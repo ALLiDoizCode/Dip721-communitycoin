@@ -15,7 +15,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Utils "../helpers/Utils";
 import Holder "../models/Holder";
-import Constants "./Constants";
+import Constants "../Constants";
 import TokenService "../services/TokenService";
 
 actor {

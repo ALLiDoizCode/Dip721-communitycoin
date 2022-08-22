@@ -9,4 +9,6 @@ module {
     public let devWallet = "";
     public let marketWallet = "";
     public let burnWallet = "";
+
+    public let dip20Canister = "";
 }
