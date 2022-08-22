@@ -16,10 +16,11 @@ import Time "mo:base/Time";
 import Utils "../helpers/Utils";
 import Holder "../models/Holder";
 import Constants "./Constants";
+import TokenService "../services/TokenService";
 
 actor {
 
-    public type Holder = Holder.Holder;
+    private type Holder = Holder.Holder;
 
     public shared({caller}) func distribute(amount:Nat,holders:[Holder]): async () {
         var recipents:[Holder] = [];
@@ -38,22 +39,28 @@ actor {
             let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings)};
             recipents := Array.append(recipents,[recipent]);
         };
-        //send list of recipents to bulktransfer call
+        ignore TokenService.bulkTransfer(recipents);
     };
 
     public shared({caller}) func devFee(value:Float): async () {
-        var amount = value * Constants.developerPercentage;
-        //send amount to canister
+        let _amount = Utils.floatToNat(value * Constants.developerPercentage);
+        let wallet = Principal.fromText(Constants.devWallet);
+        let holder:Holder = {holder = wallet; amount = _amount};
+        ignore TokenService.transfer(holder);
     };
 
     public shared({caller}) func marketingFee(value:Float): async () {
-        var amount = value * Constants.marketingPercentage;
-        //send amount to canister
+        let _amount = Utils.floatToNat(value * Constants.marketingPercentage);
+        let wallet = Principal.fromText(Constants.marketWallet);
+        let holder:Holder = {holder = wallet; amount = _amount};
+        ignore TokenService.transfer(holder);
     };
 
     public shared({caller}) func burnFee(value:Float): async () {
-        var amount = value * Constants.burnPercentage;
-        //send amount to canister
+        let _amount = Utils.floatToNat(value * Constants.burnPercentage);
+        let wallet = Principal.fromText(Constants.burnWallet);
+        let holder:Holder = {holder = wallet; amount = _amount};
+        ignore TokenService.transfer(holder);
     };
 
 };
