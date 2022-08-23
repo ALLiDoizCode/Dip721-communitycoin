@@ -1,17 +1,14 @@
 {
   "canisters": {
-    "dip721_communitycoin": {
-      "main": "src/dip721_communitycoin/main.mo",
-      "type": "motoko"
-    },
     "community": {
       "main": "src/community/main.mo",
       "type": "motoko"
     },
+    "token": {
+      "main": "src/token/main.mo",
+      "type": "motoko"
+    },
     "dip721_communitycoin_assets": {
-      "dependencies": [
-        "dip721_communitycoin"
-      ],
       "frontend": {
         "entrypoint": "src/dip721_communitycoin_assets/src/index.html"
       },
