@@ -2,6 +2,7 @@ const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
@@ -47,7 +48,7 @@ module.exports = {
   entry: {
     // The frontend.entrypoint points to the HTML file for this build, so we need
     // to replace the extension to `.js`.
-    index: path.join(__dirname, asset_entry).replace(/\.html$/, ".js"),
+    index: path.join(__dirname, asset_entry).replace(/\.html$/, ".jsx"),
   },
   devtool: isDevelopment ? "source-map" : false,
   optimization: {
@@ -74,12 +75,12 @@ module.exports = {
   // webpack configuration. For example, if you are using React
   // modules and CSS as described in the "Adding a stylesheet"
   // tutorial, uncomment the following lines:
-  // module: {
-  //  rules: [
-  //    { test: /\.(ts|tsx|jsx)$/, loader: "ts-loader" },
-  //    { test: /\.css$/, use: ['style-loader','css-loader'] }
-  //  ]
-  // },
+  module: {
+   rules: [
+     { test: /\.(ts|tsx|jsx)$/, loader: "ts-loader" },
+     { test: /\.css$/, use: ['style-loader','css-loader'] }
+   ]
+  },
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, asset_entry),
@@ -93,6 +94,15 @@ module.exports = {
       Buffer: [require.resolve("buffer/"), "Buffer"],
       process: require.resolve("process/browser"),
     }),
+    new CopyPlugin({
+          patterns: [
+            {
+              from: path.join(__dirname, "src", frontendDirectory, "assets"),
+              to: path.join(__dirname, "dist", frontendDirectory),
+            },
+          ],
+        }
+    ),
   ],
   // proxy /api to port 8000 during development
   devServer: {
