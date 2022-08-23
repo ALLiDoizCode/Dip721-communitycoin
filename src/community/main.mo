@@ -13,6 +13,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Float "mo:base/Float";
 import Utils "../helpers/Utils";
 import Holder "../models/Holder";
 import Constants "../Constants";
@@ -23,44 +24,42 @@ actor {
     private type Holder = Holder.Holder;
 
     public shared({caller}) func distribute(amount:Nat,holders:[Holder]): async () {
+        assert(caller == Principal.fromText(Constants.dip20Canister));
         var recipents:[Holder] = [];
-        var community_amount = Utils.natToFloat(amount) * Constants.transactionPercentage;
-        var holder_amount = community_amount * Constants.holdersPercentage;
+        var community_amount = Float.mul(Utils.natToFloat(amount), Constants.transactionPercentage);
+        var holder_amount = Float.mul(community_amount, Constants.holdersPercentage);
         var sum:Nat = 0;
-        ignore devFee(community_amount);
-        ignore marketingFee(community_amount);
-        ignore burnFee(community_amount);
+        let _ = devFee(community_amount);
+        let _ = marketingFee(community_amount);
+        let _ = burnFee(community_amount);
         for (holding in holders.vals()) {
             sum := sum + holding.amount;
         };
         for (holding in holders.vals()) {
-            let percentage:Float = Utils.natToFloat(holding.amount) / Utils.natToFloat(sum);
+            let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
             let earnings = holder_amount * percentage;
-            let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings)};
+            let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
             recipents := Array.append(recipents,[recipent]);
         };
-        ignore TokenService.bulkTransfer(recipents);
+        let _ = TokenService.bulkTransfer(recipents);
     };
 
     public shared({caller}) func devFee(value:Float): async () {
-        let _amount = Utils.floatToNat(value * Constants.developerPercentage);
+        let _amount = Utils.floatToNat(Float.mul(value, Constants.developerPercentage));
         let wallet = Principal.fromText(Constants.devWallet);
-        let holder:Holder = {holder = wallet; amount = _amount};
-        ignore TokenService.transfer(holder);
+        ignore TokenService.communityTransfer(wallet,_amount);
     };
 
     public shared({caller}) func marketingFee(value:Float): async () {
-        let _amount = Utils.floatToNat(value * Constants.marketingPercentage);
+        let _amount = Utils.floatToNat(Float.mul(value, Constants.marketingPercentage));
         let wallet = Principal.fromText(Constants.marketWallet);
-        let holder:Holder = {holder = wallet; amount = _amount};
-        ignore TokenService.transfer(holder);
+        let _ = TokenService.communityTransfer(wallet,_amount);
     };
 
     public shared({caller}) func burnFee(value:Float): async () {
-        let _amount = Utils.floatToNat(value * Constants.burnPercentage);
+        let _amount = Utils.floatToNat(Float.mul(value, Constants.burnPercentage));
         let wallet = Principal.fromText(Constants.burnWallet);
-        let holder:Holder = {holder = wallet; amount = _amount};
-        ignore TokenService.transfer(holder);
+        let _ = TokenService.communityTransfer(wallet,_amount);
     };
 
 };

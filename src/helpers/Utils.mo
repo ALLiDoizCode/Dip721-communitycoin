@@ -6,14 +6,14 @@ import Float "mo:base/Float";
 module {
 
     public func natToFloat(value:Nat): Float {
-        var nat64 = Nat64.fromNat(value);
-        var int64 = Int64.fromNat64(nat64);
-        return Float.fromInt64(int64)
+        //var nat64 = Nat64.fromNat(value);
+        //var int64 = Int64.fromNat64(nat64);
+        return Float.fromInt(value)
     };
 
     public func floatToNat(value:Float): Nat {
-        let int64 = Float.toInt64(value);
-        let nat64 = Int64.toNat64(int64);
+        let int = Float.toInt(value);
+        let nat64 = Nat64.fromIntWrap(int);
         return Nat64.toNat(nat64)
     };
 }
