@@ -1,0 +1,33 @@
+@font-face {
+    font-family: 'Roboto';
+    src: url('Roboto-Regular.ttf')
+  }
+
+body {
+    font-family: 'Roboto' !important;
+}
+
+.social-logo {
+    width: 50px;
+    height: 50px;
+   }
+   
+.title{
+    font-size: 60pt;
+    color: #D5BDAF;
+    font-weight: bolder;
+}
+
+.darken{
+    border-radius: 15px;
+    border: 2px solid #F5EBE0;
+    background-color: #F5EBE0;
+    color: #7E7E7E
+}
+
+.round-border {
+    border-radius: 55px;
+    border: 2px solid #D5BDAF;
+    margin-bottom: 50px;
+    background-color: #d5bdaf55;
+}

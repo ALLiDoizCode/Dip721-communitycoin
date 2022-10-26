@@ -1,0 +1,22 @@
+@font-face {
+    font-family: 'Roboto';
+    src: url('myfont.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+         url('myfont.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+  }
+
+body {
+    font-family: sans-serif;
+    font-size: 1.5rem;
+
+}
+
+.social-logo {
+    width: 50px;
+    height: 50px;
+   }
+   
+.title{
+    font-size: 60pt;
+    color: #D5BDAF;
+    font-weight: bolder;
+}
