@@ -39,8 +39,8 @@ module {
             attributes = attributes;
         });
         ignore  _putTransactionId(db, attributes, transaction.hash);
-        ignore  _putTransactionSender(db, attributes, transaction.sender, transaction.hash,timeStamp);
-        ignore  _putTransactionReceiver(db, attributes, transaction.receiver, transaction.hash,timeStamp);
+        ignore  _putTransactionSender(db, attributes, transaction.hash, transaction.sender, timeStamp);
+        ignore  _putTransactionReceiver(db, attributes, transaction.hash, transaction.receiver, timeStamp);
         transaction.hash;
     };
 
