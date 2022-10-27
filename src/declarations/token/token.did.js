@@ -87,6 +87,5 @@ export const init = ({ IDL }) => {
     IDL.Nat,
     IDL.Principal,
     IDL.Nat,
-    IDL.Principal,
   ];
 };

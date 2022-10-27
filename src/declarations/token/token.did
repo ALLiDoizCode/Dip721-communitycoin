@@ -74,4 +74,4 @@ type Holder =
    amount: nat;
    holder: principal;
  };
-service : (text, text, text, nat8, nat, principal, nat, principal) -> Token
+service : (text, text, text, nat8, nat, principal, nat) -> Token

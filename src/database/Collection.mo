@@ -115,7 +115,7 @@ shared({ caller = owner }) actor class Collection({
         } else if (path.size() == 2) {
             switch (path[0]) {
                 case ("skExists") return _skExistsResponse(path[1]);
-                case ("getTransactions") return _transactionResponse(path[1]);
+                case ("getTransaction") return _transactionResponse(path[1]);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else if (path.size() == 3) {
@@ -158,11 +158,12 @@ shared({ caller = owner }) actor class Collection({
             Text.equal,
             Text.hash,
         );
-        let result = _fetchTransaction(start, end);
+        let result = _fetchTransactions(start, end);
         var transactions:[JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
+            transactions := Array.append(transactions,[json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
         switch(result.sk){
@@ -190,11 +191,12 @@ shared({ caller = owner }) actor class Collection({
             Text.equal,
             Text.hash,
         );
-        let result = _fetchSenderTransaction(start, end);
+        let result = _fetchSenderTransactions(start, end);
         var transactions:[JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
+            transactions := Array.append(transactions,[json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
         switch(result.sk){
@@ -222,11 +224,12 @@ shared({ caller = owner }) actor class Collection({
             Text.equal,
             Text.hash,
         );
-        let result = _fetchReceiverTransaction(start, end);
+        let result = _fetchReceiverTransactions(start, end);
         var transactions:[JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
+            transactions := Array.append(transactions,[json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
         switch(result.sk){
@@ -267,7 +270,7 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchTransaction(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -275,7 +278,7 @@ shared({ caller = owner }) actor class Collection({
                 skLowerBound = "transaction:" # skLowerBound;
                 skUpperBound = "transaction:" # skUpperBound;
                 limit = 1000;
-                ascending = ?true;
+                ascending = null;
             },
         );
 
@@ -296,7 +299,7 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchSenderTransaction(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchSenderTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -304,7 +307,7 @@ shared({ caller = owner }) actor class Collection({
                 skLowerBound = "transactionSender:" # skLowerBound;
                 skUpperBound = "transactionSender:" # skUpperBound;
                 limit = 1000;
-                ascending = ?true;
+                ascending = null;
             },
         );
 
@@ -325,7 +328,7 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchReceiverTransaction(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchReceiverTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -333,7 +336,7 @@ shared({ caller = owner }) actor class Collection({
                 skLowerBound = "transactionReceiver:" # skLowerBound;
                 skUpperBound = "transactionReceiver:" # skUpperBound;
                 limit = 1000;
-                ascending = ?true;
+                ascending = null;
             },
         );
 

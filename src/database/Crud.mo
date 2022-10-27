@@ -38,10 +38,10 @@ module {
             sk = _sk;
             attributes = attributes;
         });
-        ignore _putTransactionId(db, attributes, transaction.hash);
-        ignore _putTransactionSender(db, attributes, transaction.sender, transaction.hash);
-        ignore _putTransactionReceiver(db, attributes, transaction.receiver, transaction.hash);
-        _sk;
+        ignore  _putTransactionId(db, attributes, transaction.hash);
+        ignore  _putTransactionSender(db, attributes, transaction.sender, transaction.hash,timeStamp);
+        ignore  _putTransactionReceiver(db, attributes, transaction.receiver, transaction.hash,timeStamp);
+        transaction.hash;
     };
 
     private func _putTransactionId(db:CanDB.DB, attributes:[(Entity.AttributeKey, Entity.AttributeValue)], hash: Text) : async Text {
@@ -53,8 +53,8 @@ module {
         _sk;
     };
 
-    private func _putTransactionSender(db:CanDB.DB, attributes:[(Entity.AttributeKey, Entity.AttributeValue)], hash: Text, sender: Text) : async Text {
-        let _sk = "transactionSender:" #sender #":" # hash;
+    private func _putTransactionSender(db:CanDB.DB, attributes:[(Entity.AttributeKey, Entity.AttributeValue)], hash: Text, sender: Text, now:Text) : async Text {
+        let _sk = "transactionSender:" #sender # ":" # now # ":" # hash;
         await CanDB.put(db, {
             sk = _sk;
             attributes = attributes
@@ -62,8 +62,8 @@ module {
         _sk;
     };
 
-    private func _putTransactionReceiver(db:CanDB.DB, attributes:[(Entity.AttributeKey, Entity.AttributeValue)], hash: Text, receiver:Text) : async Text {
-        let _sk = "transactionReceiver:" #receiver #":" # hash;
+    private func _putTransactionReceiver(db:CanDB.DB, attributes:[(Entity.AttributeKey, Entity.AttributeValue)], hash: Text, receiver:Text, now:Text) : async Text {
+        let _sk = "transactionReceiver:" #receiver # ":" # now # ":" # hash;
         await CanDB.put(db, {
             sk = _sk;
             attributes = attributes
