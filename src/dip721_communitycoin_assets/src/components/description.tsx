@@ -1,22 +1,33 @@
 import * as React from "react";
-import { Col, Container, Navbar, Row } from "react-bootstrap";
+import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 
 const Description = () => {
     return <>
+    <div className="padding">
+        <h1>Community token that funds the Internet Computer</h1>
+        <p>A CryptoIsGood DAO product</p>
+        <Row style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}}>
+            <Col><Button className="button-size" variant="secondary" size="lg">Buy Now</Button></Col>
+            <Col><Button className="button-size" variant="outline-secondary" size="lg">Token Info</Button></Col>
+        </Row>
+    </div>
     <Container className="darken">
-    <h1>The community token that funds the Internet Computer</h1>
-
         <Row>
             <Col>
-            <p>Crypto is good token is a novel defi technology with a tax system that encourages holding.</p>
-        <p>Every transaction done with CIG will cost 11% to it's holder.
-             These tokens will then be distributed four ways. Three percent will be burnt, three percent will be sent to every holder of the token to encourage holding, Two percent will be going to a developer treasury for marketing and future development, and 3 percent will go to a VC treasury which will be used for angel investment. </p>
+            <h1>Tax System Explained</h1>
+        <p>Crypto is good token is a novel defi technology with a tax system that encourages holding.</p>
+        <p>Every transaction done with CIG will cost 11% to it's holder.</p>
+        <ul>
+            <li>Three percent will be burnt</li>
+            <li>Three percent distributed as passive income</li>
+            <li>Two percent distributed to marketing treasury</li>
+            <li>Three percent distributed to VC treasury</li>
+        </ul>
             </Col>
             <Col>
             <img src="meta-chart.svg"></img>
             </Col>
         </Row>
-
     </Container>
     </>
     

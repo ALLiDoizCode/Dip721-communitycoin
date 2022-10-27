@@ -6,7 +6,7 @@ const CCNav = () => {
     <Navbar>
       <Container>
         <Navbar.Brand href="#home">
-            <img style={{maxWidth: "50px"}} src="coin-logo.png"></img>
+            <img style={{width: "100px"}} src="cig-logo.svg"></img>
         </Navbar.Brand>
         <Navbar.Text>CryptoIsGood</Navbar.Text>
         <Navbar.Toggle />

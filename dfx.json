@@ -4,6 +4,10 @@
       "main": "src/community/main.mo",
       "type": "motoko"
     },
+   "token": {
+      "main": "src/token/main.mo",
+      "type": "motoko"
+    },
     "dip721_communitycoin_assets": {
       "frontend": {
         "entrypoint": "src/dip721_communitycoin_assets/src/index.html"
