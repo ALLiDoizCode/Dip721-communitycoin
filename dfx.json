@@ -8,6 +8,10 @@
       "main": "src/token/main.mo",
       "type": "motoko"
     },
+    "database": {
+      "main": "src/database/IndexCanister.mo",
+      "type": "motoko"
+    },
     "dip721_communitycoin_assets": {
       "frontend": {
         "entrypoint": "src/dip721_communitycoin_assets/src/index.html"
@@ -21,11 +25,17 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "vessel sources"
     }
   },
   "dfx": "0.11.1",
   "networks": {
+    "staging": {
+      "providers": [
+        "https://ic0.app"
+      ],
+      "type": "persistent"
+    },
     "local": {
       "bind": "127.0.0.1:8000",
       "type": "ephemeral"

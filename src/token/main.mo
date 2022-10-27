@@ -14,6 +14,7 @@ import Iter "mo:base/Iter";
 import Float "mo:base/Float";
 import Array "mo:base/Array";
 import Option "mo:base/Option";
+import Blob "mo:base/Blob";
 import Order "mo:base/Order";
 import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
@@ -25,7 +26,11 @@ import Root "./cap/Root";
 import Holder "../models/Holder";
 import Constants "../Constants";
 import CommunityService "../services/CommunityService";
+import DatabaseService "../services/DatabaseService";
 import Utils "../helpers/Utils";
+import SHA256 "mo:crypto/SHA/SHA256";
+import JSON "../helpers/JSON";
+import Transaction "../models/Transaction";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -34,7 +39,8 @@ shared(msg) actor class Token(
     _decimals: Nat8,
     _totalSupply: Nat,
     _owner: Principal,
-    _fee: Nat
+    _fee: Nat,
+    _wallet: Principal,
     ) = this {
 
     type Holder = Holder.Holder;
@@ -52,8 +58,11 @@ shared(msg) actor class Token(
     };
     // returns tx index or error msg
     public type TxReceipt = Types.TxReceipt;
+    private type JSON = JSON.JSON;
+    private type Transaction = Transaction.Transaction;
 
     private stable var owner_ : Principal = _owner;
+    private stable var wallet_ : Principal = _wallet;
     private stable var logo_ : Text = _logo;
     private stable var name_ : Text = _name;
     private stable var decimals_ : Nat8 = _decimals;
@@ -72,7 +81,7 @@ shared(msg) actor class Token(
         op = #mint;
         index = 0;
         from = blackhole;
-        to = owner_;
+        to = wallet_;
         amount = totalSupply_;
         fee = 0;
         timestamp = Time.now();
@@ -115,6 +124,32 @@ shared(msg) actor class Token(
         let to_balance = _balanceOf(to);
         let to_balance_new : Nat = to_balance + value;
         if (to_balance_new != 0) { balances.put(to, to_balance_new); };
+    };
+
+    private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int) : async Text{
+        let now = Time.now();
+
+        let _transaction = {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = "";
+        };
+
+        let hash = Utils._transactionToHash(_transaction);
+
+        let transaction = {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = hash;
+        };
+
+        await DatabaseService.canister.putTransaction(transaction);
     };
 
     private func _balanceOf(who: Principal) : Nat {
@@ -163,6 +198,11 @@ shared(msg) actor class Token(
         );
     };
 
+    private func _transactionToHash(transaction:Transaction): Text {
+        let json = Utils._transactionToJson(transaction);
+        JSON.show(json);
+    };
+
     /// Transfers value amount of tokens to Principal to.
 
     public shared(msg) func communityTransfer(to: Principal, value: Nat) : async TxReceipt {
@@ -188,15 +228,15 @@ shared(msg) actor class Token(
         let _tax:Float = Float.mul(Utils.natToFloat(value), Constants.transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
-        let _ = _chargeTax(msg.caller, tax);
+        ignore _chargeTax(msg.caller, tax);
         _chargeFee(msg.caller, fee);
         _transfer(msg.caller, to, value - tax);
+        ignore _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax);
         ignore addRecord(
             msg.caller, "transfer",
             [
                 ("to", #Principal(to)),
                 ("value", #U64(u64(value - tax))),
-                ("fee", #U64(u64(fee))),
                 ("tax", #U64(u64(tax)))
             ]
         );
@@ -227,7 +267,6 @@ shared(msg) actor class Token(
                 [
                     ("to", #Principal(value.holder)),
                     ("value", #U64(u64(value.amount))),
-                    ("fee", #U64(u64(0)))
                 ]
             );
             txcounter += 1;
@@ -243,9 +282,13 @@ shared(msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
+        var holders:[Holder] = [];
+        let _tax:Float = Float.mul(Utils.natToFloat(value), Constants.transactionPercentage);
+        let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
         let allowed : Nat = _allowance(from, msg.caller);
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
+        ignore _chargeTax(msg.caller, tax);
         _chargeFee(from, fee);
         _transfer(from, to, value);
         let allowed_new : Nat = allowed - value - fee;
@@ -267,7 +310,7 @@ shared(msg) actor class Token(
                 ("from", #Principal(from)),
                 ("to", #Principal(to)),
                 ("value", #U64(u64(value))),
-                ("fee", #U64(u64(fee)))
+                ("tax", #U64(u64(tax)))
             ]
         );
         txcounter += 1;

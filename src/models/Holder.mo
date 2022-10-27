@@ -7,6 +7,5 @@ module {
     public type Holder = {
         holder:Principal;
         amount:Nat;
-        receipt:TxReceipt;
     };
 }
