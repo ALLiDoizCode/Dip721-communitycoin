@@ -21,16 +21,22 @@
     "@dfinity/principal": "0.13.1",
     "assert": "2.0.0",
     "buffer": "6.0.3",
+    "copy-webpack-plugin": "^9.0.1",
     "events": "3.3.0",
     "html-webpack-plugin": "5.5.0",
-    "copy-webpack-plugin": "^9.0.1",
     "process": "0.11.10",
     "stream-browserify": "3.0.0",
     "terser-webpack-plugin": "5.2.5",
     "util": "0.12.4",
     "webpack": "5.72.0",
     "webpack-cli": "4.10.0",
-    "webpack-dev-server": "^4.8.1"
+    "webpack-dev-server": "^4.8.1",
+    "scss-loader": "^0.0.1",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.3.1",
+    "sass": "^1.54.9",
+    "sass-loader": "^13.0.2",
+    "css-loader": "^6.7.1"
   },
   "engines": {
     "node": "^12 || ^14 || ^16 || ^18"
@@ -43,14 +49,12 @@
   ],
   "dependencies": {
     "bootstrap": "^5.2.0",
-    "css-loader": "^6.7.1",
     "jquery": "^3.6.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.5.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.3.0",
-    "recoil": "^0.7.5",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.3.1"
+    "recoil": "^0.7.5"
+
   }
 }

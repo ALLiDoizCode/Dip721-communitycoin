@@ -2,10 +2,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './app';
 import {HashRouter} from "react-router-dom";
-import "../../../node_modules/bootstrap/dist/css/bootstrap.css";
-import "../../../node_modules/bootstrap/dist/js/bootstrap";
-import "../../../node_modules/jquery/dist/jquery";
-import "../../../node_modules/@popperjs/core/dist/cjs/popper";
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap/dist/js/bootstrap";
+import "jquery/dist/jquery";
+import "@popperjs/core/dist/cjs/popper";
+import "./background.scss";
+import "./bootstrap-overrides.scss";
 
 import {
   RecoilRoot
