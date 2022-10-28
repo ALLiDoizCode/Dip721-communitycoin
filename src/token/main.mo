@@ -255,7 +255,7 @@ shared(msg) actor class Token(
 
         for((principal,amount) in balances.entries()) {
             let _holder:Holder = {
-                holder = principal;
+                holder = Principal.toText(principal);
                 amount = amount;
                 receipt = #Err(#Other(""));
             };
@@ -273,11 +273,11 @@ shared(msg) actor class Token(
         if(msg.caller != communityCanister) {return response};
         for(value in holders.vals()){
             if (_balanceOf(msg.caller) < value.amount) { return response };
-            _transfer(msg.caller, value.holder, value.amount);
+            _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
             ignore addRecord(
                 msg.caller, "transfer",
                 [
-                    ("to", #Principal(value.holder)),
+                    ("to", #Principal(Principal.fromText(value.holder))),
                     ("amount", #U64(u64(value.amount))),
                 ]
             );

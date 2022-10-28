@@ -9,7 +9,7 @@
       "type": "motoko"
     },
     "database": {
-      "main": "src/database/IndexCanister.mo",
+      "main": "src/transactionDatabase/IndexCanister.mo",
       "type": "motoko"
     },
     "dip721_communitycoin_assets": {

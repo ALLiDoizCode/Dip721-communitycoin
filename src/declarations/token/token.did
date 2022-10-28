@@ -72,6 +72,6 @@ type Metadata =
 type Holder = 
  record {
    amount: nat;
-   holder: principal;
+   holder: text;
  };
 service : (text, text, text, nat8, nat, principal, nat) -> Token
