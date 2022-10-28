@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Col, Container, Navbar, Row } from "react-bootstrap";
+import { Col, Container, Nav, Navbar, NavDropdown, Row } from "react-bootstrap";
 
 const CCNav = () => {
     return <>
@@ -11,6 +11,9 @@ const CCNav = () => {
         <Navbar.Text>CryptoIsGood</Navbar.Text>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
+        <Nav className="me-auto">
+            <Nav.Link href="https://documenter.getpostman.com/view/1266173/2s8YKAniwU#90c50659-7cf8-4a32-bf05-946">API</Nav.Link>
+        </Nav>
         <Row style={{maxWidth: "200px"}}>
             <Col>
                 <a href="https://twitter.com/crypto_is_good">

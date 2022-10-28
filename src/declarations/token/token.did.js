@@ -13,7 +13,25 @@ export const idlFactory = ({ IDL }) => {
       'AmountTooSmall' : IDL.Null,
     }),
   });
-  const Holder = IDL.Record({ 'holder' : IDL.Text, 'amount' : IDL.Nat });
+  const TxReceipt__1 = IDL.Variant({
+    'Ok' : IDL.Nat,
+    'Err' : IDL.Variant({
+      'InsufficientAllowance' : IDL.Null,
+      'InsufficientBalance' : IDL.Null,
+      'ErrorOperationStyle' : IDL.Null,
+      'Unauthorized' : IDL.Null,
+      'LedgerTrap' : IDL.Null,
+      'ErrorTo' : IDL.Null,
+      'Other' : IDL.Text,
+      'BlockUsed' : IDL.Null,
+      'AmountTooSmall' : IDL.Null,
+    }),
+  });
+  const Holder = IDL.Record({
+    'receipt' : TxReceipt__1,
+    'holder' : IDL.Principal,
+    'amount' : IDL.Nat,
+  });
   const Metadata = IDL.Record({
     'fee' : IDL.Nat,
     'decimals' : IDL.Nat8,

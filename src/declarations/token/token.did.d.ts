@@ -1,7 +1,11 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
-export interface Holder { 'holder' : string, 'amount' : bigint }
+export interface Holder {
+  'receipt' : TxReceipt__1,
+  'holder' : Principal,
+  'amount' : bigint,
+}
 export interface Metadata {
   'fee' : bigint,
   'decimals' : number,
@@ -49,6 +53,18 @@ export interface TokenInfo {
   'feeTo' : Principal,
 }
 export type TxReceipt = { 'Ok' : bigint } |
+  {
+    'Err' : { 'InsufficientAllowance' : null } |
+      { 'InsufficientBalance' : null } |
+      { 'ErrorOperationStyle' : null } |
+      { 'Unauthorized' : null } |
+      { 'LedgerTrap' : null } |
+      { 'ErrorTo' : null } |
+      { 'Other' : string } |
+      { 'BlockUsed' : null } |
+      { 'AmountTooSmall' : null }
+  };
+export type TxReceipt__1 = { 'Ok' : bigint } |
   {
     'Err' : { 'InsufficientAllowance' : null } |
       { 'InsufficientBalance' : null } |
