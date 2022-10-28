@@ -13,7 +13,7 @@ export const idlFactory = ({ IDL }) => {
       'AmountTooSmall' : IDL.Null,
     }),
   });
-  const Holder = IDL.Record({ 'holder' : IDL.Principal, 'amount' : IDL.Nat });
+  const Holder = IDL.Record({ 'holder' : IDL.Text, 'amount' : IDL.Nat });
   const Metadata = IDL.Record({
     'fee' : IDL.Nat,
     'decimals' : IDL.Nat8,

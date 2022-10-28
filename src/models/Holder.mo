@@ -5,7 +5,7 @@ module {
     type TxReceipt = Types.TxReceipt;
 
     public type Holder = {
-        holder:Principal;
+        holder:Text;
         amount:Nat;
     };
 }

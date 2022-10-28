@@ -14,6 +14,7 @@ import Iter "mo:base/Iter";
 import JSON "../helpers/JSON";
 import Array "mo:base/Array";
 import Collection "./Collection";
+import Admin "mo:candb/CanDBAdmin";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
 
@@ -44,7 +45,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     }
   };
 
-  public shared({caller = caller}) func autoScalePostCollectionServiceCanister(pk: Text): async Text {
+  public shared({caller = caller}) func autoScaleCollectionServiceCanister(pk: Text): async Text {
     // Auto-Scaling Authorization - if the request to auto-scale the partition is not coming from an existing canister in the partition, reject it
     if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
       Debug.print("creating an additional canister for pk=" # pk);
@@ -77,7 +78,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     let newPostCollectionServiceCanister = await Collection.Collection({
       partitionKey = pk;
       scalingOptions = {
-        autoScalingHook = autoScalePostCollectionServiceCanister;
+        autoScalingHook = autoScaleCollectionServiceCanister;
         sizeLimit = #heapSize(200_000_000); // Scale out at 200MB
         // for auto-scaling testing
         //sizeLimit = #count(3); // Scale out at 3 entities inserted
@@ -101,6 +102,55 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
     Debug.print("new PostCollection service canisterId=" # newPostCollectionServiceCanisterId);
     newPostCollectionServiceCanisterId;
+  };
+
+  /// !! Do not use this method without caller authorization
+  /// Upgrade user canisters in a PK range, i.e. rolling upgrades (limit is fixed at upgrading the canisters of 5 PKs per call)
+  public shared({ caller = caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
+    // !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
+    if (caller != owner) { // basic authorization
+      return {
+        upgradeCanisterResults = [];
+        nextKey = null;
+      }
+    }; 
+    
+
+
+    // CanDB documentation on this library function - https://www.candb.canscale.dev/CanDBAdmin.html
+    await Admin.upgradeCanistersInPKRange({
+      canisterMap = pkToCanisterMap;
+      lowerPK = lowerPK; 
+      upperPK = upperPK;
+      limit = 5;
+      wasmModule = wasmModule;
+      // the scaling options parameter that will be passed to the constructor of the upgraded canister
+      scalingOptions = {
+        autoScalingHook = autoScaleCollectionServiceCanister;
+        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB
+      };
+      // the owners parameter that will be passed to the constructor of the upgraded canister
+      owners = ?[owner, Principal.fromActor(this)];
+    });
+  };
+
+  /// !! Do not use this method without caller authorization
+  /// Spins down all canisters belonging to a specific user (transfers cycles back to the index canister, and stops/deletes all canisters)
+  public shared({caller = caller}) func deleteCanistersByPK(pk: Text): async ?Admin.CanisterCleanupStatusMap {
+    /* !!! Recommend Adding to prevent anyone from being able to delete your service actor canisters
+    if (caller != owner) return null; // authorization 
+    */
+
+    let canisterIds = getCanisterIdsIfExists(pk);
+    if (canisterIds == []) {
+      Debug.print("canisters with pk=" # pk # " do not exist");
+      null
+    } else {
+      // can choose to use this statusMap for to detect failures and prompt retries if desired 
+      let statusMap = await Admin.transferCyclesStopAndDeleteCanisters(canisterIds);
+      pkToCanisterMap := CanisterMap.delete(pkToCanisterMap, pk);
+      ?statusMap;
+    };
   };
 
   public query func getMemorySize(): async Nat {

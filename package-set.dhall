@@ -13,7 +13,7 @@ let packages = [
   },
   { name = "candb"
   , repo = "git@github.com:canscale/CanDB.git"
-  , version = "alpha"
+  , version = "alpha-dev"
   , dependencies = [ "base" ]
   },
   { name = "array"

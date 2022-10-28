@@ -1,6 +1,9 @@
 import Holder "../models/Holder";
 import Constants "../Constants";
 import Types "../models/types";
+import Principal "mo:base/Principal";
+import Utils "../helpers/Utils";
+import Nat64 "mo:base/Nat64";
 
 module {
 
@@ -9,7 +12,7 @@ module {
     private type Holder = Holder.Holder;
 
     public func transfer(holder:Holder): async TxReceipt {
-        await canister.transfer(holder.holder,holder.amount);
+        await canister.transfer(Principal.fromText(holder.holder),holder.amount);
     };
 
     public func communityTransfer(sender:Principal,amount:Nat): async TxReceipt {
