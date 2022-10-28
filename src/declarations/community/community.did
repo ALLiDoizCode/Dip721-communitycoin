@@ -1,7 +1,7 @@
 type Holder = 
  record {
    amount: nat;
-   holder: principal;
+   holder: text;
  };
 service : {
   burnFee: (float64) -> ();

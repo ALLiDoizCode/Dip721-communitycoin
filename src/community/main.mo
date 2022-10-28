@@ -29,9 +29,9 @@ actor {
         var community_amount = Float.mul(Utils.natToFloat(amount), Constants.transactionPercentage);
         var holder_amount = Float.mul(community_amount, Constants.holdersPercentage);
         var sum:Nat = 0;
-        let _ = devFee(community_amount);
-        let _ = marketingFee(community_amount);
-        let _ = burnFee(community_amount);
+        ignore devFee(community_amount);
+        ignore marketingFee(community_amount);
+        ignore burnFee(community_amount);
         for (holding in holders.vals()) {
             sum := sum + holding.amount;
         };
@@ -41,25 +41,27 @@ actor {
             let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
             recipents := Array.append(recipents,[recipent]);
         };
-        let _ = TokenService.bulkTransfer(recipents);
+        ignore TokenService.bulkTransfer(recipents);
     };
 
-    public shared({caller}) func devFee(value:Float): async () {
+    private func devFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, Constants.developerPercentage));
         let wallet = Principal.fromText(Constants.devWallet);
         ignore TokenService.communityTransfer(wallet,_amount);
     };
 
-    public shared({caller}) func marketingFee(value:Float): async () {
+    private func marketingFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, Constants.marketingPercentage));
         let wallet = Principal.fromText(Constants.marketWallet);
         let _ = TokenService.communityTransfer(wallet,_amount);
     };
 
-    public shared({caller}) func burnFee(value:Float): async () {
+    private func burnFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, Constants.burnPercentage));
         let wallet = Principal.fromText(Constants.burnWallet);
         let _ = TokenService.communityTransfer(wallet,_amount);
     };
+
+    public shared({caller}) func test(amount:Nat,holders:[Holder]): async () {};
 
 };
