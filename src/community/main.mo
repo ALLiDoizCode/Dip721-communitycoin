@@ -29,7 +29,7 @@ actor {
         var community_amount = Float.mul(Utils.natToFloat(amount), Constants.transactionPercentage);
         var holder_amount = Float.mul(community_amount, Constants.holdersPercentage);
         var sum:Nat = 0;
-        ignore devFee(community_amount);
+        ignore treasuryFee(community_amount);
         ignore marketingFee(community_amount);
         ignore burnFee(community_amount);
         for (holding in holders.vals()) {
@@ -44,9 +44,9 @@ actor {
         ignore TokenService.bulkTransfer(recipents);
     };
 
-    private func devFee(value:Float): async () {
-        let _amount = Utils.floatToNat(Float.mul(value, Constants.developerPercentage));
-        let wallet = Principal.fromText(Constants.devWallet);
+    private func treasuryFee(value:Float): async () {
+        let _amount = Utils.floatToNat(Float.mul(value, Constants.treasuryPercentage));
+        let wallet = Principal.fromText(Constants.treasuryWallet);
         ignore TokenService.communityTransfer(wallet,_amount);
     };
 
