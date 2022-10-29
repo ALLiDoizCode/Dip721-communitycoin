@@ -1,11 +1,9 @@
 type Holder = 
  record {
    amount: nat;
-   holder: principal;
+   holder: text;
  };
 service : {
-  burnFee: (float64) -> ();
-  devFee: (float64) -> ();
   distribute: (nat, vec Holder) -> ();
-  marketingFee: (float64) -> ();
+  test: (nat, vec Holder) -> ();
 }

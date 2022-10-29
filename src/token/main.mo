@@ -294,13 +294,12 @@ shared(msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
-        var holders:[Holder] = [];
         let _tax:Float = Float.mul(Utils.natToFloat(value), Constants.transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
         let allowed : Nat = _allowance(from, msg.caller);
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
-        ignore _chargeTax(msg.caller, tax);
+        ignore _chargeTax(from, tax);
         _chargeFee(from, fee);
         _transfer(from, to, value);
         let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax);
@@ -324,6 +323,42 @@ shared(msg) actor class Token(
                 ("to", #Principal(to)),
                 ("amount", #U64(u64(value))),
                 ("tax", #U64(u64(tax))),
+                ("hash", #Text(hash))
+            ]
+        );
+        txcounter += 1;
+        return #Ok(txcounter - 1);
+    };
+
+    /// Taxes amount of tokens from Principal.
+    public shared(msg) func chargeTax(from: Principal, value: Nat) : async TxReceipt {
+        let dao = Principal.fromText(Constants.daoCanister);
+        assert(msg.caller == dao);
+        if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
+        let allowed : Nat = _allowance(from, msg.caller);
+        if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
+        ignore _chargeTax(from, value);
+        let hash = await _putTransacton(value, Principal.toText(from), "Tax", value);
+        let allowed_new : Nat = allowed - value - fee;
+        if (allowed_new != 0) {
+            let allowance_from = Types.unwrap(allowances.get(from));
+            allowance_from.put(msg.caller, allowed_new);
+            allowances.put(from, allowance_from);
+        } else {
+            if (allowed != 0) {
+                let allowance_from = Types.unwrap(allowances.get(from));
+                allowance_from.delete(msg.caller);
+                if (allowance_from.size() == 0) { allowances.delete(from); }
+                else { allowances.put(from, allowance_from); };
+            };
+        };
+        ignore addRecord(
+            msg.caller, "Tax",
+            [
+                ("from", #Principal(from)),
+                ("to", #Text("Tax")),
+                ("amount", #U64(u64(value))),
+                ("tax", #U64(u64(value))),
                 ("hash", #Text(hash))
             ]
         );

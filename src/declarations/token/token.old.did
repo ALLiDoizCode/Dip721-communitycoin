@@ -37,7 +37,7 @@ type Metadata =
 type Holder = 
  record {
    amount: nat;
-   holder: principal;
+   holder: text;
  };
 service : {
   allowance: (principal, principal) -> (nat) query;

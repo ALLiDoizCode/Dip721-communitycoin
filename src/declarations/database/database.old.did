@@ -1,3 +1,25 @@
+type UpgradePKRangeResult = 
+ record {
+   nextKey: opt text;
+   upgradeCanisterResults: vec record {
+                                 text;
+                                 InterCanisterActionResult;
+                               };
+ };
+type Tree = 
+ variant {
+   leaf;
+   node:
+    record {
+      Color;
+      Tree;
+      record {
+        text;
+        opt InterCanisterActionResult;
+      };
+      Tree;
+    };
+ };
 type StreamingStrategy = variant {
                            Callback:
                             record {
@@ -32,17 +54,36 @@ type Request =
    method: text;
    url: text;
  };
+type InterCanisterActionResult = 
+ variant {
+   err: text;
+   ok;
+ };
 type HeaderField = 
  record {
    text;
    text;
  };
+type Color = 
+ variant {
+   B;
+   R;
+ };
+type CanisterCleanupStatusMap = 
+ record {
+   delete: Tree;
+   stop: Tree;
+   transfer: Tree;
+ };
 service : {
-  autoScalePostCollectionServiceCanister: (text) -> (text);
+  autoScaleCollectionServiceCanister: (text) -> (text);
   createPostCollectionServiceCanisterByGroup: (text) -> (opt text);
+  deleteCanistersByPK: (text) -> (opt CanisterCleanupStatusMap);
   getCanistersByPK: (text) -> (vec text) query;
   getCycles: () -> (nat) query;
   getHeapSize: () -> (nat) query;
   getMemorySize: () -> (nat) query;
   http_request: (Request) -> (Response) query;
+  upgradeGroupCanistersInPKRange: (text, text, blob) ->
+   (UpgradePKRangeResult);
 }

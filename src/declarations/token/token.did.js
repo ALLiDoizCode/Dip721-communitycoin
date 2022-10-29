@@ -42,6 +42,7 @@ export const idlFactory = ({ IDL }) => {
     'balanceOf' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
     'bulkTransfer' : IDL.Func([IDL.Vec(Holder)], [IDL.Vec(Holder)], []),
     'burn' : IDL.Func([IDL.Nat], [TxReceipt], []),
+    'chargeTax' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'communityTransfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'decimals' : IDL.Func([], [IDL.Nat8], ['query']),
     'getAllowanceSize' : IDL.Func([], [IDL.Nat], ['query']),

@@ -18,6 +18,7 @@ export interface Token {
   'balanceOf' : ActorMethod<[Principal], bigint>,
   'bulkTransfer' : ActorMethod<[Array<Holder>], Array<Holder>>,
   'burn' : ActorMethod<[bigint], TxReceipt>,
+  'chargeTax' : ActorMethod<[Principal, bigint], TxReceipt>,
   'communityTransfer' : ActorMethod<[Principal, bigint], TxReceipt>,
   'decimals' : ActorMethod<[], number>,
   'getAllowanceSize' : ActorMethod<[], bigint>,
