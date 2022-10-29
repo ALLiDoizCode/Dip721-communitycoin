@@ -1,3 +1,19 @@
+type TxReceipt__1 = 
+ variant {
+   Err:
+    variant {
+      AmountTooSmall;
+      BlockUsed;
+      ErrorOperationStyle;
+      ErrorTo;
+      InsufficientAllowance;
+      InsufficientBalance;
+      LedgerTrap;
+      Other: text;
+      Unauthorized;
+    };
+   Ok: nat;
+ };
 type TxReceipt = 
  variant {
    Err:
@@ -72,6 +88,7 @@ type Metadata =
 type Holder = 
  record {
    amount: nat;
-   holder: text;
+   holder: principal;
+   receipt: TxReceipt__1;
  };
 service : (text, text, text, nat8, nat, principal, nat) -> Token

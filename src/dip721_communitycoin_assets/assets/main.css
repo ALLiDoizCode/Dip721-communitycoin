@@ -21,10 +21,11 @@ body {
 .darken{
     border-radius: 15px;
     border: 2px solid #EDEDE9;
-    background-color: #EDEDE9;
+    background-color: #edede997;
     color: #7E7E7E;
     padding: 20px;
     text-align: left;
+    margin-bottom: 50px;
 }
 
 .round-border {
