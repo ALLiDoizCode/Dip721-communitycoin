@@ -30,7 +30,7 @@ type Token =
    balanceOf: (principal) -> (nat) query;
    bulkTransfer: (vec Holder) -> (vec Holder);
    burn: (nat) -> (TxReceipt);
-   chargeTax: (principal, nat) -> ();
+   chargeTax: (principal, nat) -> (TxReceipt);
    communityTransfer: (principal, nat) -> (TxReceipt);
    decimals: () -> (nat8) query;
    getAllowanceSize: () -> (nat) query;

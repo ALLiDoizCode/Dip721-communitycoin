@@ -195,15 +195,16 @@ shared(msg) actor class Token(
     *           historySize/getTransaction/getTransactions
     */
 
-    public shared({caller})func chargeTax(sender:Principal,amount:Nat) : async () {
+    public shared({caller})func chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
         let daoCanister = Principal.fromText(Constants.daoCanister);
         assert(daoCanister == caller);
         await _chargeTax(sender,amount);
     };
 
-    private func _chargeTax(sender:Principal,amount:Nat) : async () {
+    private func _chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
         var holders:[Holder] = [];
         let to = Principal.fromText(Constants.communityCanister);
+        if (_balanceOf(sender) < amount) { return #Err(#InsufficientBalance); };
         _transfer(sender, to, amount);
         for((principal,amount) in balances.entries()) {
             let _holder:Holder = {
@@ -225,6 +226,8 @@ shared(msg) actor class Token(
                 ("type", #Text("tax"))
             ]
         );
+        txcounter += 1;
+        return #Ok(txcounter - 1);
     };
 
     private func _transactionToHash(transaction:Transaction): Text {
