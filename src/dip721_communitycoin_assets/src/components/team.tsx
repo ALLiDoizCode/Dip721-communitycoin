@@ -24,8 +24,7 @@ const Team = () => {
         <Card.Body>
           <Card.Title>Jonathan Green</Card.Title>
           <Card.Text>
-            This card has supporting text below as a natural lead-in to
-            additional content.{' '}
+          Software Engineer and blockchain developer with over 10 years of experience
           </Card.Text>
         </Card.Body>
       </Card>
