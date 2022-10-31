@@ -28,10 +28,33 @@ const Description = () => {
     <div className="padding">
         <h1>Community token that funds the Internet Computer</h1>
         <p>A CryptoIsGood DAO product</p>
-        <Row style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}}>
-            <Col><Button className="button-size" variant="secondary" size="lg">Buy Now</Button></Col>
-            <Col><Button className="button-size" variant="outline-secondary" size="lg">Token Info</Button></Col>
+        <Row style={{maxWidth: "600px", marginLeft: "auto", marginRight: "auto"}}>
+            <Col><Button className="button-size" variant="success" size="lg">Buy Now</Button></Col>
+            <Col><Button className="button-size" variant="secondary" size="lg">Token Info</Button></Col>
+            <Col><a href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</a></Col>
         </Row>
+        <br></br>
+        <div style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}} className="darken container-sm"> 
+        <h1>Treasuries</h1>
+        <Row >
+          <Col>
+          <label className="label">VC:</label>
+          </Col>
+          <Col>
+          <label className="value">12312312312 YC</label>
+          </Col>
+        </Row>
+
+        <Row >
+          <Col>
+          <label className="label">Marketing:</label>
+          </Col>
+          <Col>
+          <label className="value">12312312312 YC</label>
+          </Col>
+        </Row>
+        </div>
+        
     </div>
     <Container className="darken">
         <Row>
