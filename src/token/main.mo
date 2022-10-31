@@ -60,7 +60,7 @@ shared(msg) actor class Token(
     public type TxReceipt = Types.TxReceipt;
     private type JSON = JSON.JSON;
     private type Transaction = Transaction.Transaction;
-
+    private stable var transactionPercentage:Float = 0.11;
     private stable var owner_ : Principal = _owner;
     private stable var logo_ : Text = _logo;
     private stable var name_ : Text = _name;
@@ -195,6 +195,11 @@ shared(msg) actor class Token(
     *           historySize/getTransaction/getTransactions
     */
 
+    public shared({caller}) func updateTransactionPercentage(value:Float): async() {
+        assert(caller == Principal.fromText(Constants.daoCanister));
+        transactionPercentage := value;
+    };
+
     public shared({caller})func chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
         let daoCanister = Principal.fromText(Constants.daoCanister);
         assert(daoCanister == caller);
@@ -256,7 +261,7 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func transfer(to: Principal, value: Nat) : async TxReceipt {
-        let _tax:Float = Float.mul(Utils.natToFloat(value), Constants.transactionPercentage);
+        let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
         ignore _chargeTax(msg.caller, tax);
@@ -303,7 +308,7 @@ shared(msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
-        let _tax:Float = Float.mul(Utils.natToFloat(value), Constants.transactionPercentage);
+        let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
         let allowed : Nat = _allowance(from, msg.caller);
