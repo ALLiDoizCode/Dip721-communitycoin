@@ -1,28 +1,11 @@
-type TxReceipt = 
- variant {
-   Err:
-    variant {
-      AmountTooSmall;
-      BlockUsed;
-      ErrorOperationStyle;
-      ErrorTo;
-      InsufficientAllowance;
-      InsufficientBalance;
-      LedgerTrap;
-      Other: text;
-      Unauthorized;
-    };
-   Ok: nat;
- };
 type Holder = 
  record {
    amount: nat;
-   holder: principal;
-   receipt: TxReceipt;
+   holder: text;
  };
 service : {
   burnFee: (float64) -> ();
-  devFee: (float64) -> ();
   distribute: (nat, vec Holder) -> ();
   marketingFee: (float64) -> ();
+  treasuryFee: (float64) -> ();
 }
