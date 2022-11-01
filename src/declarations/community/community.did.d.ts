@@ -7,4 +7,10 @@ export interface _SERVICE {
   'distribute' : ActorMethod<[bigint, Array<Holder>], undefined>,
   'marketingFee' : ActorMethod<[number], undefined>,
   'treasuryFee' : ActorMethod<[number], undefined>,
+  'updateBurnPercentage' : ActorMethod<[number], undefined>,
+  'updateMarketingPercentage' : ActorMethod<[number], undefined>,
+  'updateMaxHoldingPercentage' : ActorMethod<[number], undefined>,
+  'updateReflectionPercentage' : ActorMethod<[number], undefined>,
+  'updateTransactionPercentage' : ActorMethod<[number], undefined>,
+  'updateTreasuryPercentage' : ActorMethod<[number], undefined>,
 }
