@@ -12,12 +12,12 @@
       "main": "src/transactionDatabase/IndexCanister.mo",
       "type": "motoko"
     },
-    "dip721_communitycoin_assets": {
+    "ui": {
       "frontend": {
-        "entrypoint": "src/dip721_communitycoin_assets/src/index.html"
+        "entrypoint": "src/ui/src/index.html"
       },
       "source": [
-        "dist/dip721_communitycoin_assets/"
+        "dist/ui/"
       ],
       "type": "assets"
     }
