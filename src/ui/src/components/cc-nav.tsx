@@ -6,13 +6,15 @@ const CCNav = () => {
     <Navbar>
       <Container>
         <Navbar.Brand href="#home">
-            <img style={{width: "100px"}} src="cig-logo.svg"></img>
+            <img style={{width: "75px"}} src="yc.svg"></img>
         </Navbar.Brand>
         <Navbar.Text>CryptoIsGood</Navbar.Text>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
         <Nav className="me-auto">
-            <Nav.Link href="https://documenter.getpostman.com/view/1266173/2s8YKAniwU#90c50659-7cf8-4a32-bf05-946">API</Nav.Link>
+            <Nav.Link disabled href="https://documenter.getpostman.com/view/1266173/2s8YKAniwU#90c50659-7cf8-4a32-bf05-946">API</Nav.Link>
+            <Nav.Link disabled href="#">White Paper</Nav.Link>
+
         </Nav>
         <Row style={{maxWidth: "200px"}}>
             <Col>
