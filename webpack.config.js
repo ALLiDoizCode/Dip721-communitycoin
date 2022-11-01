@@ -38,7 +38,7 @@ const canisterEnvVariables = initCanisterEnv();
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-const frontendDirectory = "dip721_communitycoin_assets";
+const frontendDirectory = "ui";
 
 const asset_entry = path.join("src", frontendDirectory, "src", "index.html");
 
