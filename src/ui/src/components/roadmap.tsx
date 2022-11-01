@@ -2,39 +2,31 @@ import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
 
-const Description = () => {
+const RoadMap = () => {
 
     
     return <>
-    <div className="padding">
-        <h1>Community token that funds the Internet Computer</h1>
-        <p>A CryptoIsGood DAO product</p>
-        <Row style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}}>
-            <Col><Button className="button-size" variant="secondary" size="lg">Buy Now</Button></Col>
-            <Col><Button className="button-size" variant="outline-secondary" size="lg">Token Info</Button></Col>
-        </Row>
-    </div>
-    <Container className="darken">
-        <Row>
-            <Col>
-            <h1>Tax System Explained</h1>
-            </Col>
-        </Row>
-        <Row>
-            <Col>
-        <p>Crypto is good token is a novel defi technology with a tax system that encourages holding.</p>
-        <p>Every transaction done with CIG will cost 11% to it's holder.</p>
-        <ul>
-            <li>Three percent will be burnt</li>
-            <li>Three percent distributed as passive income</li>
-            <li>Two percent distributed to marketing treasury</li>
-            <li>Three percent distributed to VC treasury</li>
-        </ul>
-            </Col>
-        </Row>
-    </Container>
+     <Container className="darken">
+        <h1>Road Map</h1>
+        <p>Crypto is Good dao is a fluid dao and what you see here is not promies. 
+            These is a casual list of functinalities we are calling a road map we hope to bring that we think would
+            help the IC community long term. Our true goal is to increase liquidity within the ecosystem and foster development for the greater good.
+            Our methods will probably be misunderstood by some but most of web3 is misunderstood and that is a reality. All great crypto projects started with a little bit of degen.</p>
+
+        <p>Without further ado in no particular order, these are the projects we plan to develop</p>
+        <ol>
+            <li>DAO for governance on Crypto is Good named neuron</li>
+            <li>DAO functionality for funding projects (Shark Tank)</li>
+            <li>DAO integration with social media</li>
+            <li>Meme Coin Factory for coins modeled directly like "Your Coin"</li>
+            <li>Microcap specific swap</li>
+            <li>DEX aggregator within the IC</li>
+            <li>DEX aggregator with Ethereum</li>
+        </ol>
+
+     </Container>
     </>
     
 }
 
-export default Description
+export default RoadMap
