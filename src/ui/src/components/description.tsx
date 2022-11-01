@@ -3,7 +3,6 @@ import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
 import { daocanister, coincanister } from "../declarations/agent";
-import LaunchTimer from "./launch-timer";
 const Description = () => {
   const [vcTreasury, setVcTreasury] = React.useState(BigInt(0));
   const [burnWallet, setBurnWallet] = React.useState(BigInt(0));
@@ -39,10 +38,6 @@ const Description = () => {
         {
           "name": "Venture Capital Treasury",
           "value": 3
-        },
-        {
-          "name": "Untaxed",
-          "value": 89
         }
       ];
 
@@ -50,16 +45,15 @@ const Description = () => {
     
     return <>
     <div className="padding">
-        <h1>Your Token</h1>
-        <h3 className="silenced">A token that funds the Internet Computer</h3>
+        <h1>Community token that funds the Internet Computer</h1>
+        <p>A CryptoIsGood DAO product</p>
         <Row style={{maxWidth: "600px", marginLeft: "auto", marginRight: "auto"}}>
-            <Col><Button disabled className="button-size" variant="success" size="lg">Buy Now</Button></Col>
-            <Col><Button disabled className="button-size" variant="secondary" size="lg">Token Info</Button></Col>
-            <Col><Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</Button></Col>
+            <Col><Button className="button-size" variant="success" size="lg">Buy Now</Button></Col>
+            <Col><Button className="button-size" variant="secondary" size="lg">Token Info</Button></Col>
+            <Col><a href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</a></Col>
         </Row>
         <br></br>
-        <LaunchTimer></LaunchTimer>
-        {/* <div style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}} className="darken container-sm"> 
+        <div style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}} className="darken container-sm"> 
         <h1>Treasuries</h1>
         <Row >
           <Col>
@@ -86,20 +80,19 @@ const Description = () => {
           <label className="value">{(burnWallet/BigInt(100000)).toString() + " YC"}</label>
           </Col>
         </Row>
-        </div> */}
+        </div>
         
     </div>
     <Container className="darken">
         <Row>
             <Col >
-            <h1>Token Explained</h1>
+            <h1>Tax System Explained</h1>
             </Col>
         </Row>
         <Row>
-            <Col md="12" lg="6">
-        <p>Your token is the governance token for the Crypto is Good Dao.
-        Your Token is also a novel defi self staking technology with a tax system that encourages holding.</p>
-        <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
+            <Col lg="6">
+        <p>Crypto is good token is a novel defi technology with a tax system that encourages holding.</p>
+        <p>Every transaction done with CIG will cost 11% to it's holder.</p>
         <ul>
             <li>Three percent will be burnt</li>
             <li>Three percent distributed as passive income</li>
@@ -107,7 +100,7 @@ const Description = () => {
             <li>Three percent distributed to VC treasury</li>
         </ul>
             </Col>
-            <Col md="12"  lg="6">
+            <Col lg="6">
             <ResponsiveContainer >
                 <PieChart height={250}>
                     <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({
