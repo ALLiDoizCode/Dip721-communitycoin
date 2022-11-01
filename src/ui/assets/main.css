@@ -43,3 +43,13 @@ body {
 .button-size{
     min-width: 150px;
 }
+
+.label {
+    color: #7E7E7E;
+    font-weight: bolder;
+    font-size: 20px;
+}
+
+.value{
+    padding-top: 4px;
+}

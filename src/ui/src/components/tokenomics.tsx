@@ -25,7 +25,7 @@ const Tokenomics = () => {
                 <Col><h1>Tokenomics</h1></Col>
             </Row>
         <Row style={{minHeight: "250px"}}>
-            <Col>
+            <Col lg="6">
             <ResponsiveContainer>
                 <PieChart>
                     <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({
@@ -58,7 +58,7 @@ const Tokenomics = () => {
                 </PieChart>
                 </ResponsiveContainer>
             </Col>
-            <Col>
+            <Col lg="6">
         <p>Tokenomics are designed to empower to average person. No wallet can hold more then 1 percent of the supply. </p>
         <ul>
             <li>75% for Initial liquidity pool</li>
