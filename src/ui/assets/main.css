@@ -53,35 +53,3 @@ body {
 .value{
     padding-top: 4px;
 }
-
-.counter {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 70%;
-    margin: 10px auto;
-    padding: 10px;
-    border-radius: 15px;
-    border: 2px solid #EDEDE9;
-    background-color: #edede997;
-}
-
-.counter .time {
-    margin-right: 30px;
-}
-
-.counter .time-value {
-    padding: 1px;
-    font-size: 500%;
-    color: #7E7E7E;
-    line-height: 1;
-}
-
-.time-label {
-    text-align: center;
-    font-size: 20px;
-}
-
-.silenced {
-    color: #D5BDAF;
-}
