@@ -58,6 +58,7 @@ type Token =
    totalSupply: () -> (nat) query;
    transfer: (principal, nat) -> (TxReceipt);
    transferFrom: (principal, principal, nat) -> (TxReceipt);
+   updateTransactionPercentage: (float64) -> ();
  };
 type Time = int;
 type Metadata = 

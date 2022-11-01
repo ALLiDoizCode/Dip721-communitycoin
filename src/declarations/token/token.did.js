@@ -76,6 +76,7 @@ export const idlFactory = ({ IDL }) => {
         [TxReceipt],
         [],
       ),
+    'updateTransactionPercentage' : IDL.Func([IDL.Float64], [], []),
   });
   return Token;
 };
