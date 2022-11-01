@@ -40,6 +40,7 @@ export interface Token {
   'totalSupply' : ActorMethod<[], bigint>,
   'transfer' : ActorMethod<[Principal, bigint], TxReceipt>,
   'transferFrom' : ActorMethod<[Principal, Principal, bigint], TxReceipt>,
+  'updateTransactionPercentage' : ActorMethod<[number], undefined>,
 }
 export interface TokenInfo {
   'holderNumber' : bigint,

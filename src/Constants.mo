@@ -14,7 +14,7 @@ module {
     public let wallet = "j26ec-ix7zw-kiwcx-ixw6w-72irq-zsbyr-4t7fk-alils-u33an-kh6rk-7qe";
 
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
-    public let communityCanister = "fmnvu-iqaaa-aaaal-abawa-cai";
+    public let communityCanister = "fppg4-cyaaa-aaaap-aanza-cai";
     public let databaseCanister = "rmc3i-vqaaa-aaaal-qbfqq-cai";
     
 }
