@@ -17,6 +17,7 @@ const Team = () => {
             Influencer with over 150,000 followers across all social media. Software Engineer and architect with over 12 years of experience.
              Experience doing marketing and community management.
           </Card.Text>
+          <a href="https://twitter.com/crypto_is_good">Twitter</a>
         </Card.Body>
       </Card>
       <Card>
@@ -26,6 +27,7 @@ const Team = () => {
           <Card.Text>
           Software Engineer and blockchain developer with over 10 years of experience
           </Card.Text>
+          <a href="https://twitter.com/ALLiDoizCode">Twitter</a>
         </Card.Body>
       </Card>
       <Card>
@@ -35,6 +37,7 @@ const Team = () => {
           <Card.Text>
           Steve is an ITS project leader experienced in marketing systems, development, and administration.
           </Card.Text>
+          <a href="https://twitter.com/EasyStevie_e">Twitter</a>
         </Card.Body>
       </Card>
     </CardGroup>
