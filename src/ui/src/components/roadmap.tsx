@@ -6,7 +6,7 @@ const RoadMap = () => {
 
     
     return <>
-     <Container className="darken">
+     <Container fluid className="darken">
         <h1>Road Map</h1>
         <p>Crypto is Good dao is a fluid dao and what you see here is not promies. 
             This is a casual list of functinalities we are calling a road map we hope to create to

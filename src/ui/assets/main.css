@@ -26,6 +26,7 @@ body {
     padding: 20px;
     text-align: left;
     margin-bottom: 50px;
+    max-width: 1600px;
 }
 
 .round-border {
@@ -42,6 +43,7 @@ body {
 
 .button-size{
     min-width: 150px;
+    margin-bottom: 10px;
 }
 
 .label {
@@ -58,7 +60,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    width: 70%;
+    max-width: 1600px;
     margin: 10px auto;
     padding: 10px;
     border-radius: 15px;

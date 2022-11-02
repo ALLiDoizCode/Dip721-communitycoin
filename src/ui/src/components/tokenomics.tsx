@@ -20,7 +20,7 @@ const Tokenomics = () => {
 
     
     return <>
-        <Container className="darken">
+        <Container fluid className="darken">
             <Row>
                 <Col><h1>Tokenomics</h1></Col>
             </Row>
