@@ -10,6 +10,7 @@ import { getProposal, ProposalFunction } from "../lib/http";
 import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
 import plug from "../declarations/plug";
+import { daoCanisterId } from "../declarations/constants";
 
 
 function isWhatPercentOf(numA, numB) {
@@ -61,7 +62,7 @@ const ActiveProposalComponent = () => {
         console.log("got canister")
         const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
         console.log(workableVotingPower.getValue());
-        await coinCanister.approve(Principal.fromText(myWindow.ic.plug.principalId), BigInt(workableVotingPower.getValue()));
+        await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
         await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
         console.log("voted")
         setVotingModal(false);
