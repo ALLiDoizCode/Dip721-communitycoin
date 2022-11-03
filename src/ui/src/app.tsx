@@ -1,12 +1,15 @@
 import * as React from "react";
 import { ThemeProvider } from "react-bootstrap";
 import { Routes, Route } from "react-router-dom";
+import ActiveProposalComponent from "./components/active-proposal";
 import CCNav from "./components/cc-nav";
 import Dao from "./components/dao";
 import Description from "./components/description";
+import ProposalList from "./components/proposal-list";
 import RoadMap from "./components/roadmap";
 import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
+import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
 
 
 const APP = () => {
@@ -25,11 +28,20 @@ const APP = () => {
             >
         <Route
             path='/dao/accepted'
-            element={<><p>Accepted proposals</p></>}/>
+            element={<>
+            <ProposalList proposalFunction={fetchAcceptedProposals} ></ProposalList>
+            </>}/>
+        <Route
+            path='/dao/rejected'
+            element={<>
+            <ProposalList proposalFunction={fetchRejectedProposals} ></ProposalList>
+            </>
+            }
+            />
         <Route
             path='/dao/active'
             element={<>
-            <p>Active Proposals</p>
+            <ActiveProposalComponent></ActiveProposalComponent>
             </>
             }
             />
@@ -53,6 +65,7 @@ const APP = () => {
             />
         </Routes>
         </ThemeProvider>;
+        
     </>
     
 }

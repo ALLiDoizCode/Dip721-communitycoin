@@ -1,13 +1,11 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
+import { coinCanisterId, daoCanisterId, icpHost } from "./constants";
 import  { idlFactory as daoIdl, _SERVICE as daoService } from './dao/dao.did';
 import {idlFactory as yourCoinIdl, _SERVICE as YourCoinInterface} from './yourcoin/yourcoin.did';
 
-export const daoCanisterId = "7tac7-rqaaa-aaaak-ac47q-cai";
-export const coinCanisterId = "5gxp5-jyaaa-aaaag-qarma-cai";
-
 function createActor<T>(canisterId, idl, options): T {
   const agent = new HttpAgent(options ? { ...options.agentOptions } : {
-    host: "https://ic0.app"
+    host: icpHost
   });
   
   if (process.env.NODE_ENV !== "production") {

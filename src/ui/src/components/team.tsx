@@ -31,13 +31,13 @@ const Team = () => {
         </Card.Body>
       </Card>
       <Card>
-        <Card.Img variant="top" src="easy-steve.jpeg" />
+        <Card.Img variant="top" src="notdom.jpeg" />
         <Card.Body>
-          <Card.Title>Steve Erickson</Card.Title>
+          <Card.Title>Not Dominique Williams</Card.Title>
           <Card.Text>
-          Steve is an ITS project leader experienced in marketing systems, development, and administration.
+          Not the Chief Scientist Officer of dfinity.
           </Card.Text>
-          <a href="https://twitter.com/EasyStevie_e">Twitter</a>
+          <a href="https://twitter.com/notdomwilliams">Twitter</a>
         </Card.Body>
       </Card>
     </CardGroup>

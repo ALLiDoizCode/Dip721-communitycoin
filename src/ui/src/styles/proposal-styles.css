@@ -1,0 +1,44 @@
+.text-percent {
+    color: white;
+
+    text-align: center;
+    display: block;
+    margin: 5px;
+}
+
+.vote-bar {
+    text-align: center;
+    border-radius: 15px;
+    height: 70px;
+    padding: 5px;
+}
+
+.active-proposals{
+    width: 100%;
+}
+
+.vote-buttons{
+    margin: auto;
+    text-align: center;
+}
+
+.vote-button{
+    width: 100%;
+}
+
+.proposal-title{
+    color: #5b5b5b;
+    font-weight: bolder;
+}
+
+.card-text{
+    color: #5b5b5b;
+}
+
+.card-header{
+    color: #a1a1a1 !important;
+}
+
+.card-label {
+    color: #a1a1a1 !important;
+}
