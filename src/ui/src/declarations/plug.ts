@@ -6,9 +6,9 @@ const myWindow = (window as any);
 async function createActor<T>(canisterId, idl, options): Promise<T> {
     const connected = await myWindow.ic.plug.isConnected();
     if (!connected) 
-        await myWindow.ic.plug.requestConnect({ whiteListedCanister, icpHost });
+        await myWindow.ic.plug.requestConnect({ whitelist: whiteListedCanister, host: icpHost });
     if (connected && !myWindow.ic.plug.agent) {
-        await myWindow.ic.plug.createAgent({ whiteListedCanister, icpHost })
+        await myWindow.ic.plug.createAgent({ whitelist: whiteListedCanister, host: icpHost })
     }
     
 
