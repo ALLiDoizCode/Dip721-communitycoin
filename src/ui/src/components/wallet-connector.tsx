@@ -4,6 +4,7 @@ import { useRecoilState } from "recoil";
 import { connectedAtom } from "../lib/atoms";
 import PlugConnect from '@psychedelic/plug-connect';
 import { icpHost, whiteListedCanister } from "../declarations/constants";
+import { daocanister } from "../declarations/agent";
 const WalletConnector = (props : {className: string}) => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
     
@@ -15,7 +16,9 @@ const WalletConnector = (props : {className: string}) => {
             title="Plug Connect"
             host={icpHost}
             whitelist={whiteListedCanister}
-            onConnectCallback={() =>  setConnected(true)}
+            onConnectCallback={() =>  {
+                setConnected(true);
+            }}
             />
     </DropdownButton>}
     {connected && <Button onClick={() => setConnected(false)}>Sign Off</Button>}

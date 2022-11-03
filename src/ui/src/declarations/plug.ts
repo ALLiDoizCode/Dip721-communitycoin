@@ -1,17 +1,27 @@
-import { coinCanisterId, daoCanisterId, icpHost } from "./constants";
+import { Actor } from "@dfinity/agent";
+import { coinCanisterId, daoCanisterId, icpHost, whiteListedCanister } from "./constants";
 import  { idlFactory as daoIdl, _SERVICE as daoService } from './dao/dao.did';
 import {idlFactory as yourCoinIdl, _SERVICE as YourCoinInterface} from './yourcoin/yourcoin.did';
+const myWindow = (window as any);
+async function createActor<T>(canisterId, idl, options): Promise<T> {
+    const connected = await myWindow.ic.plug.isConnected();
+    if (!connected) 
+        await myWindow.ic.plug.requestConnect({ whiteListedCanister, icpHost });
+    if (connected && !myWindow.ic.plug.agent) {
+        await myWindow.ic.plug.createAgent({ whiteListedCanister, icpHost })
+    }
+    
 
-async function createActor<T>(canisterId, idl): Promise<T> {
-    return await (window as any).ic.plug.createActor({
-        canisterId: canisterId,
-        interfaceFactory: idl,
-    }) as T;
-  }
-  
+    return Actor.createActor(idl, {
+        agent: myWindow.ic.plug.agent,
+        canisterId,
+        ...(options ? options.actorOptions : {}),
+      });
+    }
+    
   export default { 
-    daoCanister: () => createActor<Promise<daoService>>(daoCanisterId, daoIdl),
-    coincanister: () => createActor<Promise<YourCoinInterface>>(coinCanisterId, yourCoinIdl)
+    daoCanister: (options?) => createActor<Promise<daoService>>(daoCanisterId, daoIdl, options),
+    coincanister: (options?) => createActor<Promise<YourCoinInterface>>(coinCanisterId, yourCoinIdl, options)
   };
     
   
