@@ -19,11 +19,29 @@ const APP = () => {
     <CCNav></CCNav>
 
     <Routes>
-        <Route
+        <Route 
             path='/dao'
             element={<Dao />}
+            >
+        <Route
+            path='/dao/accepted'
+            element={<><p>Accepted proposals</p></>}/>
+        <Route
+            path='/dao/active'
+            element={<>
+            <p>Active Proposals</p>
+            </>
+            }
             />
         <Route
+            path='/dao/*'
+            element={<>
+            <p>Active Proposals</p>
+            </>
+            }
+            />
+        </Route>
+        <Route 
             path='*'
             element={<>
                 <Description></Description>

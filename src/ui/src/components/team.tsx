@@ -5,7 +5,7 @@ const Team = () => {
 
     
     return <>
-     <Container className="darken">
+     <Container fluid className="darken">
         <h1>Team</h1>
         <p>At crypto is good we don't belive in titles. The most important thing you need to know about us is that we are all developers</p>
         <CardGroup>

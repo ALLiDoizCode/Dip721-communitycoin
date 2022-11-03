@@ -50,12 +50,12 @@ const Description = () => {
     
     return <>
     <div className="padding">
-        <h1>Your Token</h1>
-        <h3 className="silenced">A token that funds the Internet Computer</h3>
+        <h1>Your Coin</h1>
+        <h3 className="silenced">A coin that funds the Internet Computer</h3>
         <Row style={{maxWidth: "600px", marginLeft: "auto", marginRight: "auto"}}>
-            <Col><Button disabled className="button-size" variant="success" size="lg">Buy Now</Button></Col>
-            <Col><Button disabled className="button-size" variant="secondary" size="lg">Token Info</Button></Col>
-            <Col><Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</Button></Col>
+            <Col xs="12" md="4"><Button disabled className="button-size" variant="success" size="lg">Buy Now</Button></Col>
+            <Col xs="12" md="4"><Button disabled className="button-size" variant="secondary" size="lg">Coin Info</Button></Col>
+            <Col xs="12" md="4"><Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</Button></Col>
         </Row>
         <br></br>
         <LaunchTimer></LaunchTimer>
@@ -89,16 +89,16 @@ const Description = () => {
         </div> */}
         
     </div>
-    <Container className="darken">
+    <Container fluid className="darken">
         <Row>
             <Col >
-            <h1>Token Explained</h1>
+            <h1>Coin Explained</h1>
             </Col>
         </Row>
         <Row>
             <Col md="12" lg="6">
-        <p>Your token is the governance token for the Crypto is Good Dao.
-        Your Token is also a novel defi self staking technology with a tax system that encourages holding.</p>
+        <p>Your Coin is the governance token for the Crypto is Good Dao.
+        Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
         <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
         <ul>
             <li>Three percent will be burnt</li>
