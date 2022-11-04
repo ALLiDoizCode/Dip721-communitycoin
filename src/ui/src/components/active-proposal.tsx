@@ -11,10 +11,13 @@ import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
 import plug from "../declarations/plug";
 import { daoCanisterId } from "../declarations/constants";
-
+import { bigIntToDecimal } from "../lib/util";
+function money_round(num) {
+    return Math.ceil(num * 100) / 100;
+}
 
 function isWhatPercentOf(numA, numB) {
-    return (numA / numB) * 100;
+    return money_round((numA / numB) * 100);
   }
 
 const ActiveProposalComponent = () => {
@@ -36,10 +39,7 @@ const ActiveProposalComponent = () => {
         refreshProposal().then(() => setLoading(false));
         if (connected) {
             coincanister().balanceOf(Principal.fromText(myWindow.ic.plug.principalId)).then(balance => {
-                var result = new bigDecimal(balance);
-                var decimal = new bigDecimal(100000);
-                console.log(result)
-                setYcBalance(result.divide(decimal, 5));
+                setYcBalance(bigIntToDecimal(balance));
             });
         }
 
@@ -48,8 +48,8 @@ const ActiveProposalComponent = () => {
     async function refreshProposal() {
         const proposal = await getProposal();
         setActiveProposal(proposal);
-        const yayNum = proposal?.yay || 1;
-        const nayNum =  proposal?.nay || 1;
+        const yayNum = proposal?.yay || 1n;
+        const nayNum =  proposal?.nay || 1n;
         const voteTotal = yayNum + nayNum;
         setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
     }
@@ -78,16 +78,16 @@ const ActiveProposalComponent = () => {
     return <>
     <Row>
         <Col>
-        <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.nay+"%)"}}>
+        <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>
             <Row className="text-percent">
                 <Col><span>{votingPercents.yay}%</span></Col>
                 <Col>VS</Col>
                 <Col><span>{votingPercents.nay}%</span></Col>
             </Row>
             <Row className="text-percent">
-                <Col><span>{activeProposal.yay} YC</span></Col>
+                <Col><span>{bigIntToDecimal(activeProposal.yay).getPrettyValue(3, ",")} YC</span></Col>
                 <Col>VS</Col>
-                <Col><span>{activeProposal.nay} YC</span></Col>
+                <Col><span>{bigIntToDecimal(activeProposal.nay).getPrettyValue(3, ",")} YC</span></Col>
             </Row>
         </div>
         </Col>
@@ -115,7 +115,7 @@ const ActiveProposalComponent = () => {
             </Card.Body>
             <Card.Footer className="text-muted">
             <div><span className="card-label">Creator: </span>{activeProposal.creator} </div>
-            <div><span className="card-label">Created At: </span>{new Date(activeProposal.timeStamp/1000000).toLocaleDateString()}</div>
+            <div><span className="card-label">Created At: </span>{new Date(Number(activeProposal.timeStamp/1000000)).toLocaleDateString()}</div>
             </Card.Footer>
         </Card>
         </Col>
