@@ -5,10 +5,10 @@ const CCNav = () => {
     return <>
     <Navbar>
       <Container>
-        <Navbar.Brand href="#home">
+        <Navbar.Brand href="#">
             <img style={{width: "75px"}} src="yc.svg"></img>
         </Navbar.Brand>
-        <Navbar.Text>CryptoIsGood</Navbar.Text>
+        <Navbar.Text>CigDao</Navbar.Text>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
         <Nav className="me-auto">

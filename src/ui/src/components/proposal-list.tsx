@@ -23,7 +23,7 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
     }, [props.proposalFunction]);
 
     return <>
-    <Row>
+    <Row  className="tabs">
         <Col>
         <Table striped>
         <thead>

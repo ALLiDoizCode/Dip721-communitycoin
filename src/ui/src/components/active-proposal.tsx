@@ -1,17 +1,16 @@
 import { Principal } from "@dfinity/principal";
 import * as React from "react";
-import { Row, Col, Table, Card, ListGroup, Button, Modal, Form, InputGroup, Alert } from "react-bootstrap";
-import { Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { coincanister, daocanister } from "../declarations/agent";
-import { connectedAtom, loadingAtom, ycBalanceAtom } from "../lib/atoms";
+import { agentAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { getProposal, ProposalFunction } from "../lib/http";
 import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
-import plug from "../declarations/plug";
 import { daoCanisterId } from "../declarations/constants";
 import { bigIntToDecimal } from "../lib/util";
+import actor from "../declarations/actor";
+
 function money_round(num) {
     return Math.ceil(num * 100) / 100;
 }
@@ -26,6 +25,8 @@ const ActiveProposalComponent = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [activeProposal, setActiveProposal] = React.useState({} as Proposal);
+    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [principal, setPrincipal] = useRecoilState(principalAtom);
 
 
     const [votingPercents, setVotingPercents] = React.useState({yay: 1, nay: 1});
@@ -38,7 +39,8 @@ const ActiveProposalComponent = () => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
         if (connected) {
-            coincanister().balanceOf(Principal.fromText(myWindow.ic.plug.principalId)).then(balance => {
+            console.log("this is happening");
+            actor.coincanister(agent).balanceOf(principal).then(balance => {
                 setYcBalance(bigIntToDecimal(balance));
             });
         }
@@ -46,25 +48,27 @@ const ActiveProposalComponent = () => {
     }, [connected]);
 
     async function refreshProposal() {
-        const proposal = await getProposal();
-        setActiveProposal(proposal);
-        const yayNum = proposal?.yay || 1n;
-        const nayNum =  proposal?.nay || 1n;
-        const voteTotal = yayNum + nayNum;
-        setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
+        try {
+            const proposal = await getProposal();
+            setActiveProposal(proposal);
+            const yayNum = proposal?.yay || 1n;
+            const nayNum =  proposal?.nay || 1n;
+            const voteTotal = yayNum + nayNum;
+            setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
+        } catch(e) {
+            if (e.response.status === 404) {
+                setActiveProposal(null);
+            }
+        }
     }
 
     async function vote() {
         setLoading(true);
-        console.log("starting")
-        const coinCanister = await plug.coincanister();
-        const daoCanister = await plug.daoCanister();
-        console.log("got canister")
+        const coinCanister = await actor.coincanister(agent);
+        const daoCanister = await actor.daoCanister(agent);
         const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
-        console.log(workableVotingPower.getValue());
         await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
         await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
-        console.log("voted")
         setVotingModal(false);
         await refreshProposal();
         setLoading(false);
@@ -76,7 +80,8 @@ const ActiveProposalComponent = () => {
     }
 
     return <>
-    <Row>
+    {activeProposal && <>
+    <Row className="tabs">
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>
             <Row className="text-percent">
@@ -92,7 +97,7 @@ const ActiveProposalComponent = () => {
         </div>
         </Col>
     </Row>
-    <Row>
+    <Row className="tabs">
         <Col>
         <Card className="active-proposals">
         <Card.Header as="h5">Title: <span className="proposal-title">{activeProposal.title}</span></Card.Header>
@@ -120,7 +125,13 @@ const ActiveProposalComponent = () => {
         </Card>
         </Col>
     </Row>
-
+    </>
+}
+    {!activeProposal && <>
+        <Row className="tabs">
+            <Col className="text-center"><h2>No Active Proposal</h2></Col>
+        </Row>
+    </>}
 
     <Modal show={votingModal} onHide={() => setVotingModal(false)}>
         <Modal.Header closeButton>

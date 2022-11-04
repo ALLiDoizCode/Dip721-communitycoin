@@ -3,6 +3,7 @@ import { ThemeProvider } from "react-bootstrap";
 import { Routes, Route } from "react-router-dom";
 import ActiveProposalComponent from "./components/active-proposal";
 import CCNav from "./components/cc-nav";
+import CreateProposal from "./components/create-proposal";
 import Dao from "./components/dao";
 import Description from "./components/description";
 import ProposalList from "./components/proposal-list";
@@ -46,9 +47,16 @@ const APP = () => {
             }
             />
         <Route
+            path='/dao/createproposal'
+            element={<>
+            <CreateProposal></CreateProposal>
+            </>
+            }
+            />
+        <Route
             path='/dao/*'
             element={<>
-            <p>Active Proposals</p>
+            <ActiveProposalComponent></ActiveProposalComponent>
             </>
             }
             />

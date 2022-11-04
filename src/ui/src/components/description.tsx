@@ -2,21 +2,24 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
-import { daocanister, coincanister } from "../declarations/agent";
+import { useRecoilState } from "recoil";
+import actor from "../declarations/actor";
+import { agentAtom } from "../lib/atoms";
 import LaunchTimer from "./launch-timer";
 const Description = () => {
   const [vcTreasury, setVcTreasury] = React.useState(BigInt(0));
   const [burnWallet, setBurnWallet] = React.useState(BigInt(0));
   const [marketingTresury, setMarketingTreasury] = React.useState(BigInt(0));
+  const [agent, setAgent] = useRecoilState(agentAtom);
 
   React.useEffect(() => {
-    coincanister().balanceOf(Principal.fromText("unwqb-kyaaa-aaaak-ac5aa-cai")).then(result => {
+    actor.coincanister(agent).balanceOf(Principal.fromText("unwqb-kyaaa-aaaak-ac5aa-cai")).then(result => {
       setVcTreasury(result);
     });
-    coincanister().balanceOf(Principal.fromText("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae")).then(result => {
+    actor.coincanister(agent).balanceOf(Principal.fromText("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae")).then(result => {
       setBurnWallet(result);
     });
-    coincanister().balanceOf(Principal.fromText("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe")).then(result => {
+    actor.coincanister(agent).balanceOf(Principal.fromText("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe")).then(result => {
       setMarketingTreasury(result);
     });
     
