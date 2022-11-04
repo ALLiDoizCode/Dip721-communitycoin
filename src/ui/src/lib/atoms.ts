@@ -1,5 +1,8 @@
 import {atom} from "recoil";
 import bigDecimal from "js-big-decimal";
+import { HttpAgent } from "@dfinity/agent";
+import { Principal } from "@dfinity/principal";
+import { icpHost } from "../declarations/constants";
 
 const localStorageEffect = key => ({setSelf, onSet}) => {
     const savedValue = localStorage.getItem(key)
@@ -29,6 +32,19 @@ export const connectedAtom = atom({
     key: 'connected',
     default: false
 });
+
+export const agentAtom = atom({
+    key: 'agent',
+    default: new HttpAgent({
+        host: icpHost
+      })
+});
+
+export const principalAtom = atom({
+    key: 'principal',
+    default: (undefined as Principal)
+});
+
 
 export const maxTokensAtom = atom({
     key: 'max_tokens',
