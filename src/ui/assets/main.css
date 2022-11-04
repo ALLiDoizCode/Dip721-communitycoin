@@ -87,3 +87,10 @@ body {
 .silenced {
     color: #D5BDAF;
 }
+
+
+@media only screen and (max-width: 600px) {
+    .hidden-sm{
+        display: none !important;
+    }
+  }

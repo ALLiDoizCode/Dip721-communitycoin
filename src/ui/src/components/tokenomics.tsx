@@ -24,8 +24,8 @@ const Tokenomics = () => {
             <Row>
                 <Col><h1>Tokenomics</h1></Col>
             </Row>
-        <Row style={{minHeight: "250px"}}>
-            <Col md="12" lg="6">
+        <Row>
+            <Col style={{minHeight: "250px"}} className="hidden-sm" md="12" lg="6">
             <ResponsiveContainer>
                 <PieChart>
                     <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({

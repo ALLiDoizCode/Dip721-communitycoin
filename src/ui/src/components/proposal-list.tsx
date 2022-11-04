@@ -4,6 +4,7 @@ import { useRecoilState } from "recoil";
 import { loadingAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { ProposalFunction } from "../lib/http";
+import { bigIntToDecimal } from "../lib/util";
 
 
 const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
@@ -41,9 +42,9 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
                     <tr key={props.id}>
                         <td>{props.id}</td>
                         <td>{props.title}</td>
-                        <td>{props.yay}</td>
-                        <td>{props.nay}</td>
-                        <td>{new Date(props.timeStamp/1000000).toLocaleDateString()}</td>
+                        <td>{bigIntToDecimal(props.yay).getPrettyValue(3, ",")}</td>
+                        <td>{bigIntToDecimal(props.nay).getPrettyValue(3, ",")}</td>
+                        <td>{new Date(Number(props.timeStamp/1000000)).toLocaleDateString()}</td>
                     </tr>
                     </>
                 })

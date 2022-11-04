@@ -107,7 +107,7 @@ const Description = () => {
             <li>Three percent distributed to VC treasury</li>
         </ul>
             </Col>
-            <Col md="12"  lg="6">
+            <Col className="hidden-sm" md="12"  lg="6">
             <ResponsiveContainer >
                 <PieChart height={250}>
                     <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({

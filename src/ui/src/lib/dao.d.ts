@@ -3,12 +3,12 @@ export interface Proposal {
     vote?: boolean | null;
     creator: string;
     title: string;
-    yay: number;
+    yay: bigint;
     description: string;
     timeStamp: number;
     treasuryRequestId?: number | null;
     executed: boolean;
-    nay: number;
+    nay: bigint;
     request?: Request | null;
   }
   export interface Request {
@@ -19,7 +19,7 @@ export interface Proposal {
   
   export interface Vote {
     yay: boolean;
-    timeStamp: number;
+    timeStamp: bigint;
     power: number;
     proposalId: number;
     member: string;
