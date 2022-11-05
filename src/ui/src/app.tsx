@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ThemeProvider } from "react-bootstrap";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import ActiveProposalComponent from "./components/active-proposal";
 import CCNav from "./components/cc-nav";
 import CreateProposal from "./components/create-proposal";
@@ -11,9 +11,18 @@ import RoadMap from "./components/roadmap";
 import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
+import ReactGA from 'react-ga';
 
 
 const APP = () => {
+
+    const currentLocation = useLocation();
+
+    React.useEffect(() => {
+        currentLocation.pathname
+        ReactGA.pageview(currentLocation.pathname);
+    }, [currentLocation.pathname]);
+
     return <>
 
 <ThemeProvider
