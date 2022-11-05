@@ -8,10 +8,12 @@ import "jquery/dist/jquery";
 import "@popperjs/core/dist/cjs/popper";
 import "./background.scss";
 import "./bootstrap-overrides.scss";
+import ReactGA from 'react-ga';
 
 import {
   RecoilRoot
 } from 'recoil';
+ReactGA.initialize('G-G7HPNGQVM6');
 
 const container = document.getElementById('root');
 const root = createRoot(container)
