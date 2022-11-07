@@ -12,11 +12,11 @@ import { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
 
 function money_round(num) {
-    return Math.ceil(num * 100) / 100;
+    return Math.ceil(Number(num) * 100) / 100;
 }
 
 function isWhatPercentOf(numA, numB) {
-    return money_round((numA / numB) * 100);
+    return money_round(BigInt(numA / numB) * 100n);
   }
 
 const ActiveProposalComponent = () => {
