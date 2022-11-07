@@ -67,13 +67,8 @@ const ActiveProposalComponent = () => {
         const coinCanister = await actor.coincanister(agent);
         const daoCanister = await actor.daoCanister(agent);
         const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
-        const approveDebug = await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
-        console.log(approveDebug);
-        console.log(daoCanisterId, "dao canister id");
-        console.log(BigInt(workableVotingPower.getValue()), "voting power value");
-        console.log((await agent.getPrincipal()).toText(), "wallet principal");
-        const debug = await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
-        console.log(debug);
+        await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
+        await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
         setVotingModal(false);
         await refreshProposal();
         setLoading(false);
