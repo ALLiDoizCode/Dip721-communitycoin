@@ -51,8 +51,8 @@ const ActiveProposalComponent = () => {
         try {
             const proposal = await getProposal();
             setActiveProposal(proposal);
-            const yayNum = proposal?.yay || 1n;
-            const nayNum =  proposal?.nay || 1n;
+            const yayNum = proposal?.yay === undefined ? 1n : BigInt(proposal.yay);
+            const nayNum =  proposal?.nay === undefined ?  1n : BigInt(proposal.nay);
             const voteTotal = yayNum + nayNum;
             setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
         } catch(e) {
@@ -67,8 +67,13 @@ const ActiveProposalComponent = () => {
         const coinCanister = await actor.coincanister(agent);
         const daoCanister = await actor.daoCanister(agent);
         const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
-        await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
-        await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
+        const approveDebug = await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
+        console.log(approveDebug);
+        console.log(daoCanisterId, "dao canister id");
+        console.log(BigInt(workableVotingPower.getValue()), "voting power value");
+        console.log((await agent.getPrincipal()).toText(), "wallet principal");
+        const debug = await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
+        console.log(debug);
         setVotingModal(false);
         await refreshProposal();
         setLoading(false);

@@ -54,7 +54,8 @@ const TaxProposal = () => {
         const coinCanister = await actor.coincanister(agent);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(agent);
-        await daoCanister.createProposal({tax: taxRequest});
+        const debug = await daoCanister.createProposal({tax: taxRequest});
+        console.log(debug);
         setLoading(false);
     }
 
