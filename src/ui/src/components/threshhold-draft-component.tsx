@@ -19,7 +19,7 @@ const ThresholdDraftComponent = (param: {setConsumer: consumer<ThresholdDraft>})
     }
 
     return <>
-    <Form className="proposal-form" validated onSubmit={onFormSubmit}>
+    <Form className="proposal-form" onSubmit={onFormSubmit}>
         <Form.Group className="mb-3" controlId="formDescription">
             <Form.Label>Description</Form.Label>
             <Form.Control required type="text" placeholder="Description"  onChange={(e) => setValue("description", e?.target?.value)}/>
@@ -29,7 +29,7 @@ const ThresholdDraftComponent = (param: {setConsumer: consumer<ThresholdDraft>})
         </Form.Group>
         <Form.Group className="mb-3" controlId="formPower">
             <Form.Label>Power</Form.Label>
-            <Form.Control required min={0} type="number" placeholder="Enter power" onChange={(e) => setValue("power", e?.target?.value)} />
+            <Form.Control required min={0} type="number" placeholder="Enter power" onChange={(e) => setValue("power", Number(e?.target?.value))} />
             <Form.Text className="text-muted">
             How much power does this person have?
             </Form.Text>

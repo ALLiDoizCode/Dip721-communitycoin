@@ -59,7 +59,7 @@ const TaxProposal = () => {
     }
 
     return <>
-    <Form className="proposal-form" validated onSubmit={onFormSubmit}> 
+    <Form className="proposal-form" onSubmit={onFormSubmit}> 
       <Form.Group className="mb-3" controlId="formBasicTitle">
         <Form.Label>Title</Form.Label>
         <Form.Control required type="text" placeholder="Enter Title" onChange={(e) => setValue("title", e?.target?.value)}/>
