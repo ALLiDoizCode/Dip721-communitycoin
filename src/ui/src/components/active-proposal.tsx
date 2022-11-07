@@ -39,7 +39,6 @@ const ActiveProposalComponent = () => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
         if (connected) {
-            console.log("this is happening");
             actor.coincanister(agent).balanceOf(principal).then(balance => {
                 setYcBalance(bigIntToDecimal(balance));
             });
