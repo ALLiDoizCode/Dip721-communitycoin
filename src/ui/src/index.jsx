@@ -14,7 +14,7 @@ import {
   RecoilRoot
 } from 'recoil';
 ReactGA.initialize('G-G7HPNGQVM6');
-
+ReactGA.pageview(window.location.pathname + window.location.search);
 const container = document.getElementById('root');
 const root = createRoot(container)
 root.render(
