@@ -27,7 +27,6 @@ const WalletConnector = (props : {className: string}) => {
                     return new AstroX({
                         whitelist: whiteListedCanister,
                         host: icpHost,
-                        providerUrl: "https://ccmhe-vqaaa-aaaai-acmoq-cai.raw.ic0.app"
                       });
                 case "stoic": 
                     return new StoicWallet({
