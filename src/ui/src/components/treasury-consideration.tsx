@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { MemberDraft, RequestDraft, ThresholdDraft, TreasuryActionRequest } from "../declarations/dao/dao.did";
-import { agentAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
 import MemberDraftComponent from "./member-draft-component";
 import ThresholdDraftComponent from "./threshhold-draft-component";
 
@@ -22,7 +22,7 @@ const TreasuryConsideration = () => {
 
     const [step, setStep] = React.useState(0);
     const [state, setState] = React.useState({} as TreasuryConsiderationForm);
-    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
 
 
@@ -39,9 +39,9 @@ const TreasuryConsideration = () => {
             request: state.request
         }
     
-        const coinCanister = await actor.coincanister(agent);
+        const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
-        const daoCanister = await actor.daoCanister(agent);
+        const daoCanister = await actor.daoCanister(provider);
         await daoCanister.createProposal({treasuryAction: treasuryActionRequest});
         setLoading(false);
     }
@@ -57,7 +57,6 @@ const TreasuryConsideration = () => {
     }
 
     function draftTypeRendered() {
-        console.log("this is getting called")
         switch (state.draftType) {
             case "addMember":
             case "removeMember":
@@ -71,7 +70,7 @@ const TreasuryConsideration = () => {
 
     return <>
     {step == 0 && 
-        <Form onSubmit={onFormSubmit} className="proposal-form" validated> 
+        <Form onSubmit={onFormSubmit} className="proposal-form" > 
         <Form.Group className="mb-3" controlId="formBasicTitle">
             <Form.Label>Title</Form.Label>
             <Form.Control required type="text" placeholder="Enter Title" onChange={(e) => setValue("title", e?.target?.value)}/>
@@ -98,7 +97,7 @@ const TreasuryConsideration = () => {
                 <option value="threshold">Change Power Threshold</option>
                 <option value="removeMember">Remove Controlling Member</option>
                 <option value="addMember">Add Controlling Member</option>
-                <option value="transfer">Modify Power</option>
+                {/* <option value="transfer">Modify Power</option> */}
             </Form.Select>
             <Form.Text className="text-muted">
                 What treasury action would you like to take?

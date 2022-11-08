@@ -3,8 +3,11 @@ import { Button, Card, Col, Form, Row} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { loadingAtom, proposalCostAtom } from "../lib/atoms";
 import http from "../lib/http";
+import { bigIntToDecimal } from "../lib/util";
+import DaoUpdate from "./dao-update";
 import TaxProposal from "./tax-proposal";
 import TreasuryConsideration from "./treasury-consideration";
+import TreasuryExecution from "./treasury-execution";
 
 const CreateProposal = () => {
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
@@ -49,13 +52,13 @@ const CreateProposal = () => {
                     </Form>
                 </>
             case 2:
-                return <><TaxProposal></TaxProposal></>
+                return <><TaxProposal/></>
             case 3:
-                return <><TreasuryConsideration></TreasuryConsideration></>
+                return <><TreasuryConsideration/></>
             case 4:
-                return <><p>Treasury Execution</p></>
+                return <><TreasuryExecution/></>
             case 5:
-                return <><p>Upgrade Dao</p></>
+                return <><DaoUpdate/></>
     }
 
 }
@@ -69,7 +72,10 @@ const CreateProposal = () => {
                     <Card.Header>Request Proposal</Card.Header>
                     <Card.Body>
                     <Card.Text>
-                        CigDao and all it's products are fully controlled by this form.
+                        <>
+                        <span>CigDao and all it's products are fully controlled by this form.</span><br/>
+                        <span>Cost of creating a proposal is currently: </span><span className="text-danger" >{bigIntToDecimal(proposalCost).getPrettyValue(3, ",")}</span>
+                        </>
                     </Card.Text>    
                     <Button style={{float: "right", marginRight: "100px"}} variant="secondary" onClick={() => setStep(1)}>Reset Form</Button>
                     </Card.Body>

@@ -33,11 +33,9 @@ export const connectedAtom = atom({
     default: false
 });
 
-export const agentAtom = atom({
-    key: 'agent',
-    default: new HttpAgent({
-        host: icpHost
-      })
+export const identityProviderAtom = atom({
+    key: 'identityProvider',
+    default: undefined
 });
 
 export const principalAtom = atom({

@@ -10,7 +10,6 @@ const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
     const [isInvalidPrincipal, setIsInvalidPrincipal] = React.useState(true);
 
     function setValue(name, value, e?) {
-        console.log(e)
         state[name] = value;
         setState(state);
     }

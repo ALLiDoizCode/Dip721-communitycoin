@@ -5,7 +5,7 @@ import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { TaxRequest, TaxType } from "../declarations/dao/dao.did";
-import { agentAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
 
 const TaxProposal = () => {
     interface TaxForm {
@@ -17,7 +17,7 @@ const TaxProposal = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
 
     const [state, setState] = React.useState({} as TaxForm);
-    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
 
  
@@ -51,11 +51,10 @@ const TaxProposal = () => {
             title: state.title,
             taxType
         }
-        const coinCanister = await actor.coincanister(agent);
+        const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
-        const daoCanister = await actor.daoCanister(agent);
+        const daoCanister = await actor.daoCanister(provider);
         const debug = await daoCanister.createProposal({tax: taxRequest});
-        console.log(debug);
         setLoading(false);
     }
 

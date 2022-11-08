@@ -2,7 +2,7 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { agentAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { identityProviderAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { getProposal, ProposalFunction } from "../lib/http";
 import "../styles/proposal-styles.css";
@@ -12,11 +12,11 @@ import { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
 
 function money_round(num) {
-    return Math.ceil(Number(num) * 100) / 100;
+    return Math.round(num * 100) / 100;
 }
 
 function isWhatPercentOf(numA, numB) {
-    return money_round(BigInt(numA / numB) * 100n);
+    return money_round((numA / numB) * 100);
   }
 
 const ActiveProposalComponent = () => {
@@ -25,7 +25,7 @@ const ActiveProposalComponent = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [activeProposal, setActiveProposal] = React.useState({} as Proposal);
-    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [principal, setPrincipal] = useRecoilState(principalAtom);
 
 
@@ -39,20 +39,24 @@ const ActiveProposalComponent = () => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
         if (connected) {
-            actor.coincanister(agent).balanceOf(principal).then(balance => {
-                setYcBalance(bigIntToDecimal(balance));
-            });
+            setBalance().then();
         }
 
     }, [connected]);
+
+    async function setBalance() {
+        const coinCanister = await actor.coincanister(provider);
+        const balance = await coinCanister.balanceOf(principal);
+        setYcBalance(bigIntToDecimal(balance))
+    }
 
     async function refreshProposal() {
         try {
             const proposal = await getProposal();
             setActiveProposal(proposal);
-            const yayNum = proposal?.yay === undefined ? 1n : BigInt(proposal.yay);
-            const nayNum =  proposal?.nay === undefined ?  1n : BigInt(proposal.nay);
-            const voteTotal = yayNum + nayNum;
+            const yayNum = proposal?.yay === undefined ? 1 : proposal.yay;
+            const nayNum =  proposal?.nay === undefined ?  1 : proposal.nay;
+            const voteTotal = Number(yayNum) + Number(nayNum);
             setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
         } catch(e) {
             if (e.response.status === 404) {
@@ -63,8 +67,8 @@ const ActiveProposalComponent = () => {
 
     async function vote() {
         setLoading(true);
-        const coinCanister = await actor.coincanister(agent);
-        const daoCanister = await actor.daoCanister(agent);
+        const coinCanister = await actor.coincanister(provider);
+        const daoCanister = await actor.daoCanister(provider);
         const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
         await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
         await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
@@ -84,9 +88,9 @@ const ActiveProposalComponent = () => {
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>
             <Row className="text-percent">
-                <Col><span>{votingPercents.yay}%</span></Col>
+                <Col><span>{votingPercents.yay.toString()}%</span></Col>
                 <Col>VS</Col>
-                <Col><span>{votingPercents.nay}%</span></Col>
+                <Col><span>{votingPercents.nay.toString()}%</span></Col>
             </Row>
             <Row className="text-percent">
                 <Col><span>{bigIntToDecimal(activeProposal.yay).getPrettyValue(3, ",")} YC</span></Col>
