@@ -26,7 +26,7 @@ const WalletConnector = (props : {className: string}) => {
                 case "astro":
                     return new AstroX({
                         whitelist: whiteListedCanister,
-                        host: icpHost,
+                        host: icpHost
                       });
                 case "stoic": 
                     return new StoicWallet({

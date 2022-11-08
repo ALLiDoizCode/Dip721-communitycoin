@@ -3,10 +3,13 @@ import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { Typeahead } from 'react-bootstrap-typeahead';
 import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
-import { TreasuryRequest } from "../declarations/dao/dao.did";
+import { TreasuryRequest, UpgradeRequest } from "../declarations/dao/dao.did";
 import { Principal } from "@dfinity/principal";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
+import axios from "axios";
+import { ParseConfig  } from "@dfinity/candid";
+import sha256 from "sha256";
 
 const DaoUpdate = () => {
     interface UpgradeRequestForm {
@@ -19,6 +22,7 @@ const DaoUpdate = () => {
         canister: string;
       }
 
+
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [state, setState] = React.useState({} as UpgradeRequestForm);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
@@ -30,28 +34,30 @@ const DaoUpdate = () => {
         setState(state);
     }
 
-    function getFileArray(file): Promise<ArrayBuffer | string>{
-        return new Promise((acc, errorReturn) => {
-            const reader = new FileReader();
-            reader.onload = (event) => { acc(event.target.result) };
-            reader.onerror = (err)  => { errorReturn(err) };
-            reader.readAsArrayBuffer(file);
-        });
-     }
-
     async function fileToByteArray(e) {
-        var arrayBuffer = e.target.result;
-        var bytes = new Uint8Array(arrayBuffer);
+        const data = await readFileDataAsBase64(e);
+        let arrayBuffer = data;
+        if (typeof data === 'string' || data instanceof String) {
+            const response = await axios.get(data as string, {
+                responseType: 'arraybuffer'
+            });
+
+            arrayBuffer = response.data;
+        }
+
+        const bytes = Array.from(new Uint8Array(arrayBuffer as ArrayBuffer));
         setValue("wasm", bytes);
     }
 
-    function readFileDataAsBase64(e) {
+    function readFileDataAsBase64(e): Promise<ArrayBuffer | string> {
         const file = e.target.files[0];
+        console.log(file);
     
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
     
             reader.onload = (event) => {
+                console.log(event.target);
                 resolve(event.target.result);
             };
     
@@ -65,19 +71,37 @@ const DaoUpdate = () => {
 
     async function onFormSubmit(e) {
         e.preventDefault();
-        // setLoading(true);
-        // const treasuryRequest: TreasuryRequest = {
-        //     title: state.title,
-        //     description: state.description,
-        //     treasuryRequestId: state.treasuryRequestId,
-        //     vote: state.vote
-        // }
-    
-        // const coinCanister = await actor.coincanister(provider);
-        // await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
-        // const daoCanister = await actor.daoCanister(provider);
-        // await daoCanister.createProposal({treasury: treasuryRequest});
-        // setLoading(false);
+        console.log(state);
+        setLoading(true);
+
+        const canisterObj = (() => {
+            switch (state.canister) {
+                case "dao":
+                    return {"dao": null}
+                case "controller":
+                    return {"controller": null}
+                case "community":
+                    return {"community": null}
+                case "treasury":
+                    return {"treasury": null}
+            }
+        })();
+
+        const upgrade: UpgradeRequest = {
+            title: state.title,
+            description: state.description,
+            args: [],
+            hash: sha256(state.wasm),
+            wasm: state.wasm,
+            canister: canisterObj,
+            source: state.source
+        }
+            
+        const coinCanister = await actor.coincanister(provider);
+        await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
+        const daoCanister = await actor.daoCanister(provider);
+        await daoCanister.createProposal({upgrade: upgrade});
+        setLoading(false);
     }
 
     return <>
@@ -111,26 +135,9 @@ const DaoUpdate = () => {
             </Form.Text>
         </Form.Group>
 
-        <Form.Group className="mb-3" controlId="formBasicTitle">
-            <Form.Label>Args</Form.Label>
-            <Form.Control required type="text" placeholder="Enter Args" onChange={(e) => setValue("args", e?.target?.value.split(","))}/>
-            <Form.Text className="text-muted">
-                Array of args seperated by comma, example:
-                <div>-p,people,-d,/src/s</div>
-            </Form.Text>
-        </Form.Group>
-
-        <Form.Group className="mb-3" controlId="formBasicTitle">
-            <Form.Label>Hash</Form.Label>
-            <Form.Control required type="text" placeholder="Enter Hash" onChange={(e) => setValue("args", e?.target?.value)}/>
-            <Form.Text className="text-muted">
-                Hash of wasm
-            </Form.Text>
-        </Form.Group>
-
         <Form.Group controlId="formFileLg" className="mb-3">
             <Form.Label>Wasm</Form.Label>
-            <Form.Control accept=".gz" onLoad={fileToByteArray} type="file" size="lg" />
+            <Form.Control accept=".gz" onChange={fileToByteArray} type="file" size="lg" />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formCanister">
