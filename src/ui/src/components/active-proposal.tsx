@@ -12,11 +12,11 @@ import { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
 
 function money_round(num) {
-    return Math.ceil(num * 100) / 100;
+    return Math.ceil(Number(num) * 100) / 100;
 }
 
 function isWhatPercentOf(numA, numB) {
-    return money_round((numA / numB) * 100);
+    return money_round(BigInt(numA / numB) * 100n);
   }
 
 const ActiveProposalComponent = () => {
@@ -39,7 +39,6 @@ const ActiveProposalComponent = () => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
         if (connected) {
-            console.log("this is happening");
             actor.coincanister(agent).balanceOf(principal).then(balance => {
                 setYcBalance(bigIntToDecimal(balance));
             });
@@ -51,8 +50,8 @@ const ActiveProposalComponent = () => {
         try {
             const proposal = await getProposal();
             setActiveProposal(proposal);
-            const yayNum = proposal?.yay || 1n;
-            const nayNum =  proposal?.nay || 1n;
+            const yayNum = proposal?.yay === undefined ? 1n : BigInt(proposal.yay);
+            const nayNum =  proposal?.nay === undefined ?  1n : BigInt(proposal.nay);
             const voteTotal = yayNum + nayNum;
             setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
         } catch(e) {

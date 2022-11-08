@@ -13,14 +13,13 @@ import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
 import ReactGA from 'react-ga';
 
-
 const APP = () => {
 
     const currentLocation = useLocation();
 
     React.useEffect(() => {
         currentLocation.pathname
-        ReactGA.pageview(currentLocation.pathname);
+        
     }, [currentLocation.pathname]);
 
     return <>

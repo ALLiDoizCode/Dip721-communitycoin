@@ -1,4 +1,6 @@
 import bigDecimal from "js-big-decimal";
+export type consumer<T> = (t:T) => void;
+
 
 export function bigIntToDecimal(big: BigInt | number) {
     var result = new bigDecimal(big?.toString() || 1);

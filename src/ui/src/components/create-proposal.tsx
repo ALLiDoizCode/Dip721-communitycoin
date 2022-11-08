@@ -1,8 +1,25 @@
 import * as React from "react";
 import { Button, Card, Col, Form, Row} from "react-bootstrap";
+import { useRecoilState } from "recoil";
+import { loadingAtom, proposalCostAtom } from "../lib/atoms";
+import http from "../lib/http";
 import TaxProposal from "./tax-proposal";
+import TreasuryConsideration from "./treasury-consideration";
 
 const CreateProposal = () => {
+    const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [loading, setLoading] = useRecoilState(loadingAtom);
+
+    React.useEffect(()=>{
+        setLoading(true);
+
+        http.getProposalCost().then((cost) => {
+            setProposalCost(BigInt(cost));
+            setLoading(false);
+        });
+        
+    }, [])
+
 
     /**
      * step 1 choose proposal type
@@ -34,7 +51,7 @@ const CreateProposal = () => {
             case 2:
                 return <><TaxProposal></TaxProposal></>
             case 3:
-                return <><p>Treasury Consideration</p></>
+                return <><TreasuryConsideration></TreasuryConsideration></>
             case 4:
                 return <><p>Treasury Execution</p></>
             case 5:
@@ -52,7 +69,7 @@ const CreateProposal = () => {
                     <Card.Header>Request Proposal</Card.Header>
                     <Card.Body>
                     <Card.Text>
-                        CigDao is fully controlled by Your Coin
+                        CigDao and all it's products are fully controlled by this form.
                     </Card.Text>    
                     <Button style={{float: "right", marginRight: "100px"}} variant="secondary" onClick={() => setStep(1)}>Reset Form</Button>
                     </Card.Body>

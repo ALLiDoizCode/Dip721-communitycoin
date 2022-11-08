@@ -7,7 +7,9 @@ import { connectedAtom, loadingAtom } from "../lib/atoms";
 import WalletConnector from "./wallet-connector";
 import "../styles/dao-styles.css";
 import { getProposal } from "../lib/http";
-
+import ReactGA from 'react-ga';
+ReactGA.initialize('G-G7HPNGQVM6');
+ReactGA.pageview(window.location.pathname + window.location.search);
 const Dao = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [connected, setConnected] = useRecoilState(connectedAtom);

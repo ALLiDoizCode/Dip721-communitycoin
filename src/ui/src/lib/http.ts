@@ -19,3 +19,15 @@ export async function getProposal(): Promise<Proposal> {
 export async function getVote(voteId: number): Promise<Vote> {
     return await (await axios.get(urlBuilder(`getVote/${voteId}`))).data;
 }
+
+export async function getProposalCost(): Promise<string> {
+    return (await axios.get<string>(urlBuilder('proposalCost'))).data
+}
+
+export default {
+    fetchRejectedProposals,
+    fetchAcceptedProposals,
+    getProposal,
+    getVote,
+    getProposalCost
+}
