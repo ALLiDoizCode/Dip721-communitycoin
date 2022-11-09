@@ -51,10 +51,10 @@ const Dao = () => {
     return <>
      <Container fluid className="darken">
         <Row>
-            <Col xxs="6"><h1>Crypto is Good Dao</h1></Col>
+            <Col xxs="6"><h1>Cig Dao</h1></Col>
             <Col xxs="6" className="text-right text-end">
             <WalletConnector className="btn-group-dao"></WalletConnector>
-            <button disabled={!connected || !activeProposal} onClick={navCreateProposal} className="btn btn-dark btn-group-dao" >Create Proposal</button>
+            <button disabled={!connected || activeProposal} onClick={navCreateProposal} className="btn btn-dark btn-group-dao" >Create Proposal</button>
             <a href="#" className="btn btn-outline-dark btn-group-dao btn-group-dao" >Back</a>
             </Col>
             <Col xxs="12">{connected ? <span className="text-success">Connected</span> : <span className="text-danger">Not Connected</span> }</Col>
