@@ -159,7 +159,7 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
         </Form.Text>
       </Form.Group>
 
-        {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+        {param.proposalCost.compareTo(ycBalance) > 1  || !connected && <>
         <span className="text-danger">
             You don't have enough YC to make a proposal or you are not connected
         </span>

@@ -78,7 +78,7 @@ const ActiveProposalComponent = () => {
     }
 
     return <>
-    {activeProposal && (votingPercents.yay || votingPercents.nay) && <>
+    {activeProposal && <>
     <Row className="tabs">
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>

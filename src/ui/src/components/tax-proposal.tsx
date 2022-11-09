@@ -105,7 +105,7 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
             Please enter in detail what about the tokenomics you want to change and why.
         </Form.Text>
       </Form.Group>
-      {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+      {param.proposalCost.compareTo(ycBalance) > 1 || !connected && <>
         <span className="text-danger">
             You don't have enough YC to make a proposal or you are not connected
         </span>
