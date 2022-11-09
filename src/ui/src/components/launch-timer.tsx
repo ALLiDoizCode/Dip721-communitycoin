@@ -37,7 +37,7 @@ const LaunchTimer = () => {
     };
     
     return <>
-     <Countdown className={"timer"} renderer={renderer} date={1667894400000}/>
+     <Countdown className={"timer"} renderer={renderer} date={1677894400000}/>
     </>
     
 }
