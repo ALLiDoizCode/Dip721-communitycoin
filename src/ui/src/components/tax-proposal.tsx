@@ -87,7 +87,7 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
      </Form.Group>
      <Form.Group className="mb-3" controlId="formBasicTitle">
         <Form.Label>Percent to Set</Form.Label>
-        <Form.Control required type="number" min={0} max={5} placeholder="Enter a percent" onChange={(e) => setValue("taxValue", e?.target?.value)}/>
+        <Form.Control required type="number" min={0} max={50} placeholder="Enter a percent" onChange={(e) => setValue("taxValue", e?.target?.value)}/>
         <Form.Text className="text-muted">
             Change to what percent?
         </Form.Text>
@@ -105,14 +105,14 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
             Please enter in detail what about the tokenomics you want to change and why.
         </Form.Text>
       </Form.Group>
-      {param.proposalCost.compareTo(ycBalance) > 1 || !connected && <>
+      {(param.proposalCost.compareTo(ycBalance) === 1  || !connected) && <>
         <span className="text-danger">
             You don't have enough YC to make a proposal or you are not connected
         </span>
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
+        <Button disabled={param.proposalCost.compareTo(ycBalance) === 1  || !connected} variant="info" type="submit">
             Submit
         </Button>
     </Form>

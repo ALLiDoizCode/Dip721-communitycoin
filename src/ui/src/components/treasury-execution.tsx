@@ -112,15 +112,15 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
         <Form.Group className="mb-3" controlId="formBasicCheckbox">
             <Form.Check type="checkbox" label="Approve" onChange={(e) => setValue("vote", e?.target?.checked)} />
         </Form.Group>
-        {param.proposalCost.compareTo(ycBalance) > 1  || !connected && <>
+        {(param.proposalCost.compareTo(ycBalance) === 1  || !connected) && <>
         <span className="text-danger">
             You don't have enough YC to make a proposal or you are not connected
         </span>
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
-            Next
+        <Button disabled={param.proposalCost.compareTo(ycBalance) === 1  || !connected} variant="info" type="submit">
+            Submit
         </Button>
         </Form>
     </>

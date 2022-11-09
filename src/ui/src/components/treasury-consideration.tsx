@@ -9,6 +9,7 @@ import { MemberDraft, RequestDraft, ThresholdDraft, TreasuryActionRequest } from
 import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 import MemberDraftComponent from "./member-draft-component";
 import ThresholdDraftComponent from "./threshhold-draft-component";
+import TransferDraftComponent from "./trahsfer-draft-component";
 
 const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
 
@@ -63,10 +64,11 @@ const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
         switch (state.draftType) {
             case "addMember":
             case "removeMember":
-            case "transfer":
                 return <MemberDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></MemberDraftComponent>
             case "threshold":
                 return <ThresholdDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></ThresholdDraftComponent>
+            case "transfer":
+                return <TransferDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></TransferDraftComponent>
         }
     }
     
@@ -100,21 +102,21 @@ const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
                 <option value="threshold">Change Power Threshold</option>
                 <option value="removeMember">Remove Controlling Member</option>
                 <option value="addMember">Add Controlling Member</option>
-                {/* <option value="transfer">Modify Power</option> */}
+                <option value="transfer">Transfer</option> 
             </Form.Select>
             <Form.Text className="text-muted">
                 What treasury action would you like to take?
             </Form.Text>
         </Form.Group>
-        {param.proposalCost.compareTo(ycBalance) > 1  || !connected && <>
+        {(param.proposalCost.compareTo(ycBalance) === 1  || !connected) && <>
         <span className="text-danger">
             You don't have enough YC to make a proposal or you are not connected
         </span>
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
-            Submit
+        <Button disabled={param.proposalCost.compareTo(ycBalance) === 1  || !connected} variant="info" type="submit">
+            Next
         </Button>
         </Form>
     }
