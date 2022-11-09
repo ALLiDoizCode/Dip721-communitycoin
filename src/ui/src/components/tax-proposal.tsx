@@ -112,7 +112,7 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
             Submit
         </Button>
     </Form>

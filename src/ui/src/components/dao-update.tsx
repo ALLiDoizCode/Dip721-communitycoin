@@ -131,10 +131,10 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formBasicTitle">
-            <Form.Label>Source</Form.Label>
+            <Form.Label>Github Link</Form.Label>
             <Form.Control required type="text" placeholder="Enter Source" onChange={(e) => setValue("source", e?.target?.value)}/>
             <Form.Text className="text-muted">
-                Who are you?
+                Github Link
             </Form.Text>
         </Form.Group>
 
@@ -166,7 +166,7 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
             Submit
         </Button>
         </Form>

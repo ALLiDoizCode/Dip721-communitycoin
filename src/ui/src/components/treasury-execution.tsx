@@ -119,7 +119,7 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
         <br/>
         </>}
 
-        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+        <Button disabled={param.proposalCost.compareTo(ycBalance) > 1  || !connected} variant="info" type="submit">
             Next
         </Button>
         </Form>
