@@ -57,8 +57,8 @@ const DaoUpdate = () => {
             const reader = new FileReader();
     
             reader.onload = (event) => {
-                console.log(event.target);
-                resolve(event.target.result);
+                if (event)
+                    resolve(event?.target?.result as any);
             };
     
             reader.onerror = (err) => {
@@ -91,9 +91,9 @@ const DaoUpdate = () => {
             title: state.title,
             description: state.description,
             args: [],
-            hash: sha256(state.wasm),
+            hash: sha256(state.wasm).toString(),
             wasm: state.wasm,
-            canister: canisterObj,
+            canister: canisterObj as any,
             source: state.source
         }
             
@@ -137,7 +137,7 @@ const DaoUpdate = () => {
 
         <Form.Group controlId="formFileLg" className="mb-3">
             <Form.Label>Wasm</Form.Label>
-            <Form.Control accept=".gz" onChange={fileToByteArray} type="file" size="lg" />
+            <Form.Control accept=".wasm" onChange={fileToByteArray} type="file" size="lg" />
         </Form.Group>
 
         <Form.Group className="mb-3" controlId="formCanister">
