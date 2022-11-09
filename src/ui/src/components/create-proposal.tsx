@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button, Card, Col, Form, Row} from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
 import http from "../lib/http";
 import { bigIntToDecimal } from "../lib/util";
 import DaoUpdate from "./dao-update";
@@ -12,6 +12,7 @@ import TreasuryExecution from "./treasury-execution";
 const CreateProposal = () => {
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
     const [loading, setLoading] = useRecoilState(loadingAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
     React.useEffect(()=>{
         setLoading(true);
@@ -21,7 +22,7 @@ const CreateProposal = () => {
             setLoading(false);
         });
         
-    }, [])
+    }, [connected])
 
 
     /**
@@ -52,13 +53,13 @@ const CreateProposal = () => {
                     </Form>
                 </>
             case 2:
-                return <><TaxProposal/></>
+                return <><TaxProposal proposalCost={bigIntToDecimal(proposalCost)}/></>
             case 3:
-                return <><TreasuryConsideration/></>
+                return <><TreasuryConsideration proposalCost={bigIntToDecimal(proposalCost)}/></>
             case 4:
-                return <><TreasuryExecution/></>
+                return <><TreasuryExecution proposalCost={bigIntToDecimal(proposalCost)}/></>
             case 5:
-                return <><DaoUpdate/></>
+                return <><DaoUpdate proposalCost={bigIntToDecimal(proposalCost)}/></>
     }
 
 }

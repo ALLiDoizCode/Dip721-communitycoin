@@ -16,7 +16,7 @@ async function createActor<T>(canisterId, idl): Promise<T> {
 
 async function createActorWrapper<T>( cid, idl, icConnector?: IConnector) {
 
-  if (icConnector) {
+  if (icConnector?.meta) {
     const conn = await icConnector.createActor<T>(cid, idl);
     if (conn.isErr()) {
       throw Error("unable to create actor");

@@ -1,15 +1,16 @@
 import { Principal } from "@dfinity/principal";
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { MemberDraft, RequestDraft, ThresholdDraft, TreasuryActionRequest } from "../declarations/dao/dao.did";
-import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 import MemberDraftComponent from "./member-draft-component";
 import ThresholdDraftComponent from "./threshhold-draft-component";
 
-const TreasuryConsideration = () => {
+const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
 
     interface TreasuryConsiderationForm {
         title: string;
@@ -24,6 +25,8 @@ const TreasuryConsideration = () => {
     const [state, setState] = React.useState({} as TreasuryConsiderationForm);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
 
     function setValue(name, value) {
@@ -103,8 +106,15 @@ const TreasuryConsideration = () => {
                 What treasury action would you like to take?
             </Form.Text>
         </Form.Group>
-        <Button variant="info" type="submit">
-            Next
+        {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+            Submit
         </Button>
         </Form>
     }

@@ -1,13 +1,14 @@
 import { Principal } from "@dfinity/principal";
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { TaxRequest, TaxType } from "../declarations/dao/dao.did";
-import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 
-const TaxProposal = () => {
+const TaxProposal = (param: {proposalCost: bigDecimal}) => {
     interface TaxForm {
         title: string;
         taxType: string;
@@ -19,8 +20,10 @@ const TaxProposal = () => {
     const [state, setState] = React.useState({} as TaxForm);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
- 
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+
 
     function setValue(name, value) {
         state[name] = value;
@@ -30,7 +33,7 @@ const TaxProposal = () => {
     async function onFormSubmit(e) {
         setLoading(true);
         e.preventDefault();
-        const taxType: TaxType = (() => {
+        const taxType = (() => {
             switch(state.taxType) {
                 case "marketing":
                     return {'marketing': Number(state.taxValue)}
@@ -44,7 +47,7 @@ const TaxProposal = () => {
                     return {'treasury': Number(state.taxValue)}
             }
 
-        })();
+        })() as TaxType;
 
         const taxRequest: TaxRequest = {
             description: state.description,
@@ -59,6 +62,7 @@ const TaxProposal = () => {
     }
 
     return <>
+    
     <Form className="proposal-form" onSubmit={onFormSubmit}> 
       <Form.Group className="mb-3" controlId="formBasicTitle">
         <Form.Label>Title</Form.Label>
@@ -101,9 +105,16 @@ const TaxProposal = () => {
             Please enter in detail what about the tokenomics you want to change and why.
         </Form.Text>
       </Form.Group>
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
+      {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+            Submit
+        </Button>
     </Form>
     </>
  

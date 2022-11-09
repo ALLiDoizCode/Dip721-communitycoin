@@ -2,18 +2,19 @@ import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 import 'react-bootstrap-typeahead/css/Typeahead.css';
 import http from "../lib/http";
 import { TreasuryRequest } from "../declarations/dao/dao.did";
 import { Principal } from "@dfinity/principal";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
+import bigDecimal from "js-big-decimal";
 
 type TypeAheadChoice = {id: number|string, label: string, description: string};
 
 
-const TreasuryExecution = () => {
+const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
 
     React.useEffect(() => {
         setLoading(true);
@@ -38,6 +39,8 @@ const TreasuryExecution = () => {
     const [state, setState] = React.useState({} as TreasuryRequestForm);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
 
     function setValue(name, value) {
@@ -89,13 +92,13 @@ const TreasuryExecution = () => {
         <Typeahead
         inputProps={{ required: true }}
         id="treasuryRequests"
-        onChange={(selected: Array<TypeAheadChoice>) => {
+        onChange={(selected: any) => {
             if (selected.length > 0) {
                 setValue("treasuryRequestId", selected[0]?.id)
             }
         }}
         options={typeAheadOption}
-        renderMenuItemChildren={(option: TypeAheadChoice) => (
+        renderMenuItemChildren={(option: any) => (
             <div>
               {option.label}
               <div>
@@ -109,8 +112,15 @@ const TreasuryExecution = () => {
         <Form.Group className="mb-3" controlId="formBasicCheckbox">
             <Form.Check type="checkbox" label="Approve" onChange={(e) => setValue("vote", e?.target?.checked)} />
         </Form.Group>
-        <Button variant="info" type="submit">
-            Submit
+        {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
+            Next
         </Button>
         </Form>
     </>

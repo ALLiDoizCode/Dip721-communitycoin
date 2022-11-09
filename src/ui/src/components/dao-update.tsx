@@ -2,7 +2,7 @@ import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { identityProviderAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 import { TreasuryRequest, UpgradeRequest } from "../declarations/dao/dao.did";
 import { Principal } from "@dfinity/principal";
 import actor from "../declarations/actor";
@@ -10,8 +10,9 @@ import constants from "../declarations/constants";
 import axios from "axios";
 import { ParseConfig  } from "@dfinity/candid";
 import sha256 from "sha256";
+import bigDecimal from "js-big-decimal";
 
-const DaoUpdate = () => {
+const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
     interface UpgradeRequestForm {
         title: string;
         description: string;
@@ -27,6 +28,8 @@ const DaoUpdate = () => {
     const [state, setState] = React.useState({} as UpgradeRequestForm);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
 
     function setValue(name, value) {
@@ -156,7 +159,14 @@ const DaoUpdate = () => {
         </Form.Text>
       </Form.Group>
 
-        <Button variant="info" type="submit">
+        {param.proposalCost.compareTo(ycBalance) < 1  || !connected && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) < 1  || !connected} variant="info" type="submit">
             Submit
         </Button>
         </Form>

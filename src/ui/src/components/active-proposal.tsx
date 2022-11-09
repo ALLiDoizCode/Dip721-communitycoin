@@ -24,7 +24,7 @@ const ActiveProposalComponent = () => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
-    const [activeProposal, setActiveProposal] = React.useState({} as Proposal);
+    const [activeProposal, setActiveProposal] = React.useState<undefined | Proposal>();
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [principal, setPrincipal] = useRecoilState(principalAtom);
 
@@ -38,17 +38,8 @@ const ActiveProposalComponent = () => {
     React.useEffect(() => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
-        if (connected) {
-            setBalance().then();
-        }
-
     }, [connected]);
 
-    async function setBalance() {
-        const coinCanister = await actor.coincanister(provider);
-        const balance = await coinCanister.balanceOf(principal);
-        setYcBalance(bigIntToDecimal(balance))
-    }
 
     async function refreshProposal() {
         try {
@@ -57,24 +48,28 @@ const ActiveProposalComponent = () => {
             const yayNum = proposal?.yay === undefined ? 1 : proposal.yay;
             const nayNum =  proposal?.nay === undefined ?  1 : proposal.nay;
             const voteTotal = Number(yayNum) + Number(nayNum);
-            setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal), nay: isWhatPercentOf(nayNum, voteTotal)})
+            setVotingPercents({yay: isWhatPercentOf(yayNum, voteTotal) || 0, nay: isWhatPercentOf(nayNum, voteTotal) || 0})
         } catch(e) {
             if (e.response.status === 404) {
-                setActiveProposal(null);
+                setActiveProposal(undefined);
             }
         }
     }
 
     async function vote() {
-        setLoading(true);
-        const coinCanister = await actor.coincanister(provider);
-        const daoCanister = await actor.daoCanister(provider);
-        const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
-        await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
-        await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
-        setVotingModal(false);
-        await refreshProposal();
-        setLoading(false);
+        if (activeProposal) {
+            setLoading(true);
+            const coinCanister = await actor.coincanister(provider);
+            const daoCanister = await actor.daoCanister(provider);
+            const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
+            await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
+            await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
+            setVotingModal(false);
+            await refreshProposal();
+            setLoading(false);
+        } else {
+            alert("no active proposal");
+        }
     }
 
     async function showModal(direction: string) {
@@ -83,7 +78,7 @@ const ActiveProposalComponent = () => {
     }
 
     return <>
-    {activeProposal && <>
+    {activeProposal && (votingPercents.yay || votingPercents.nay) && <>
     <Row className="tabs">
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>

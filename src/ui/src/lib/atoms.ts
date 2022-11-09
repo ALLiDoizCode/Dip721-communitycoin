@@ -1,8 +1,8 @@
 import {atom} from "recoil";
 import bigDecimal from "js-big-decimal";
-import { HttpAgent } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
-import { icpHost } from "../declarations/constants";
+import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet"
+import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
 
 const localStorageEffect = key => ({setSelf, onSet}) => {
     const savedValue = localStorage.getItem(key)
@@ -33,14 +33,14 @@ export const connectedAtom = atom({
     default: false
 });
 
-export const identityProviderAtom = atom({
+export const identityProviderAtom = atom<IConnector | undefined>({
     key: 'identityProvider',
     default: undefined
 });
 
 export const principalAtom = atom({
     key: 'principal',
-    default: (undefined as Principal)
+    default: Principal.anonymous()
 });
 
 export const proposalCostAtom = atom({

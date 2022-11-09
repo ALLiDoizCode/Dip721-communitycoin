@@ -7,6 +7,7 @@ import { Principal } from "@dfinity/principal";
 import { AstroX } from "@connect2ic/core/providers/astrox"
 import { PlugWallet } from "@connect2ic/core/providers/plug-wallet"
 import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet"
+import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
 
 const WalletConnector = (props : {className: string}) => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
@@ -35,14 +36,17 @@ const WalletConnector = (props : {className: string}) => {
                         host: icpHost,
                       });
             }
-        })();
+        })() as IConnector;
 
         await provider.init();
         await provider.connect();
 
-        setPrincipal(Principal.fromText(provider.principal));
-        setProvider(provider);
-        setConnected(true);
+        if (provider){
+            if(provider.principal) setPrincipal(Principal.fromText(provider.principal));
+            setProvider(provider);
+            setConnected(true);
+        }
+
     }
     
     
@@ -56,7 +60,7 @@ const WalletConnector = (props : {className: string}) => {
     </DropdownButton>}
     {connected && <Button onClick={() => {
         setConnected(false);
-        setProvider(null);
+        setProvider(undefined);
     }}>Sign Off</Button>}
     </>
     
