@@ -38,7 +38,7 @@ const ActiveProposalComponent = () => {
     React.useEffect(() => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
-    }, [connected, activeProposal]);
+    }, [connected]);
 
 
     async function refreshProposal() {
