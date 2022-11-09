@@ -83,9 +83,9 @@ const ActiveProposalComponent = () => {
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>
             <Row className="text-percent">
-                <Col><span>{votingPercents.yay.toString()}%</span></Col>
+                <Col><span>{votingPercents.yay}%</span></Col>
                 <Col>VS</Col>
-                <Col><span>{votingPercents.nay.toString()}%</span></Col>
+                <Col><span>{votingPercents.nay}%</span></Col>
             </Row>
             <Row className="text-percent">
                 <Col><span>{bigIntToDecimal(activeProposal.yay).getPrettyValue(3, ",")} YC</span></Col>
