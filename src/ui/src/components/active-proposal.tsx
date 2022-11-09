@@ -38,12 +38,13 @@ const ActiveProposalComponent = () => {
     React.useEffect(() => {
         setLoading(true);
         refreshProposal().then(() => setLoading(false));
-    }, [connected]);
+    }, [connected, activeProposal]);
 
 
     async function refreshProposal() {
         try {
             const proposal = await getProposal();
+            console.log(typeof proposal)
             setActiveProposal(proposal);
             const yayNum = proposal?.yay === undefined ? 1 : proposal.yay;
             const nayNum =  proposal?.nay === undefined ?  1 : proposal.nay;
@@ -79,6 +80,7 @@ const ActiveProposalComponent = () => {
 
     return <>
     {activeProposal && <>
+    
     <Row className="tabs">
         <Col>
         <div className="vote-bar" style={{ background: "linear-gradient(to right, green "+votingPercents.yay+"%, red "+votingPercents.yay+"%)"}}>
@@ -98,6 +100,7 @@ const ActiveProposalComponent = () => {
     <Row className="tabs">
         <Col>
         <Card className="active-proposals">
+            
         <Card.Header as="h5">Title: <span className="proposal-title">{activeProposal.title}</span></Card.Header>
             <Card.Body>
                 <h5 className="card-label">Descripton:</h5>

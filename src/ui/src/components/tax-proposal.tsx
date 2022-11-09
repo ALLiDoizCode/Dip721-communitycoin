@@ -7,6 +7,7 @@ import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { TaxRequest, TaxType } from "../declarations/dao/dao.did";
 import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
+import { sanitizeJsonSync } from 'generic-json-sanitizer';
 
 const TaxProposal = (param: {proposalCost: bigDecimal}) => {
     interface TaxForm {
@@ -54,10 +55,11 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
             title: state.title,
             taxType
         }
+        const sanatized = JSON.parse(JSON.stringify(taxRequest));
         const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(provider);
-        const debug = await daoCanister.createProposal({tax: taxRequest});
+        const debug = await daoCanister.createProposal({tax: sanatized});
         setLoading(false);
     }
 

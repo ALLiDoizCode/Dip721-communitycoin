@@ -11,6 +11,7 @@ import axios from "axios";
 import { ParseConfig  } from "@dfinity/candid";
 import sha256 from "sha256";
 import bigDecimal from "js-big-decimal";
+import { sanitizeJsonSync } from 'generic-json-sanitizer';
 
 const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
     interface UpgradeRequestForm {
@@ -99,11 +100,12 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
             canister: canisterObj as any,
             source: state.source
         }
-            
+
+        const sanatizedUpgrade = JSON.parse(JSON.stringify(upgrade));
         const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(provider);
-        await daoCanister.createProposal({upgrade: upgrade});
+        await daoCanister.createProposal({upgrade: sanatizedUpgrade});
         setLoading(false);
     }
 

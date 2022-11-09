@@ -57,11 +57,13 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
             treasuryRequestId: state.treasuryRequestId,
             vote: state.vote
         }
+
+        const sanatizedTreasuryRequest = JSON.parse(JSON.stringify(treasuryRequest));
     
         const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(provider);
-        await daoCanister.createProposal({treasury: treasuryRequest});
+        await daoCanister.createProposal({treasury: sanatizedTreasuryRequest});
         setLoading(false);
     }
 
