@@ -104,7 +104,7 @@ const Description = () => {
         </Row>
         <Row>
             <Col md="12" lg="6">
-        <p>Your Coin is the governance token for the Crypto is Good Dao.
+        <p>YourCoin is the governance token for the Cig Dao.
         Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
         <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
         <ul>
@@ -117,7 +117,7 @@ const Description = () => {
             <Col className="hidden-sm" md="12"  lg="6">
             <ResponsiveContainer >
                 <PieChart height={250}>
-                    <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({
+                    <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine label={({
           cx,
           cy,
           midAngle,
