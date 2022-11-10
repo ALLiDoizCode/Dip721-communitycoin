@@ -16,7 +16,6 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
     React.useEffect(() => {
         setLoading(true);
         props.proposalFunction().then((proposals => {
-            console.log(proposals);
             setActiveProposals(proposals)
             setLoading(false);
         }));
@@ -37,8 +36,7 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
         </thead>
         <tbody>
             {
-                activeProposals.map((props: Proposal) => {
-                    return <>
+                activeProposals.map((props: Proposal) =>  
                     <tr key={props.id}>
                         <td>{props.id}</td>
                         <td>{props.title}</td>
@@ -46,8 +44,7 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
                         <td>{bigIntToDecimal(props.nay).getPrettyValue(3, ",")}</td>
                         <td>{new Date(Number(props.timeStamp/1000000)).toLocaleDateString()}</td>
                     </tr>
-                    </>
-                })
+                )
             }
         </tbody>
         </Table>

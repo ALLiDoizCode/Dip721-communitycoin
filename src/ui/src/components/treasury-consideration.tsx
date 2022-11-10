@@ -1,15 +1,17 @@
 import { Principal } from "@dfinity/principal";
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { MemberDraft, RequestDraft, ThresholdDraft, TreasuryActionRequest } from "../declarations/dao/dao.did";
-import { agentAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
 import MemberDraftComponent from "./member-draft-component";
 import ThresholdDraftComponent from "./threshhold-draft-component";
+import TransferDraftComponent from "./trahsfer-draft-component";
 
-const TreasuryConsideration = () => {
+const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
 
     interface TreasuryConsiderationForm {
         title: string;
@@ -22,8 +24,10 @@ const TreasuryConsideration = () => {
 
     const [step, setStep] = React.useState(0);
     const [state, setState] = React.useState({} as TreasuryConsiderationForm);
-    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
 
     function setValue(name, value) {
@@ -38,11 +42,13 @@ const TreasuryConsideration = () => {
             description: state.description,
             request: state.request
         }
+
+        const sanatizedTreasuryActionRequest = JSON.parse(JSON.stringify(treasuryActionRequest));
     
-        const coinCanister = await actor.coincanister(agent);
+        const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
-        const daoCanister = await actor.daoCanister(agent);
-        await daoCanister.createProposal({treasuryAction: treasuryActionRequest});
+        const daoCanister = await actor.daoCanister(provider);
+        await daoCanister.createProposal({treasuryAction: sanatizedTreasuryActionRequest});
         setLoading(false);
     }
 
@@ -57,21 +63,21 @@ const TreasuryConsideration = () => {
     }
 
     function draftTypeRendered() {
-        console.log("this is getting called")
         switch (state.draftType) {
             case "addMember":
             case "removeMember":
-            case "transfer":
                 return <MemberDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></MemberDraftComponent>
             case "threshold":
                 return <ThresholdDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></ThresholdDraftComponent>
+            case "transfer":
+                return <TransferDraftComponent setConsumer={(mem) => setMember(state.draftType, mem)}></TransferDraftComponent>
         }
     }
     
 
     return <>
     {step == 0 && 
-        <Form onSubmit={onFormSubmit} className="proposal-form" validated> 
+        <Form onSubmit={onFormSubmit} className="proposal-form" > 
         <Form.Group className="mb-3" controlId="formBasicTitle">
             <Form.Label>Title</Form.Label>
             <Form.Control required type="text" placeholder="Enter Title" onChange={(e) => setValue("title", e?.target?.value)}/>
@@ -98,13 +104,20 @@ const TreasuryConsideration = () => {
                 <option value="threshold">Change Power Threshold</option>
                 <option value="removeMember">Remove Controlling Member</option>
                 <option value="addMember">Add Controlling Member</option>
-                <option value="transfer">Modify Power</option>
+                <option value="transfer">Transfer</option> 
             </Form.Select>
             <Form.Text className="text-muted">
                 What treasury action would you like to take?
             </Form.Text>
         </Form.Group>
-        <Button variant="info" type="submit">
+        {(param.proposalCost.compareTo(ycBalance) === 1  || !connected) && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) === 1  || !connected} variant="info" type="submit">
             Next
         </Button>
         </Form>
