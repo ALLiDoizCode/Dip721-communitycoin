@@ -18,9 +18,9 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
 
     React.useEffect(() => {
         setLoading(true);
-        http.fetchAcceptedProposals().then((proposals => {
-            const requests = proposals.filter(x=> !!x.request).map(y => {
-                return {id: y.id, label: y.title, description: y.description}
+        http.fetchTreasuryRequests().then((treasuryRequests => {
+            const requests = treasuryRequests.filter(x=> !!x).map(y => {
+                return {id: y.id, label: y.recipient, description: y.description}
             });
             setTypeAheadOtion(requests);
             setLoading(false);
@@ -63,7 +63,7 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
         const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(provider);
-        await daoCanister.createProposal({treasury: sanatizedTreasuryRequest});
+        await daoCanister.createProposal({treasury: treasuryRequest});
         setLoading(false);
     }
 
@@ -95,6 +95,8 @@ const TreasuryExecution = (param: {proposalCost: bigDecimal}) => {
         inputProps={{ required: true }}
         id="treasuryRequests"
         onChange={(selected: any) => {
+            console.log(selected);
+            console.log(selected[0]?.id);
             if (selected.length > 0) {
                 setValue("treasuryRequestId", selected[0]?.id)
             }
