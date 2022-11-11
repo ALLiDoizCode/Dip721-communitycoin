@@ -2,7 +2,7 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { identityProviderAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
@@ -26,8 +26,6 @@ const ActiveProposalComponent = () => {
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [activeProposal, setActiveProposal] = React.useState<undefined | Proposal>();
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
-    const [principal, setPrincipal] = useRecoilState(principalAtom);
-
 
     const [votingPercents, setVotingPercents] = React.useState({yay: 1, nay: 1});
     const [votingModal, setVotingModal] = React.useState(false);

@@ -55,11 +55,17 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
             title: state.title,
             taxType
         }
+        console.log(provider);
         const sanatized = JSON.parse(JSON.stringify(taxRequest));
         const coinCanister = await actor.coincanister(provider);
-        await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
+        const debugApproved = await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
+        console.log("approved", debugApproved);
+        console.log(coinCanister);
         const daoCanister = await actor.daoCanister(provider);
+        console.log(daoCanister);
+
         const debug = await daoCanister.createProposal({tax: sanatized});
+        console.log(debug);
         setLoading(false);
     }
 

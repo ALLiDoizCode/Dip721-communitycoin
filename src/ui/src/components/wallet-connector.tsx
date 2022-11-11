@@ -8,48 +8,28 @@ import { AstroX } from "@connect2ic/core/providers/astrox"
 import { PlugWallet } from "@connect2ic/core/providers/plug-wallet"
 import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet"
 import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
+import { getProvider } from "../lib/util";
 
 const WalletConnector = (props : {className: string}) => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
-    const [provider, setProvider] = useRecoilState(identityProviderAtom);
+    const [provider, setIdentityProvider] = useRecoilState(identityProviderAtom);
     const [principal, setPrincipal] = useRecoilState(principalAtom);
 
     const myWindow = (window as any);
 
     async function connect(connector: string) {
-        const provider = (() => {
-            switch(connector) {
-                case "plug":
-                    return new PlugWallet({
-                        whitelist: whiteListedCanister,
-                        host: icpHost,
-                    });
-                case "astro":
-                    return new AstroX({
-                        whitelist: whiteListedCanister,
-                        host: icpHost
-                      });
-                case "stoic": 
-                    return new StoicWallet({
-                        whitelist: whiteListedCanister,
-                        providerUrl: "https://www.stoicwallet.com",
-                        host: icpHost,
-                      });
-            }
-        })() as IConnector;
+        const provider = getProvider(connector);
 
         await provider.init();
         await provider.connect();
 
         if (provider){
             if(provider.principal) setPrincipal(provider.principal);
-            setProvider(provider);
+            setIdentityProvider(connector);
             setConnected(true);
         }
 
     }
-    
-    
     
     return <>
     {!connected &&
@@ -60,7 +40,7 @@ const WalletConnector = (props : {className: string}) => {
     </DropdownButton>}
     {connected && <Button onClick={() => {
         setConnected(false);
-        setProvider(undefined);
+        setIdentityProvider(undefined);
     }}>Sign Off</Button>}
     </>
     

@@ -35,7 +35,7 @@ export const connectedAtom = atom({
     ]
 });
 
-export const identityProviderAtom = atom<IConnector | undefined>({
+export const identityProviderAtom = atom<string>({
     key: 'identityProvider',
     default: undefined,
     effects: [
@@ -47,7 +47,7 @@ export const principalAtom = atom<string>({
     key: 'principal',
     default: Principal.anonymous().toText(),
     effects: [
-        storageEffect("identityProvider", sessionStorage)
+        storageEffect("principal", sessionStorage)
     ]
 });
 
