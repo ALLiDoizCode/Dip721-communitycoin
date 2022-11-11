@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
+import { treasuryCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import {
@@ -72,9 +73,25 @@ export default function Tokensale() {
   async function getWicpBalance() {
     try {
       const wicpActor = await actor.wicpcanister();
-      console.log(wicpActor);
       const balance = await wicpActor.balanceOf(Principal.fromText(principal));
       setBalance(new bigDecimal(balance).getPrettyValue(8, ","));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function wicpTransfer() {
+    try {
+      const wicpActor = await actor.wicpcanister();
+      const approve = await wicpActor.approve(Principal.fromText(treasuryCanisterId), BigInt(1));
+      if ("Ok" in approve) {
+        const res = await wicpActor.transferFrom(
+          Principal.fromText(principal),
+          Principal.fromText(treasuryCanisterId),
+          approve.Ok
+        );
+        console.log(res);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -124,7 +141,9 @@ export default function Tokensale() {
           <Button onClick={() => setInvestModalOpen(0)} variant="secondary">
             Close
           </Button>
-          <Button variant="primary">Approve</Button>
+          <Button onClick={wicpTransfer} variant="primary">
+            Approve
+          </Button>
         </Modal.Footer>
       </Modal>
     );
