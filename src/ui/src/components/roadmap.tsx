@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
-import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
 
 const RoadMap = () => {
 
