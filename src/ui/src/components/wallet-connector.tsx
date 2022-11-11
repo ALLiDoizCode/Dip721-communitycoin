@@ -2,21 +2,12 @@ import * as React from "react";
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { identityProviderAtom, connectedAtom, principalAtom } from "../lib/atoms";
-import { icpHost, whiteListedCanister } from "../declarations/constants";
-import { Principal } from "@dfinity/principal";
-import { AstroX } from "@connect2ic/core/providers/astrox"
-import { PlugWallet } from "@connect2ic/core/providers/plug-wallet"
-import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet"
-import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
 import { getProvider } from "../lib/util";
 
 const WalletConnector = (props : {className: string}) => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
     const [provider, setIdentityProvider] = useRecoilState(identityProviderAtom);
     const [principal, setPrincipal] = useRecoilState(principalAtom);
-
-    const myWindow = (window as any);
-
     async function connect(connector: string) {
         const provider = getProvider(connector);
 
