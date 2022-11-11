@@ -1,13 +1,6 @@
-import { IConnector } from "@connect2ic/core";
-import { InterfaceFactory } from "@dfinity/candid/lib/cjs/idl";
-import { Principal } from "@dfinity/principal";
-import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Dropdown, DropdownButton } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { icpHost } from "../declarations/constants.js";
-import { idlFactory } from "../declarations/token/index.js";
-import { _SERVICE } from "../declarations/token/token.did.js";
 import { identityProviderAtom, connectedAtom, principalAtom } from "../lib/atoms";
 import { getProvider } from "../lib/util";
 

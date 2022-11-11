@@ -4,7 +4,7 @@ import bigDecimal from "js-big-decimal";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { createActor, idlFactory } from "../declarations/token";
+import actor from "../declarations/actor";
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import {
@@ -71,9 +71,9 @@ export default function Tokensale() {
 
   async function getWicpBalance() {
     try {
-      const actor = createActor("utozz-siaaa-aaaam-qaaxq-cai", { agentOptions: { host: "https://ic0.app" } });
-
-      const balance = await actor.balanceOf(Principal.fromText(principal));
+      const wicpActor = await actor.wicpcanister();
+      console.log(wicpActor);
+      const balance = await wicpActor.balanceOf(Principal.fromText(principal));
       setBalance(new bigDecimal(balance).getPrettyValue(8, ","));
     } catch (error) {
       console.log(error);
