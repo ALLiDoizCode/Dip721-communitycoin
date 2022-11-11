@@ -6,13 +6,13 @@ import type { IConnector } from "@connect2ic/core/dist/declarations/src/provider
 const storageEffect = (key, storageType) => ({setSelf, onSet}) => {
     const savedValue = storageType.getItem(key)
     if (savedValue != null) {
-        setSelf(JSON.parse(savedValue));
+        setSelf(JSON.parse(savedValue).savedVal);
     }
 
     onSet((newValue, _, isReset) => {
         isReset
             ? storageType.removeItem(key)
-            : storageType.setItem(key, JSON.stringify(newValue));
+            : storageType.setItem(key, JSON.stringify({savedVal: newValue}));
     });
 };
 
@@ -43,9 +43,9 @@ export const identityProviderAtom = atom<IConnector | undefined>({
     ]
 });
 
-export const principalAtom = atom({
+export const principalAtom = atom<string>({
     key: 'principal',
-    default: Principal.anonymous(),
+    default: Principal.anonymous().toText(),
     effects: [
         storageEffect("identityProvider", sessionStorage)
     ]
