@@ -42,7 +42,7 @@ const WalletConnector = (props : {className: string}) => {
         await provider.connect();
 
         if (provider){
-            if(provider.principal) setPrincipal(Principal.fromText(provider.principal));
+            if(provider.principal) setPrincipal(provider.principal);
             setProvider(provider);
             setConnected(true);
         }

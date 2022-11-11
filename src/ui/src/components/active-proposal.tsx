@@ -4,7 +4,7 @@ import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { identityProviderAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
-import { getProposal, ProposalFunction } from "../lib/http";
+import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
 import { daoCanisterId } from "../declarations/constants";

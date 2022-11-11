@@ -10,6 +10,7 @@ import { getProposal } from "../lib/http";
 import ReactGA from 'react-ga';
 import util, { bigIntToDecimal, bigIntToDecimalPrettyString } from "../lib/util";
 import actor from "../declarations/actor";
+import { Principal } from "@dfinity/principal";
 ReactGA.initialize('G-G7HPNGQVM6');
 ReactGA.pageview(window.location.pathname + window.location.search);
 const Dao = () => {
@@ -29,7 +30,9 @@ const Dao = () => {
 
     async function setBalance() {
         const coinCanister = await actor.coincanister(provider);
-        const balance = await coinCanister.balanceOf(principal);
+        console.log("set balance called")
+        const balance = await coinCanister.balanceOf(Principal.fromText(principal));
+        console.log(balance);
         setYcBalance(bigIntToDecimal(balance))
     }
 
