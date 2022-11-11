@@ -2,7 +2,7 @@ import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, successAtom, ycBalanceAtom } from "../lib/atoms";
 import { TreasuryRequest, UpgradeRequest } from "../declarations/dao/dao.did";
 import { Principal } from "@dfinity/principal";
 import actor from "../declarations/actor";
@@ -12,6 +12,7 @@ import { ParseConfig  } from "@dfinity/candid";
 import sha256 from "sha256";
 import bigDecimal from "js-big-decimal";
 import { sanitizeJsonSync } from 'generic-json-sanitizer';
+import { useNavigate } from "react-router-dom";
 
 const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
     interface UpgradeRequestForm {
@@ -31,6 +32,8 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [connected, setConnected] = useRecoilState(connectedAtom);
+    const [success, setSuccess] = useRecoilState(successAtom);
+    const navigate = useNavigate();
 
 
     function setValue(name, value) {
@@ -107,6 +110,9 @@ const DaoUpdate = (param: {proposalCost: bigDecimal}) => {
         const daoCanister = await actor.daoCanister(provider);
         await daoCanister.createProposal({upgrade: sanatizedUpgrade});
         setLoading(false);
+        setSuccess(true);
+        navigate("/dao/active");
+        setTimeout(() => setSuccess(false), 4000);
     }
 
     return <>

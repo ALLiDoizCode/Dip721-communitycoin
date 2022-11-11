@@ -22,6 +22,11 @@ export const loadingAtom = atom({
     default: false
 });
 
+export const successAtom = atom({
+    key: 'success',
+    default: false
+});
+
 export const ycBalanceAtom = atom({
     key: 'ycBalance',
     default: new bigDecimal(0)

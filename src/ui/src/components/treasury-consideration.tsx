@@ -2,11 +2,12 @@ import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Form} from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { MemberDraft, RequestDraft, ThresholdDraft, TreasuryActionRequest } from "../declarations/dao/dao.did";
-import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, successAtom, ycBalanceAtom } from "../lib/atoms";
 import MemberDraftComponent from "./member-draft-component";
 import ThresholdDraftComponent from "./threshhold-draft-component";
 import TransferDraftComponent from "./trahsfer-draft-component";
@@ -28,6 +29,8 @@ const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [connected, setConnected] = useRecoilState(connectedAtom);
+    const [success, setSuccess] = useRecoilState(successAtom);
+    const navigate = useNavigate();
 
 
     function setValue(name, value) {
@@ -50,6 +53,9 @@ const TreasuryConsideration = (param: {proposalCost: bigDecimal}) => {
         const daoCanister = await actor.daoCanister(provider);
         await daoCanister.createProposal({treasuryAction: sanatizedTreasuryActionRequest});
         setLoading(false);
+        setSuccess(true);
+        navigate("/dao/active");
+        setTimeout(() => setSuccess(false), 4000);
     }
 
     function setMember(key: string, member: MemberDraft | ThresholdDraft) {

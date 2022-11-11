@@ -2,7 +2,7 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom } from "../lib/atoms";
+import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom, successAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
@@ -31,6 +31,7 @@ const ActiveProposalComponent = () => {
     const [votingModal, setVotingModal] = React.useState(false);
     const [approve, setApprove] = React.useState(false);
     const [votingPower, setVotingPower] = React.useState(new bigDecimal(0));
+    const [success, setSuccess] = useRecoilState(successAtom);
 
 
     React.useEffect(() => {
@@ -42,7 +43,6 @@ const ActiveProposalComponent = () => {
     async function refreshProposal() {
         try {
             const proposal = await getProposal();
-            console.log(typeof proposal)
             setActiveProposal(proposal);
             const yayNum = proposal?.yay === undefined ? 1 : proposal.yay;
             const nayNum =  proposal?.nay === undefined ?  1 : proposal.nay;
@@ -66,6 +66,8 @@ const ActiveProposalComponent = () => {
             setVotingModal(false);
             await refreshProposal();
             setLoading(false);
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
         } else {
             alert("no active proposal");
         }
