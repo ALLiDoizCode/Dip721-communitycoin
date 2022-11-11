@@ -1,15 +1,16 @@
 import * as React from "react";
-import { Col, Container, Modal, Nav, Row, Spinner} from "react-bootstrap";
+import { Alert, Col, Container, Modal, Nav, OverlayTrigger, Popover, Row, Spinner} from "react-bootstrap";
 import { Outlet } from "react-router-dom";
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useRecoilState } from "recoil";
-import { connectedAtom, identityProviderAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, principalAtom, successAtom, ycBalanceAtom } from "../lib/atoms";
 import WalletConnector from "./wallet-connector";
 import "../styles/dao-styles.css";
 import { getProposal } from "../lib/http";
 import ReactGA from 'react-ga';
 import util, { bigIntToDecimal, bigIntToDecimalPrettyString } from "../lib/util";
 import actor from "../declarations/actor";
+import { Principal } from "@dfinity/principal";
 ReactGA.initialize('G-G7HPNGQVM6');
 ReactGA.pageview(window.location.pathname + window.location.search);
 const Dao = () => {
@@ -19,6 +20,8 @@ const Dao = () => {
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [principal, setPrincipal] = useRecoilState(principalAtom);
+    const [success, setSuccess] = useRecoilState(successAtom);
+
     const currentLocation = useLocation();
     const navigate = useNavigate();
 
@@ -29,7 +32,7 @@ const Dao = () => {
 
     async function setBalance() {
         const coinCanister = await actor.coincanister(provider);
-        const balance = await coinCanister.balanceOf(principal);
+        const balance = await coinCanister.balanceOf(Principal.fromText(principal));
         setYcBalance(bigIntToDecimal(balance))
     }
 
@@ -47,14 +50,36 @@ const Dao = () => {
     function navCreateProposal() {
         navigate("/dao/createproposal");
     }
+    const popover = (
+        <Popover id="popover-basic">
+          <Popover.Header as="h3">Disabled</Popover.Header>
+          <Popover.Body>
+            <ul>
+            {(activeProposal) && <li>There is already an active proposal</li>}
+            {(!connected && activeProposal) && <li>Not signed-in</li>}
+            </ul>
+          </Popover.Body>
+        </Popover>
+      );
+      
 
     return <>
      <Container fluid className="darken">
         <Row>
+        <Alert show={success} variant={"success"}>
+        <Alert.Heading className="text-center">Successfulyl Submitted Form</Alert.Heading>
+        </Alert>
+        </Row>
+        <Row>
             <Col xxs="6"><h1>Cig Dao</h1></Col>
             <Col xxs="6" className="text-right text-end">
             <WalletConnector className="btn-group-dao"></WalletConnector>
-            <button disabled={!connected || activeProposal} onClick={navCreateProposal} className="btn btn-dark btn-group-dao" >Create Proposal</button>
+            <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
+                <span>
+                <button disabled={!connected || activeProposal} onClick={navCreateProposal} className="btn btn-dark btn-group-dao" >Create Proposal</button>
+                </span>
+            </OverlayTrigger>
+
             <a href="#" className="btn btn-outline-dark btn-group-dao btn-group-dao" >Back</a>
             </Col>
             <Col xxs="12">{connected ? <span className="text-success">Connected</span> : <span className="text-danger">Not Connected</span> }</Col>

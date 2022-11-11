@@ -2,9 +2,9 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Row, Col, Card,  Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { identityProviderAtom, connectedAtom, loadingAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom, successAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
-import { getProposal, ProposalFunction } from "../lib/http";
+import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
 import { daoCanisterId } from "../declarations/constants";
@@ -26,13 +26,12 @@ const ActiveProposalComponent = () => {
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
     const [activeProposal, setActiveProposal] = React.useState<undefined | Proposal>();
     const [provider, setProvider] = useRecoilState(identityProviderAtom);
-    const [principal, setPrincipal] = useRecoilState(principalAtom);
-
 
     const [votingPercents, setVotingPercents] = React.useState({yay: 1, nay: 1});
     const [votingModal, setVotingModal] = React.useState(false);
     const [approve, setApprove] = React.useState(false);
     const [votingPower, setVotingPower] = React.useState(new bigDecimal(0));
+    const [success, setSuccess] = useRecoilState(successAtom);
 
 
     React.useEffect(() => {
@@ -44,7 +43,6 @@ const ActiveProposalComponent = () => {
     async function refreshProposal() {
         try {
             const proposal = await getProposal();
-            console.log(typeof proposal)
             setActiveProposal(proposal);
             const yayNum = proposal?.yay === undefined ? 1 : proposal.yay;
             const nayNum =  proposal?.nay === undefined ?  1 : proposal.nay;
@@ -68,6 +66,8 @@ const ActiveProposalComponent = () => {
             setVotingModal(false);
             await refreshProposal();
             setLoading(false);
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
         } else {
             alert("no active proposal");
         }

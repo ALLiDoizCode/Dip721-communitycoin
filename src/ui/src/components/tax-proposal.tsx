@@ -6,8 +6,9 @@ import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { TaxRequest, TaxType } from "../declarations/dao/dao.did";
-import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, successAtom, ycBalanceAtom } from "../lib/atoms";
 import { sanitizeJsonSync } from 'generic-json-sanitizer';
+import { useNavigate } from "react-router-dom";
 
 const TaxProposal = (param: {proposalCost: bigDecimal}) => {
     interface TaxForm {
@@ -24,6 +25,8 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
     const [connected, setConnected] = useRecoilState(connectedAtom);
 
     const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+    const [success, setSuccess] = useRecoilState(successAtom);
+    const navigate = useNavigate();
 
 
     function setValue(name, value) {
@@ -57,10 +60,14 @@ const TaxProposal = (param: {proposalCost: bigDecimal}) => {
         }
         const sanatized = JSON.parse(JSON.stringify(taxRequest));
         const coinCanister = await actor.coincanister(provider);
-        await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
+        const debugApproved = await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
         const daoCanister = await actor.daoCanister(provider);
         const debug = await daoCanister.createProposal({tax: sanatized});
         setLoading(false);
+        setSuccess(true);
+        navigate("/dao/active");
+        setTimeout(() => setSuccess(false), 4000);
+
     }
 
     return <>

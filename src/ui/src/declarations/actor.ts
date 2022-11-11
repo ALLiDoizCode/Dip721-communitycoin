@@ -4,6 +4,7 @@ import  { idlFactory as daoIdl, _SERVICE as daoService } from './dao/dao.did';
 import {idlFactory as yourCoinIdl, _SERVICE as YourCoinInterface} from './yourcoin/yourcoin.did';
 import { AstroX } from "@connect2ic/core/providers/astrox"
 import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
+import { getProvider } from "../lib/util";
 
 async function createActor<T>(canisterId, idl): Promise<T> {
   return Actor.createActor(idl, {
@@ -14,10 +15,12 @@ async function createActor<T>(canisterId, idl): Promise<T> {
   });
 }
 
-async function createActorWrapper<T>( cid, idl, icConnector?: IConnector) {
+async function createActorWrapper<T>( cid, idl, icConnector?: string) {
 
-  if (icConnector?.meta) {
-    const conn = await icConnector.createActor<T>(cid, idl);
+  if (icConnector) {
+    const provider = getProvider(icConnector);
+    await provider.init()
+    const conn = await provider.createActor<T>(cid, idl);
     if (conn.isErr()) {
       throw Error("unable to create actor");
     }
@@ -29,6 +32,6 @@ async function createActorWrapper<T>( cid, idl, icConnector?: IConnector) {
 }
 
 export default { 
-  daoCanister: (icConnector?: IConnector)  => createActorWrapper<daoService>(daoCanisterId, daoIdl, icConnector),
-  coincanister: (icConnector?: IConnector) => createActorWrapper<YourCoinInterface>(coinCanisterId, yourCoinIdl, icConnector)
+  daoCanister: (icConnector?: string)  => createActorWrapper<daoService>(daoCanisterId, daoIdl, icConnector),
+  coincanister: (icConnector?: string) => createActorWrapper<YourCoinInterface>(coinCanisterId, yourCoinIdl, icConnector)
 };

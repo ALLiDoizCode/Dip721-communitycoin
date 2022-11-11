@@ -59,7 +59,7 @@ const Tokenomics = () => {
                 </ResponsiveContainer>
             </Col>
             <Col md="12" lg="6">
-        <p>Tokenomics are designed to empower to average person. No wallet can hold more then 1 percent of the supply. </p>
+        <p>Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
         <ul>
             <li>75% for Initial liquidity pool</li>
             <li>20% for Airdrops</li>
