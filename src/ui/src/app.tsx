@@ -11,79 +11,46 @@ import RoadMap from "./components/roadmap";
 import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
-import ReactGA from 'react-ga';
+import ReactGA from "react-ga";
+import Tokensale from "./components/tokensale";
 
 const APP = () => {
+  const currentLocation = useLocation();
 
-    const currentLocation = useLocation();
+  React.useEffect(() => {
+    currentLocation.pathname;
+  }, [currentLocation.pathname]);
 
-    React.useEffect(() => {
-        currentLocation.pathname
-        
-    }, [currentLocation.pathname]);
+  return (
+    <>
+      <ThemeProvider breakpoints={["xxxl", "xxl", "xl", "lg", "md", "sm", "xs", "xxs"]} minBreakpoint="xxs">
+        <CCNav></CCNav>
 
-    return <>
-
-<ThemeProvider
-  breakpoints={['xxxl', 'xxl', 'xl', 'lg', 'md', 'sm', 'xs', 'xxs']}
-  minBreakpoint="xxs"
->
-    <CCNav></CCNav>
-
-    <Routes>
-        <Route 
-            path='/dao'
-            element={<Dao />}
-            >
-        <Route
-            path='/dao/accepted'
-            element={<>
-            <ProposalList proposalFunction={fetchAcceptedProposals} ></ProposalList>
-            </>}/>
-        <Route
-            path='/dao/rejected'
-            element={<>
-            <ProposalList proposalFunction={fetchRejectedProposals} ></ProposalList>
-            </>
-            }
-            />
-        <Route
-            path='/dao/active'
-            element={<>
-            <ActiveProposalComponent></ActiveProposalComponent>
-            </>
-            }
-            />
-        <Route
-            path='/dao/createproposal'
-            element={<>
-            <CreateProposal></CreateProposal>
-            </>
-            }
-            />
-        <Route
-            path='/dao/*'
-            element={<>
-            <ActiveProposalComponent></ActiveProposalComponent>
-            </>
-            }
-            />
-        </Route>
-        <Route 
-            path='*'
-            element={<>
+        <Routes>
+          <Route path="/tokensale" element={<Tokensale />} />
+          <Route path="/dao" element={<Dao />}>
+            <Route path="/dao/accepted" element={<ProposalList proposalFunction={fetchAcceptedProposals} />} />
+            <Route path="/dao/rejected" element={<ProposalList proposalFunction={fetchRejectedProposals} />} />
+            <Route path="/dao/active" element={<ActiveProposalComponent />} />
+            <Route path="/dao/createproposal" element={<CreateProposal />} />
+            <Route path="/dao/*" element={<ActiveProposalComponent />} />
+          </Route>
+          <Route
+            path="*"
+            element={
+              <>
                 <Description></Description>
                 <Tokenomics></Tokenomics>
                 <RoadMap></RoadMap>
                 <Team></Team>
-            </>
+              </>
             }
-            />
+          />
         </Routes>
-        </ThemeProvider>;
-        
+      </ThemeProvider>
+      ;
     </>
-    
-}
+  );
+};
 
-export default APP
+export default APP;

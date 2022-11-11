@@ -25,7 +25,7 @@ import Crud "./Crud";
 import Transaction "../models/Transaction";
 import Holder "../models/Holder";
 
-shared({ caller = owner }) actor class Collection({
+shared ({ caller = owner }) actor class Collection({
     // the primary key of this canister
     partitionKey : Text;
     // the scaling options that determine when to auto-scale out this canister storage partition
@@ -35,7 +35,7 @@ shared({ caller = owner }) actor class Collection({
 }) {
 
     private stable var transactiontId : Int = 1;
-  
+
     private type JSON = JSON.JSON;
     private type ApiError = Response.ApiError;
     private type Transaction = Transaction.Transaction;
@@ -60,7 +60,7 @@ shared({ caller = owner }) actor class Collection({
     };
 
     /// @required public API (Do not delete or change)
-    public shared({ caller = caller }) func transferCycles() : async () {
+    public shared ({ caller = caller }) func transferCycles() : async () {
         if (caller == owner) {
             return await CA.transferCycles(caller);
         };
@@ -94,11 +94,11 @@ shared({ caller = owner }) actor class Collection({
         Cycles.balance();
     };
 
-    public shared({ caller }) func putTransaction(transaction: Transaction) : async Text {
+    public shared ({ caller }) func putTransaction(transaction : Transaction) : async Text {
         let canister = Principal.toText(caller);
-        assert(Constants.dip20Canister == canister);
-        await Crud.putTransaction(db,transaction);
-        
+        assert (Constants.dip20Canister == canister);
+        await Crud.putTransaction(db, transaction);
+
     };
 
     public query func http_request(request : Http.Request) : async Http.Response {
@@ -120,9 +120,9 @@ shared({ caller = owner }) actor class Collection({
             };
         } else if (path.size() == 3) {
             switch (path[0]) {
-                case ("fetchTransactions") return _fetchTransactionResponse(path[1],path[2]);
-                case ("fetchSenderTransactions") return _fetchSenderTransactionResponse(path[1],path[2]);
-                case ("fetchReceiverTransactions") return _fetchReceiverTransactionResponse(path[1],path[2]);
+                case ("fetchTransactions") return _fetchTransactionResponse(path[1], path[2]);
+                case ("fetchSenderTransactions") return _fetchSenderTransactionResponse(path[1], path[2]);
+                case ("fetchReceiverTransactions") return _fetchReceiverTransactionResponse(path[1], path[2]);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else {
@@ -159,22 +159,22 @@ shared({ caller = owner }) actor class Collection({
             Text.hash,
         );
         let result = _fetchTransactions(start, end);
-        var transactions:[JSON] = [];
+        var transactions : [JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
-            transactions := Array.append(transactions,[json]);
+            transactions := Array.append(transactions, [json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
-        switch(result.sk){
-            case(?exist){
+        switch (result.sk) {
+            case (?exist) {
                 transactionsHashMap.put("sk", #String(exist));
             };
-            case(null){
+            case (null) {
 
             };
         };
-        
+
         let json = #Object(transactionsHashMap);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
@@ -192,22 +192,22 @@ shared({ caller = owner }) actor class Collection({
             Text.hash,
         );
         let result = _fetchSenderTransactions(start, end);
-        var transactions:[JSON] = [];
+        var transactions : [JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
-            transactions := Array.append(transactions,[json]);
+            transactions := Array.append(transactions, [json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
-        switch(result.sk){
-            case(?exist){
+        switch (result.sk) {
+            case (?exist) {
                 transactionsHashMap.put("sk", #String(exist));
             };
-            case(null){
+            case (null) {
 
             };
         };
-        
+
         let json = #Object(transactionsHashMap);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
@@ -225,22 +225,22 @@ shared({ caller = owner }) actor class Collection({
             Text.hash,
         );
         let result = _fetchReceiverTransactions(start, end);
-        var transactions:[JSON] = [];
+        var transactions : [JSON] = [];
 
         for (transaction in result.transactions.vals()) {
             let json = Utils._transactionToJson(transaction);
-            transactions := Array.append(transactions,[json]);
+            transactions := Array.append(transactions, [json]);
         };
         transactionsHashMap.put("transactions", #Array(transactions));
-        switch(result.sk){
-            case(?exist){
+        switch (result.sk) {
+            case (?exist) {
                 transactionsHashMap.put("sk", #String(exist));
             };
-            case(null){
+            case (null) {
 
             };
         };
-        
+
         let json = #Object(transactionsHashMap);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
@@ -253,8 +253,8 @@ shared({ caller = owner }) actor class Collection({
 
     private func _transactionResponse(value : Text) : Http.Response {
         let exist = _getTransaction(value);
-        switch(exist) {
-            case(?exist){
+        switch (exist) {
+            case (?exist) {
                 let json = Utils._transactionToJson(exist);
                 let blob = Text.encodeUtf8(JSON.show(json));
                 let response : Http.Response = {
@@ -264,13 +264,16 @@ shared({ caller = owner }) actor class Collection({
                     streaming_strategy = null;
                 };
             };
-            case(null){
+            case (null) {
                 return Http.NOT_FOUND();
             };
         };
     };
 
-    private func _fetchTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchTransactions(skLowerBound : Text, skUpperBound : Text) : {
+        transactions : [Transaction];
+        sk : ?Text;
+    } {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -299,7 +302,10 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchSenderTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchSenderTransactions(skLowerBound : Text, skUpperBound : Text) : {
+        transactions : [Transaction];
+        sk : ?Text;
+    } {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -328,7 +334,10 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchReceiverTransactions(skLowerBound: Text, skUpperBound: Text): {transactions:[Transaction]; sk:?Text} {
+    private func _fetchReceiverTransactions(skLowerBound : Text, skUpperBound : Text) : {
+        transactions : [Transaction];
+        sk : ?Text;
+    } {
         var transactions : [Transaction] = [];
         let result = CanDB.scan(
             db,
@@ -357,8 +366,8 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _getTransaction(value: Text): ?Transaction {
-        switch (CanDB.get(db, { sk = "transactionId:" # value})) {
+    private func _getTransaction(value : Text) : ?Transaction {
+        switch (CanDB.get(db, { sk = "transactionId:" # value })) {
             case null { null };
             case (?entity) { Crud.unwrapTransaction(entity) };
         };
