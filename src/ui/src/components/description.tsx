@@ -4,27 +4,31 @@ import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
-import { agentAtom } from "../lib/atoms";
+import { identityProviderAtom } from "../lib/atoms";
 import LaunchTimer from "./launch-timer";
 const Description = () => {
   const [vcTreasury, setVcTreasury] = React.useState(BigInt(0));
   const [burnWallet, setBurnWallet] = React.useState(BigInt(0));
   const [marketingTresury, setMarketingTreasury] = React.useState(BigInt(0));
-  const [agent, setAgent] = useRecoilState(agentAtom);
+  const [provider, setProvider] = useRecoilState(identityProviderAtom);
+
+  async function unwrapCoinCanister(principal: string) {
+    const coinCanister = await actor.coincanister(provider);
+    return await coinCanister.balanceOf(Principal.fromText(principal));
+  }
 
   React.useEffect(() => {
-    actor.coincanister(agent).balanceOf(Principal.fromText("unwqb-kyaaa-aaaak-ac5aa-cai")).then(result => {
+    unwrapCoinCanister("unwqb-kyaaa-aaaak-ac5aa-cai").then(result => {
       setVcTreasury(result);
     });
-    actor.coincanister(agent).balanceOf(Principal.fromText("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae")).then(result => {
+    unwrapCoinCanister("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae").then(result => {
       setBurnWallet(result);
     });
-    actor.coincanister(agent).balanceOf(Principal.fromText("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe")).then(result => {
+    unwrapCoinCanister("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe").then(result => {
       setMarketingTreasury(result);
     });
     
   }, []);
-
 
     const data01 = [
         {
@@ -100,7 +104,7 @@ const Description = () => {
         </Row>
         <Row>
             <Col md="12" lg="6">
-        <p>Your Coin is the governance token for the Crypto is Good Dao.
+        <p>YourCoin is the governance token for the Cig Dao.
         Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
         <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
         <ul>
@@ -113,7 +117,7 @@ const Description = () => {
             <Col className="hidden-sm" md="12"  lg="6">
             <ResponsiveContainer >
                 <PieChart height={250}>
-                    <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine        label={({
+                    <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine label={({
           cx,
           cy,
           midAngle,

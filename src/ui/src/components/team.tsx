@@ -33,7 +33,7 @@ const Team = () => {
       <Card>
         <Card.Img variant="top" src="notdom.jpeg" />
         <Card.Body>
-          <Card.Title>Not Dominique Williams</Card.Title>
+          <Card.Title>Not Dom</Card.Title>
           <Card.Text>
           Not the Chief Scientist Officer of dfinity.
           </Card.Text>

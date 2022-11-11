@@ -1,13 +1,15 @@
 import { Principal } from "@dfinity/principal";
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Form} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import constants from "../declarations/constants";
 import { TaxRequest, TaxType } from "../declarations/dao/dao.did";
-import { agentAtom, loadingAtom, proposalCostAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, loadingAtom, proposalCostAtom, ycBalanceAtom } from "../lib/atoms";
+import { sanitizeJsonSync } from 'generic-json-sanitizer';
 
-const TaxProposal = () => {
+const TaxProposal = (param: {proposalCost: bigDecimal}) => {
     interface TaxForm {
         title: string;
         taxType: string;
@@ -17,10 +19,12 @@ const TaxProposal = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
 
     const [state, setState] = React.useState({} as TaxForm);
-    const [agent, setAgent] = useRecoilState(agentAtom);
+    const [provider, setProvider] = useRecoilState(identityProviderAtom);
     const [proposalCost, setProposalCost] = useRecoilState(proposalCostAtom);
+    const [connected, setConnected] = useRecoilState(connectedAtom);
 
- 
+    const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
+
 
     function setValue(name, value) {
         state[name] = value;
@@ -30,7 +34,7 @@ const TaxProposal = () => {
     async function onFormSubmit(e) {
         setLoading(true);
         e.preventDefault();
-        const taxType: TaxType = (() => {
+        const taxType = (() => {
             switch(state.taxType) {
                 case "marketing":
                     return {'marketing': Number(state.taxValue)}
@@ -44,22 +48,23 @@ const TaxProposal = () => {
                     return {'treasury': Number(state.taxValue)}
             }
 
-        })();
+        })() as TaxType;
 
         const taxRequest: TaxRequest = {
             description: state.description,
             title: state.title,
             taxType
         }
-        const coinCanister = await actor.coincanister(agent);
+        const sanatized = JSON.parse(JSON.stringify(taxRequest));
+        const coinCanister = await actor.coincanister(provider);
         await coinCanister.approve(Principal.fromText(constants.daoCanisterId), proposalCost);
-        const daoCanister = await actor.daoCanister(agent);
-        const debug = await daoCanister.createProposal({tax: taxRequest});
-        console.log(debug);
+        const daoCanister = await actor.daoCanister(provider);
+        const debug = await daoCanister.createProposal({tax: sanatized});
         setLoading(false);
     }
 
     return <>
+    
     <Form className="proposal-form" onSubmit={onFormSubmit}> 
       <Form.Group className="mb-3" controlId="formBasicTitle">
         <Form.Label>Title</Form.Label>
@@ -84,7 +89,7 @@ const TaxProposal = () => {
      </Form.Group>
      <Form.Group className="mb-3" controlId="formBasicTitle">
         <Form.Label>Percent to Set</Form.Label>
-        <Form.Control required type="number" min={0} max={5} placeholder="Enter a percent" onChange={(e) => setValue("taxValue", e?.target?.value)}/>
+        <Form.Control required type="number" min={0} max={50} placeholder="Enter a percent" onChange={(e) => setValue("taxValue", e?.target?.value)}/>
         <Form.Text className="text-muted">
             Change to what percent?
         </Form.Text>
@@ -102,9 +107,16 @@ const TaxProposal = () => {
             Please enter in detail what about the tokenomics you want to change and why.
         </Form.Text>
       </Form.Group>
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
+      {(param.proposalCost.compareTo(ycBalance) === 1  || !connected) && <>
+        <span className="text-danger">
+            You don't have enough YC to make a proposal or you are not connected
+        </span>
+        <br/>
+        </>}
+
+        <Button disabled={param.proposalCost.compareTo(ycBalance) === 1  || !connected} variant="info" type="submit">
+            Submit
+        </Button>
     </Form>
     </>
  

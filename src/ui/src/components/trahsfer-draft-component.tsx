@@ -4,7 +4,7 @@ import { Button, Form} from "react-bootstrap";
 import { MemberDraft } from "../declarations/dao/dao.did";
 import { consumer } from "../lib/util";
 
-const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
+const TransferDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
 
     const [state, setState] = React.useState({} as MemberDraft);
     const [isInvalidPrincipal, setIsInvalidPrincipal] = React.useState(true);
@@ -22,7 +22,7 @@ const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
     return <>
     <Form className="proposal-form" onSubmit={onFormSubmit}>
         <Form.Group className="mb-3" controlId="formBasicPrincipal">
-            <Form.Label>Principal</Form.Label>
+            <Form.Label>Recipient</Form.Label>
             <Form.Control isValid={!isInvalidPrincipal} isInvalid={isInvalidPrincipal} required type="text" onChange={(e) => {
 
                 try {
@@ -32,11 +32,11 @@ const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
                     setIsInvalidPrincipal(true);
                 }
                 
-                setValue("principal", e?.target?.value, e);
+                setValue("recipient", e?.target?.value, e);
                 
                 }} placeholder="Enter Principal" />
             <Form.Text className="text-muted">
-            Enter a valid Principal
+            Enter a Recipient Principal
             </Form.Text>
         </Form.Group>
         <Form.Group className="mb-3" controlId="formDescription">
@@ -46,11 +46,11 @@ const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
             Who is this person?
             </Form.Text>
         </Form.Group>
-        <Form.Group className="mb-3" controlId="formPower">
-            <Form.Label>Power</Form.Label>
-            <Form.Control required min={0} type="number" placeholder="Enter power" onChange={(e) => setValue("power", Number(e?.target?.value), e)} />
+        <Form.Group className="mb-3" controlId="formAmount">
+            <Form.Label>Amount</Form.Label>
+            <Form.Control required min={0} type="number" placeholder="Enter amount" onChange={(e) => setValue("amount", Number(e?.target?.value), e)} />
             <Form.Text className="text-muted">
-            How much power does this person have?
+            How much money to transfer?
             </Form.Text>
         </Form.Group>
         <Button variant="info" type="submit">
@@ -61,4 +61,4 @@ const MemberDraftComponent = (param: {setConsumer: consumer<MemberDraft>}) => {
  
 }
 
-export default MemberDraftComponent
+export default TransferDraftComponent

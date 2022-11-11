@@ -11,6 +11,21 @@ export interface Proposal {
     nay: bigint;
     request?: Request | null;
   }
+  export interface TreasuryRequest {
+    id: number;
+    recipient: string;
+    amount: number;
+    description: string;
+    createdAt: number;
+    executed: boolean;
+    approvals:[Approval];
+  }
+
+  interface Approval {
+    power: number;
+    member: string;
+  }
+
   export interface Request {
     recipient: string;
     amount: number;

@@ -6,6 +6,7 @@ type Holder =
 service : {
   burnFee: (float64) -> ();
   distribute: (nat, vec Holder) -> ();
+  hello: () -> (text) query;
   marketingFee: (float64) -> ();
   treasuryFee: (float64) -> ();
   updateBurnPercentage: (float64) -> ();
