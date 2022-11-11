@@ -4,7 +4,7 @@ module {
     public let treasuryWallet = "unwqb-kyaaa-aaaak-ac5aa-cai";
     public let daoCanister = "7tac7-rqaaa-aaaak-ac47q-cai";
 
-    public let wallet = "j26ec-ix7zw-kiwcx-ixw6w-72irq-zsbyr-4t7fk-alils-u33an-kh6rk-7qe";
+    public let wallet = "cjzlc-riaaa-aaaal-qbgwa-cai";
 
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
     public let communityCanister = "fppg4-cyaaa-aaaap-aanza-cai";
