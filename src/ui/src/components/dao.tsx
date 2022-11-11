@@ -30,9 +30,7 @@ const Dao = () => {
 
     async function setBalance() {
         const coinCanister = await actor.coincanister(provider);
-        console.log("set balance called")
         const balance = await coinCanister.balanceOf(Principal.fromText(principal));
-        console.log(balance);
         setYcBalance(bigIntToDecimal(balance))
     }
 
