@@ -8,11 +8,11 @@ const RoadMap = () => {
     return <>
      <Container fluid className="darken">
         <h1>Road Map</h1>
-        <p>We want to help you fund your dao. The future of Cig Dao is not clear but our goals are concrete. 
-            We want to create, fund and deploy tools that will help fund the IC. 
-            This is a casual list of functinalities we are calling a road map. 
-            Our methods will probably be misunderstood by some but most of web3 is misunderstood 
-            and that is a reality. All great crypto projects started with a little bit of degen.</p>
+        <p>The future of Cig Dao is not clear but our goals are concrete. 
+            We want to create, fund and deploy tools that will help fund projects in the IC ecosystem. 
+            This is a casual list of functionalities we are calling a road map. 
+            Our methods will probably be misunderstood by some but most of web3 is misunderstood and that's ok. 
+            All great crypto projects started with a little bit of degen!</p>
 
         <p>Without further ado in no particular order, these are the projects we plan to develop</p>
         <ol>
