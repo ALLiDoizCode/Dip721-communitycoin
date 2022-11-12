@@ -1,10 +1,10 @@
 import axios from "axios";
-import { daoCanisterId, treasuryCanisterId, tokensaleCanisterId } from "../declarations/constants";
+import { daoCanisterId, treasuryCanisterId, distributionCanisterId } from "../declarations/constants";
 import { Proposal, TreasuryRequest, Vote } from "./dao";
 
 const urlBuilder = (endpoint: string) => `https://${daoCanisterId}.raw.ic0.app/${endpoint}`;
 const TreasuryUrlBuilder = (endpoint: string) => `https://${treasuryCanisterId}.raw.ic0.app/${endpoint}`;
-const TokenSaleUrlBuilder = (endpoint: string) => `https://${tokensaleCanisterId}.raw.ic0.app/${endpoint}`;
+const TokenSaleUrlBuilder = (endpoint: string) => `https://${distributionCanisterId}.raw.ic0.app/${endpoint}`;
 export type ProposalFunction = () => Promise<Proposal[]>;
 
 export interface TokenSaleRound {

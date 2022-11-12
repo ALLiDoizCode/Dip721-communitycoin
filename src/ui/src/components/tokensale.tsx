@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
-import { treasuryCanisterId } from "../declarations/constants";
+import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import {
@@ -27,8 +27,10 @@ export default function Tokensale() {
   const [tokensPerRound, setTokensPerRound] = useState(0);
   const [rounds, setRounds] = useState<TokenSaleRound[]>([]);
   const [userInvestedRounds, setUserInvestedRounds] = useState<TokenSaleRound[]>([]);
-  const [investModalOpen, setInvestModalOpen] = useState(0);
   const [balance, setBalance] = useState("");
+  const [investDay, setInvestDay] = useState(0);
+  const [investAmount, setInvestAmount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (maxRounds === 0) {
@@ -72,7 +74,7 @@ export default function Tokensale() {
 
   async function getWicpBalance() {
     try {
-      const wicpActor = await actor.wicpcanister();
+      const wicpActor = await actor.wicpCanister();
       const balance = await wicpActor.balanceOf(Principal.fromText(principal));
       setBalance(new bigDecimal(balance).getPrettyValue(8, ","));
     } catch (error) {
@@ -82,18 +84,25 @@ export default function Tokensale() {
 
   async function wicpTransfer() {
     try {
-      const wicpActor = await actor.wicpcanister();
-      const approve = await wicpActor.approve(Principal.fromText(treasuryCanisterId), BigInt(1));
+      setIsLoading(true);
+      const { savedVal: provider }: { savedVal: string } = JSON.parse(sessionStorage.getItem("identityProvider"));
+      const wicpActor = await actor.wicpCanister(provider);
+      const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), BigInt(investAmount));
+      console.log(approve);
       if ("Ok" in approve) {
-        const res = await wicpActor.transferFrom(
-          Principal.fromText(principal),
-          Principal.fromText(treasuryCanisterId),
-          approve.Ok
-        );
+        const distributionActor = await actor.distributionCanister(provider);
+
+        const res = await distributionActor.deposit(investDay, BigInt(investAmount));
+        await getUserInvestedRounds();
+        await getWicpBalance();
+
         console.log(res);
+        setInvestDay(0);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -113,7 +122,7 @@ export default function Tokensale() {
           {userInvested + " WICP" + ` (${userInvestedPercentage.toFixed(2)}%)`}
         </td>
         <td style={{ verticalAlign: "middle" }}>
-          <button disabled={!connected} onClick={() => setInvestModalOpen(day)} className="btn btn-success">
+          <button disabled={!connected} onClick={() => setInvestDay(day)} className="btn btn-success">
             Buy
           </button>
         </td>
@@ -123,26 +132,26 @@ export default function Tokensale() {
 
   function renderModal() {
     return (
-      <Modal show={investModalOpen > 0} onHide={() => setInvestModalOpen(0)}>
+      <Modal backdrop="static" show={investDay > 0} onHide={() => setInvestDay(0)}>
         <Modal.Header closeButton>
-          <Modal.Title>Deposit for day {investModalOpen}</Modal.Title>
+          <Modal.Title>Deposit for day {investDay}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Investment amount in WICP</Form.Label>
-              <Form.Control type="number" placeholder="0" />
+              <Form.Control onChange={(e) => setInvestAmount(Number(e.target.value))} type="number" placeholder="0" />
             </Form.Group>
           </Form>
         </Modal.Body>
 
         <Modal.Footer>
-          <Button onClick={() => setInvestModalOpen(0)} variant="secondary">
+          <Button disabled={isLoading} onClick={() => setInvestDay(0)} variant="secondary">
             Close
           </Button>
-          <Button onClick={wicpTransfer} variant="primary">
-            Approve
+          <Button disabled={isLoading} onClick={wicpTransfer} variant="primary">
+            {isLoading ? "Loading…" : "Approve"}
           </Button>
         </Modal.Footer>
       </Modal>

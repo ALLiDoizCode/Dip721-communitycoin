@@ -13,56 +13,66 @@ const Description = () => {
   const [provider, setProvider] = useRecoilState(identityProviderAtom);
 
   async function unwrapCoinCanister(principal: string) {
-    const coinCanister = await actor.coincanister(provider);
+    const coinCanister = await actor.coinCanister(provider);
     return await coinCanister.balanceOf(Principal.fromText(principal));
   }
 
   React.useEffect(() => {
-    unwrapCoinCanister("unwqb-kyaaa-aaaak-ac5aa-cai").then(result => {
+    unwrapCoinCanister("unwqb-kyaaa-aaaak-ac5aa-cai").then((result) => {
       setVcTreasury(result);
     });
-    unwrapCoinCanister("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae").then(result => {
+    unwrapCoinCanister("wrzvo-gu4p7-nshc5-hx4mk-rtzx2-vrkpa-i2sge-3h2gh-xh5mc-33wqm-mae").then((result) => {
       setBurnWallet(result);
     });
-    unwrapCoinCanister("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe").then(result => {
+    unwrapCoinCanister("765oi-n47ml-w577g-qxh4n-uooko-kclh2-mfwar-5ico6-wx67f-z7jqv-3qe").then((result) => {
       setMarketingTreasury(result);
     });
-    
   }, []);
 
-    const data01 = [
-        {
-          "name": "Burnt",
-          "value": 3
-        },
-        {
-          "name": "Passive Income",
-          "value": 3
-        },
-        {
-          "name": "Marketing Treasury",
-          "value": 2
-        },
-        {
-          "name": "Venture Capital Treasury",
-          "value": 3
-        },
-        {
-          "name": "Untaxed",
-          "value": 89
-        }
-      ];
+  const data01 = [
+    {
+      name: "Burnt",
+      value: 3,
+    },
+    {
+      name: "Passive Income",
+      value: 3,
+    },
+    {
+      name: "Marketing Treasury",
+      value: 2,
+    },
+    {
+      name: "Venture Capital Treasury",
+      value: 3,
+    },
+    {
+      name: "Untaxed",
+      value: 89,
+    },
+  ];
 
-
-    
-    return <>
-    <div className="padding">
+  return (
+    <>
+      <div className="padding">
         <h1>Your Coin</h1>
         <h3 className="silenced">A coin that funds the Internet Computer</h3>
-        <Row style={{maxWidth: "600px", marginLeft: "auto", marginRight: "auto"}}>
-            <Col xs="12" md="4"><Button disabled className="button-size" variant="success" size="lg">Buy Now</Button></Col>
-            <Col xs="12" md="4"><Button disabled className="button-size" variant="secondary" size="lg">Coin Info</Button></Col>
-            <Col xs="12" md="4"><Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</Button></Col>
+        <Row style={{ maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
+          <Col xs="12" md="4">
+            <Button disabled className="button-size" variant="success" size="lg">
+              Buy Now
+            </Button>
+          </Col>
+          <Col xs="12" md="4">
+            <Button disabled className="button-size" variant="secondary" size="lg">
+              Coin Info
+            </Button>
+          </Col>
+          <Col xs="12" md="4">
+            <Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark">
+              Enter Dao
+            </Button>
+          </Col>
         </Row>
         <br></br>
         <LaunchTimer></LaunchTimer>
@@ -94,63 +104,60 @@ const Description = () => {
           </Col>
         </Row>
         </div> */}
-        
-    </div>
-    <Container fluid className="darken">
+      </div>
+      <Container fluid className="darken">
         <Row>
-            <Col >
+          <Col>
             <h1>Coin Explained</h1>
-            </Col>
+          </Col>
         </Row>
         <Row>
-            <Col md="12" lg="6">
-        <p>YourCoin is the governance token for the Cig Dao.
-        Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
-        <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
-        <ul>
-            <li>Three percent will be burnt</li>
-            <li>Three percent distributed as passive income</li>
-            <li>Two percent distributed to marketing treasury</li>
-            <li>Three percent distributed to VC treasury</li>
-        </ul>
-            </Col>
-            <Col className="hidden-sm" md="12"  lg="6">
-            <ResponsiveContainer >
-                <PieChart height={250}>
-                    <Pie data={data01} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#D6CCC2" labelLine label={({
-          cx,
-          cy,
-          midAngle,
-          innerRadius,
-          outerRadius,
-          value,
-          index
-        }) => {
-          const RADIAN = Math.PI / 180;
-          const radius = 25 + innerRadius + (outerRadius - innerRadius);
-          const x = cx + radius * Math.cos(-midAngle * RADIAN);
-          const y = cy + radius * Math.sin(-midAngle * RADIAN);
+          <Col md="12" lg="6">
+            <p>
+              YourCoin is the governance token for the Cig Dao. Your Coin is also a novel defi self staking technology
+              with a tax system that encourages holding.
+            </p>
+            <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
+            <ul>
+              <li>Three percent will be burnt</li>
+              <li>Three percent distributed as passive income</li>
+              <li>Two percent distributed to marketing treasury</li>
+              <li>Three percent distributed to VC treasury</li>
+            </ul>
+          </Col>
+          <Col className="hidden-sm" md="12" lg="6">
+            <ResponsiveContainer>
+              <PieChart height={250}>
+                <Pie
+                  data={data01}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  fill="#D6CCC2"
+                  labelLine
+                  label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = 25 + innerRadius + (outerRadius - innerRadius);
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-          return (
-            <text
-              x={x}
-              y={y}
-              fill="#7E7E7E"
-              textAnchor={x > cx ? "start" : "end"}
-              dominantBaseline="central"
-            >
-              {data01[index].name} ({value})%
-            </text>
-          );
-        }}
-      />
-                </PieChart>
-                </ResponsiveContainer>
-            </Col>
+                    return (
+                      <text x={x} y={y} fill="#7E7E7E" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central">
+                        {data01[index].name} ({value})%
+                      </text>
+                    );
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </Col>
         </Row>
-    </Container>
+      </Container>
     </>
-    
-}
+  );
+};
 
-export default Description
+export default Description;
