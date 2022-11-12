@@ -7,7 +7,7 @@ import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
-import { connectedAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import {
   fetchRounds,
   getLastRound,
@@ -22,6 +22,7 @@ import WalletConnector from "./wallet-connector";
 export default function Tokensale() {
   const [connected] = useRecoilState(connectedAtom);
   const [principal] = useRecoilState(principalAtom);
+  const [provider] = useRecoilState(identityProviderAtom);
 
   const [maxRounds, setMaxRounds] = useState(0);
   const [tokensPerRound, setTokensPerRound] = useState(0);
@@ -85,7 +86,6 @@ export default function Tokensale() {
   async function wicpTransfer() {
     try {
       setIsLoading(true);
-      const { savedVal: provider }: { savedVal: string } = JSON.parse(sessionStorage.getItem("identityProvider"));
       const wicpActor = await actor.wicpCanister(provider);
       const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), BigInt(investAmount));
       console.log(approve);
