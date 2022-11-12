@@ -6,7 +6,7 @@ import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { identityProviderAtom } from "../lib/atoms";
 import LaunchTimer from "./launch-timer";
-const Description = () => {
+const Description = (param: {distribuptionTime: Date}) => {
   const [vcTreasury, setVcTreasury] = React.useState(BigInt(0));
   const [burnWallet, setBurnWallet] = React.useState(BigInt(0));
   const [marketingTresury, setMarketingTreasury] = React.useState(BigInt(0));
@@ -58,14 +58,14 @@ const Description = () => {
     return <>
     <div className="padding">
         <h1>Your Coin</h1>
-        <h3 className="silenced">A coin that funds the Internet Computer</h3>
+        <h3 className="silenced">The coin that funds projects on the Internet Computer</h3>
         <Row style={{maxWidth: "600px", marginLeft: "auto", marginRight: "auto"}}>
             <Col xs="12" md="4"><Button disabled className="button-size" variant="success" size="lg">Buy Now</Button></Col>
             <Col xs="12" md="4"><Button disabled className="button-size" variant="secondary" size="lg">Coin Info</Button></Col>
             <Col xs="12" md="4"><Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark" >Enter Dao</Button></Col>
         </Row>
         <br></br>
-        <LaunchTimer></LaunchTimer>
+        <LaunchTimer distribuptionTime={param.distribuptionTime}></LaunchTimer>
         {/* <div style={{maxWidth: "400px", marginLeft: "auto", marginRight: "auto"}} className="darken container-sm"> 
         <h1>Treasuries</h1>
         <Row >

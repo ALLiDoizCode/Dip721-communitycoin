@@ -12,10 +12,12 @@ import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
 import ReactGA from 'react-ga';
+import Distributions from "./components/distribution";
 
 const APP = () => {
 
     const currentLocation = useLocation();
+    const distribuptionTime = new Date();
 
     React.useEffect(() => {
         currentLocation.pathname
@@ -72,8 +74,9 @@ const APP = () => {
         <Route 
             path='*'
             element={<>
-                <Description></Description>
+                <Description distribuptionTime={distribuptionTime}></Description>
                 <Tokenomics></Tokenomics>
+                <Distributions distribuptionTime={distribuptionTime} distributionLength={182} tokenDistributedCount={1000000000}></Distributions>
                 <RoadMap></RoadMap>
                 <Team></Team>
             </>

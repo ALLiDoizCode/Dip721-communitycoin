@@ -1,7 +1,7 @@
 import * as React from "react";
 import Countdown from "react-countdown";
 
-const LaunchTimer = () => {
+const LaunchTimer = (param: {distribuptionTime: Date}) => {
     const Completionist = () => <h3 className={"font-body"} >Coin has released</h3>;
 
     const renderer = ({ days, hours, minutes, seconds, completed }) => {
@@ -36,7 +36,7 @@ const LaunchTimer = () => {
     };
     
     return <>
-     <Countdown className={"timer"} renderer={renderer} date={1677894400000}/>
+     <Countdown className={"timer"} renderer={renderer} date={param.distribuptionTime}/>
     </>
     
 }
