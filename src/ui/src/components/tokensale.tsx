@@ -1,6 +1,7 @@
-import { Actor, HttpAgent } from "@dfinity/agent";
+import "../styles/token-sale-styles.css";
 import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
+import { DateTime } from "luxon";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
@@ -8,10 +9,11 @@ import actor from "../declarations/actor";
 import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, identityProviderAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { dateFromNano } from "../lib/dateHelper";
 import {
   fetchRounds,
   getLastRound,
-  getDistributionStart,
+  getStart,
   getTokensPerRound,
   TokenSaleRound,
   fetchRoundsByPrincipal,
@@ -31,6 +33,7 @@ export default function Tokensale() {
   const [balance, setBalance] = useState("");
   const [investDay, setInvestDay] = useState(0);
   const [investAmount, setInvestAmount] = useState(0);
+  const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -56,6 +59,9 @@ export default function Tokensale() {
 
       const rounds = await fetchRounds();
       setRounds(rounds);
+
+      const start = await getStart();
+      setStartDate(dateFromNano(start));
     } catch (error) {
       console.log(error);
     }
@@ -88,15 +94,12 @@ export default function Tokensale() {
       setIsLoading(true);
       const wicpActor = await actor.wicpCanister(provider);
       const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), BigInt(investAmount));
-      console.log(approve);
       if ("Ok" in approve) {
         const distributionActor = await actor.distributionCanister(provider);
+        await distributionActor.deposit(investDay, BigInt(investAmount));
 
-        const res = await distributionActor.deposit(investDay, BigInt(investAmount));
         await getUserInvestedRounds();
         await getWicpBalance();
-
-        console.log(res);
         setInvestDay(0);
       }
     } catch (error) {
@@ -108,21 +111,30 @@ export default function Tokensale() {
 
   function renderRow(day: number) {
     const totalTokens = bigIntToDecimal(tokensPerRound).getPrettyValue(3, ",") + " YC";
-    const totalInvested = rounds.find((r) => r.day === day)?.amount ?? 0;
-    const userInvested = userInvestedRounds.find((r) => r.day === day)?.amount ?? 0;
+    const totalInvested = rounds.find((r) => r.day === day)?.amount / 100000000 ?? 0;
+    const userInvested = userInvestedRounds.find((r) => r.day === day)?.amount / 100000000 ?? 0;
     const userInvestedPercentage = Number.isNaN((userInvested / totalInvested) * 100)
       ? 0
       : (userInvested / totalInvested) * 100;
+
+    const today = DateTime.now().day;
+    const canInvest = startDate.plus({ days: day - 1 }).day >= today;
+    const currentDate = startDate.plus({ days: day - 1 }).day === today;
     return (
-      <tr key={day}>
+      <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
         <td style={{ verticalAlign: "middle" }}>#{day}</td>
+        <td style={{ verticalAlign: "middle" }}>{startDate.plus({ days: day - 1 }).toFormat("dd-MM-yyyy")}</td>
         <td style={{ verticalAlign: "middle" }}>{totalTokens}</td>
-        <td style={{ verticalAlign: "middle" }}>{totalInvested} WICP</td>
+        <td style={{ verticalAlign: "middle" }}>{new bigDecimal(totalInvested).getPrettyValue(8, ",")} WICP</td>
         <td style={{ verticalAlign: "middle" }}>
-          {userInvested + " WICP" + ` (${userInvestedPercentage.toFixed(2)}%)`}
+          {isNaN(userInvested)
+            ? "Not invested"
+            : new bigDecimal(userInvested).getPrettyValue(8, ",") +
+              " WICP" +
+              ` (${userInvestedPercentage.toFixed(2)}%)`}
         </td>
         <td style={{ verticalAlign: "middle" }}>
-          <button disabled={!connected} onClick={() => setInvestDay(day)} className="btn btn-success">
+          <button disabled={!connected || !canInvest} onClick={() => setInvestDay(day)} className="btn btn-success">
             Buy
           </button>
         </td>
@@ -160,7 +172,7 @@ export default function Tokensale() {
 
   function renderTable() {
     let days: number[] = [];
-    for (let i = 1; i <= maxRounds; i++) {
+    for (let i = 1; i <= maxRounds - 1; i++) {
       days.push(i);
     }
     return (
@@ -168,6 +180,7 @@ export default function Tokensale() {
         <thead>
           <tr>
             <th>Day</th>
+            <th>Start date</th>
             <th>Total tokens</th>
             <th>Total invested</th>
             <th>Your investment</th>

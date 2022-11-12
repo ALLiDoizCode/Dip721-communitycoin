@@ -53,8 +53,8 @@ export async function getTokensPerRound(): Promise<number> {
   return (await axios.get<number>(TokenSaleUrlBuilder("getTokensPerRound"))).data;
 }
 
-export async function getDistributionStart(): Promise<number> {
-  return (await axios.get<number>(TokenSaleUrlBuilder("getStart"))).data;
+export async function getStart(): Promise<bigint> {
+  return (await axios.get<bigint>(TokenSaleUrlBuilder("getStart"))).data;
 }
 
 export async function fetchRounds(): Promise<TokenSaleRound[]> {

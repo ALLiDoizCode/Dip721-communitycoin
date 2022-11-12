@@ -1,0 +1,9 @@
+.past-date {
+    background-color: #edede997;
+    color: #7E7E7E;
+    opacity: 0.4;
+}
+
+.current-date {
+    background-color: #13cf4897;
+}
