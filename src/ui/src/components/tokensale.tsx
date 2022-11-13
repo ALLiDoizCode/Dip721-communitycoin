@@ -31,7 +31,7 @@ export default function Tokensale() {
   const [rounds, setRounds] = useState<TokenSaleRound[]>([]);
   const [userInvestedRounds, setUserInvestedRounds] = useState<TokenSaleRound[]>([]);
   const [balance, setBalance] = useState("");
-  const [investDay, setInvestDay] = useState(0);
+  const [investDay, setInvestDay] = useState(-1);
   const [investAmount, setInvestAmount] = useState(0.0);
   const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +61,7 @@ export default function Tokensale() {
       setRounds(rounds);
 
       const start = await getStart();
-      setStartDate(dateFromNano(start));
+      setStartDate(dateFromNano(BigInt(start)));
     } catch (error) {
       console.log(error);
     }
@@ -100,7 +100,7 @@ export default function Tokensale() {
 
         await getUserInvestedRounds();
         await getWicpBalance();
-        setInvestDay(0);
+        setInvestDay(-1);
       }
     } catch (error) {
       console.log(error);
@@ -119,12 +119,11 @@ export default function Tokensale() {
 
     const today = DateTime.now();
     const canInvest = startDate.plus({ days: day }) >= today;
-    const currentDate = startDate.plus({ days: day - 1 }).toFormat("dd-MM-yyyy") === today.toFormat("dd-MM-yyyy");
-    console.log(currentDate);
+    const currentDate = startDate.plus({ days: day }).toFormat("dd-MM-yyyy") === today.toFormat("dd-MM-yyyy");
     return (
       <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
         <td style={{ verticalAlign: "middle" }}>#{day}</td>
-        <td style={{ verticalAlign: "middle" }}>{startDate.plus({ days: day - 1 }).toFormat("dd-MM-yyyy")}</td>
+        <td style={{ verticalAlign: "middle" }}>{startDate.plus({ days: day }).toFormat("dd-MM-yyyy")}</td>
         <td style={{ verticalAlign: "middle" }}>{totalTokens}</td>
         <td style={{ verticalAlign: "middle" }}>{new bigDecimal(totalInvested).getPrettyValue(8, ",")} WICP</td>
         <td style={{ verticalAlign: "middle" }}>
@@ -145,7 +144,7 @@ export default function Tokensale() {
 
   function renderModal() {
     return (
-      <Modal backdrop="static" show={investDay > 0} onHide={() => setInvestDay(0)}>
+      <Modal backdrop="static" show={investDay >= 0} onHide={() => setInvestDay(-1)}>
         <Modal.Header closeButton>
           <Modal.Title>Deposit for day {investDay}</Modal.Title>
         </Modal.Header>
@@ -177,7 +176,7 @@ export default function Tokensale() {
 
   function renderTable() {
     let days: number[] = [];
-    for (let i = 1; i <= maxRounds - 1; i++) {
+    for (let i = 0; i < maxRounds; i++) {
       days.push(i);
     }
     return (
