@@ -52,7 +52,7 @@ const Team = () => {
         <Card.Text>
           Crypto Enthusiast with 25+ years of B2B sales experience and now helping my ICPFam with Community Management and Business Development
         </Card.Text>
-        <a href="https://twitter.com/Promote_ICP">Twitter</a>
+        <a href="https://twitter.com/CajunCanadian_">Twitter</a>
       </Card.Body>
     </Card>
 
