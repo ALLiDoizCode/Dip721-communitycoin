@@ -3,7 +3,7 @@ import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import { DateTime } from "luxon";
 import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Modal, Row, Table } from "react-bootstrap";
+import { Button, Col, Container, Form, Modal, Row, Spinner, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
@@ -32,7 +32,7 @@ export default function Tokensale() {
   const [userInvestedRounds, setUserInvestedRounds] = useState<TokenSaleRound[]>([]);
   const [balance, setBalance] = useState("");
   const [investDay, setInvestDay] = useState(0);
-  const [investAmount, setInvestAmount] = useState(0);
+  const [investAmount, setInvestAmount] = useState(0.0);
   const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
   const [isLoading, setIsLoading] = useState(false);
 
@@ -154,7 +154,11 @@ export default function Tokensale() {
           <Form>
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Investment amount in WICP</Form.Label>
-              <Form.Control onChange={(e) => setInvestAmount(Number(e.target.value))} type="number" placeholder="0" />
+              <Form.Control
+                onChange={(e) => setInvestAmount(Number(e.target.value) * 100000000)}
+                type="number"
+                placeholder="0"
+              />
             </Form.Group>
           </Form>
         </Modal.Body>
@@ -164,7 +168,7 @@ export default function Tokensale() {
             Close
           </Button>
           <Button disabled={isLoading} onClick={wicpTransfer} variant="primary">
-            {isLoading ? "Loading…" : "Approve"}
+            {isLoading ? <Spinner animation="border" role="status" size="sm"></Spinner> : "Approve"}
           </Button>
         </Modal.Footer>
       </Modal>
