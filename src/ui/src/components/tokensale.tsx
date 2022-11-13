@@ -117,9 +117,10 @@ export default function Tokensale() {
       ? 0
       : (userInvested / totalInvested) * 100;
 
-    const today = DateTime.now().day;
-    const canInvest = startDate.plus({ days: day - 1 }).day >= today;
-    const currentDate = startDate.plus({ days: day - 1 }).day === today;
+    const today = DateTime.now();
+    const canInvest = startDate.plus({ days: day }) >= today;
+    const currentDate = startDate.plus({ days: day - 1 }).toFormat("dd-MM-yyyy") === today.toFormat("dd-MM-yyyy");
+    console.log(currentDate);
     return (
       <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
         <td style={{ verticalAlign: "middle" }}>#{day}</td>
