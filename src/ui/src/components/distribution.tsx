@@ -8,7 +8,7 @@ const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: n
      <Container fluid className="darken">
         <h1>Distribution</h1>
         <Row>
-            <Col>
+            <Col md="12" lg="6">
             <p>{`The Your Token distribution will take place over 6 months starting on
                 ${param.distribuptionTime.toLocaleDateString() + " at " + param.distribuptionTime.toLocaleTimeString()}. 
                 ${param.tokenDistributedCount} of Your Tokens will be distributed according to the schedule below:`}
@@ -26,7 +26,7 @@ Number of Your Tokens distributed to a purchaser = a * (b/c)`}</p>
     <li>c = Total $ICP contributed by all authorized purchasers during the period.</li>
 </ul>
             </Col>
-            <Col className="text-center">
+            <Col className="text-center" md="12" lg="6">
             <img width={"70%"} src="cigdaodis.svg" />
 
             </Col>
