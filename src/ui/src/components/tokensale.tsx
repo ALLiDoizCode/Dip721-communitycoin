@@ -174,11 +174,12 @@ export default function Tokensale() {
       : (data.userTotalInvested / data.totalInvested) * 100;
     const userYcClaim = data.totalTokens * (userWicpInvestedPercentage / 100);
 
-    let format = "yyyyMMdd";
-    const today = DateTime.now();
+    let format = "yyyyMMddhhmm";
+    const todayFormat = Number(DateTime.now().toFormat(format));
     const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * data.round));
-    const canInvest = investDay >= today;
-    const currentDate = investDay === today;
+    const investDayFormat = Number(investDay.toFormat(format));
+    const canInvest = investDayFormat >= todayFormat;
+    const currentDate = investDayFormat === todayFormat;
     return (
       <Col key={data.round}>
         <Card
