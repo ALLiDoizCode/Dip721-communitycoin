@@ -3,12 +3,12 @@ import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import { DateTime } from "luxon";
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner, Table } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
-import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
+import { distributionCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
-import { connectedAtom, identityProviderAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
+import { connectedAtom, identityProviderAtom, principalAtom } from "../lib/atoms";
 import { dateFromNano } from "../lib/dateHelper";
 import {
   fetchRounds,
@@ -176,7 +176,7 @@ export default function Tokensale() {
 
     let format = "yyyyMMddhhmm";
     const todayFormat = Number(DateTime.now().toFormat(format));
-    const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * data.round));
+    const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * (data.round + 1)));
     const investDayFormat = Number(investDay.toFormat(format));
     const canInvest = investDayFormat >= todayFormat;
     const currentDate = investDayFormat === todayFormat;
@@ -275,6 +275,16 @@ export default function Tokensale() {
           </Card.Footer>
         </Card>
       </Col>
+    );
+  }
+
+  function renderFilters() {
+    return (
+      <ButtonGroup>
+        <Button variant="secondary">All rounds</Button>
+        <Button variant="secondary">participated rounds</Button>
+        <Button variant="secondary">Right</Button>
+      </ButtonGroup>
     );
   }
 
