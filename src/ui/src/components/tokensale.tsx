@@ -452,7 +452,7 @@ export default function Tokensale() {
           </Col>
           <Col xxs="12">{"Principal: " + principal}</Col>
           <Col xxs="12">{"WICP Balance: " + wicpBalance}</Col>
-          <Col xxs="12">{"YC Balance: " + ycBalance}</Col>
+          <Col xxs="12">{"YC Balance: " + bigIntToDecimal(ycBalance).getPrettyValue(3, ",")}</Col>
         </Row>
       </Container>
 
