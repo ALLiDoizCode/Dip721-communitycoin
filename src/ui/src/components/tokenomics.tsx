@@ -2,19 +2,23 @@ import * as React from "react";
 import { Col, Container, Row, Tooltip } from "react-bootstrap";
 import { Pie, PieChart, ResponsiveContainer, Sankey } from "recharts";
 
-const Tokenomics = () => {
+const Tokenomics = (param: {maxSupply: string}) => {
     const data01 = [
         {
-          "name": "Initial Liquidity Pool",
-          "value": 75
+          "name": "Token Burn",
+          "value": 50
         },
         {
-          "name": "Airdrops",
+          "name": "Initial Liquidity",
+          "value": 20
+        },
+        {
+          "name": "Token Distribution",
           "value": 20
         },
         {
           "name": "Marketing",
-          "value": 5
+          "value": 10
         }
       ];
 
@@ -59,11 +63,13 @@ const Tokenomics = () => {
                 </ResponsiveContainer>
             </Col>
             <Col md="12" lg="6">
-        <p>Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
+        <p>Your Coin is a deflationary token. Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
+        <p>Max Supply: {param.maxSupply}</p>
         <ul>
-            <li>75% for Initial liquidity pool</li>
-            <li>20% for Airdrops</li>
-            <li>5% for Marketing</li>
+            <li>50% to Burn</li>
+            <li>20% for Initial liquidity</li>
+            <li>20% for Token Distribution</li>
+            <li>10% for Marketing</li>
         </ul>
             </Col>
         </Row>

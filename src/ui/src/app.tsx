@@ -11,11 +11,13 @@ import RoadMap from "./components/roadmap";
 import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
-import ReactGA from "react-ga";
-import Tokensale from "./components/tokensale";
+import Distributions from "./components/distribution";
+import bigDecimal from "js-big-decimal";
+import util from "./lib/util";
 
 const APP = () => {
   const currentLocation = useLocation();
+  const distribuptionTime = new Date(1669928400000);
 
   React.useEffect(() => {
     currentLocation.pathname;
@@ -27,20 +29,59 @@ const APP = () => {
         <CCNav></CCNav>
 
         <Routes>
-          <Route path="/tokensale" element={<Tokensale />} />
           <Route path="/dao" element={<Dao />}>
-            <Route path="/dao/accepted" element={<ProposalList proposalFunction={fetchAcceptedProposals} />} />
-            <Route path="/dao/rejected" element={<ProposalList proposalFunction={fetchRejectedProposals} />} />
-            <Route path="/dao/active" element={<ActiveProposalComponent />} />
-            <Route path="/dao/createproposal" element={<CreateProposal />} />
-            <Route path="/dao/*" element={<ActiveProposalComponent />} />
+            <Route
+              path="/dao/accepted"
+              element={
+                <>
+                  <ProposalList proposalFunction={fetchAcceptedProposals}></ProposalList>
+                </>
+              }
+            />
+            <Route
+              path="/dao/rejected"
+              element={
+                <>
+                  <ProposalList proposalFunction={fetchRejectedProposals}></ProposalList>
+                </>
+              }
+            />
+            <Route
+              path="/dao/active"
+              element={
+                <>
+                  <ActiveProposalComponent></ActiveProposalComponent>
+                </>
+              }
+            />
+            <Route
+              path="/dao/createproposal"
+              element={
+                <>
+                  <CreateProposal></CreateProposal>
+                </>
+              }
+            />
+            <Route
+              path="/dao/*"
+              element={
+                <>
+                  <ActiveProposalComponent></ActiveProposalComponent>
+                </>
+              }
+            />
           </Route>
           <Route
             path="*"
             element={
               <>
-                <Description></Description>
-                <Tokenomics></Tokenomics>
+                <Description distribuptionTime={distribuptionTime}></Description>
+                <Tokenomics maxSupply={"1,000,000,000,000,000.00000"}></Tokenomics>
+                <Distributions
+                  distribuptionTime={distribuptionTime}
+                  distributionLength={182}
+                  tokenDistributedCount={util.bigIntToDecimal(20000000000000000000)}
+                ></Distributions>
                 <RoadMap></RoadMap>
                 <Team></Team>
               </>
@@ -48,7 +89,6 @@ const APP = () => {
           />
         </Routes>
       </ThemeProvider>
-      ;
     </>
   );
 };

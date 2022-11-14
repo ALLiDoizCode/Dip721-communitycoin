@@ -16,12 +16,12 @@ const RoadMap = () => {
         <p>Without further ado in no particular order, these are the projects we plan to develop</p>
         <ol>
             <li>Novel token launch</li>
-            <li>DAO for governance on CryptoIsGood named neuron</li>
             <li>DAO integration with social media</li>
+            <li>DAO for governance on CryptoIsGood named neuron</li>
             <li>DAO integration with NFT trading</li>
             <li>Meme Coin Factory for coins modeled directly like "Your Coin"</li>
-            <li>DAO frame work similar to SNS for meme coins</li>
-            <li>DAO launch pad similar to DaoMaker</li>
+            <li>DAO frame work similar to SNS</li>
+            <li>DAO launch pad similar to SNS</li>
         </ol>
 
      </Container>
