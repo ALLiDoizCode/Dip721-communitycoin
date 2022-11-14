@@ -29,11 +29,7 @@ interface IRoundData {
   totalInvested: number;
   userTotalInvested: number;
   unrealisedInvestment: string;
-}
-
-interface ITimeData {
-  startTime: number;
-  roundTime: number;
+  expired: DateTime;
 }
 
 export default function Tokensale() {
@@ -42,9 +38,11 @@ export default function Tokensale() {
   const [provider] = useRecoilState(identityProviderAtom);
 
   const [wicpBalance, setWicpBalance] = useState(0);
-  const [roundTime, setRoundTime] = useState<ITimeData>({ startTime: 0, roundTime: 0 });
   const [roundsData, setRoundsData] = useState<{ [value: number]: IRoundData }>([]);
+  const [filteredRoundsData, setFilteredRoundsData] = useState<number[]>([]);
   const [roundsInitialized, setRoundsInitialized] = useState(false);
+
+  const [filter, setFilter] = useState<"all" | "participated" | "active">("all");
 
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isLoadingTransfer, setIsLoadingTransfer] = useState<{ [value: number]: boolean }>([]);
@@ -66,9 +64,6 @@ export default function Tokensale() {
 
   async function initialize() {
     try {
-      const startTime = await getStart();
-      const roundTime = await getRoundTime();
-      setRoundTime({ startTime, roundTime });
       await getRoundsData();
     } catch (error) {
       console.log(error);
@@ -81,9 +76,11 @@ export default function Tokensale() {
       const maxRounds = await getLastRound();
       const tokensPerRound = await getTokensPerRound();
       const rounds = await fetchRounds();
+      const startTime = await getStart();
+      const roundTime = await getRoundTime();
       let roundsData: { [value: number]: IRoundData } = [];
 
-      for (let i = 0; i <= maxRounds; i++) {
+      for (let i = 1; i < maxRounds; i++) {
         const totalInvested = rounds.find((r) => r.day === i)?.amount;
         roundsData[i] = {
           round: i,
@@ -91,6 +88,7 @@ export default function Tokensale() {
           totalTokens: tokensPerRound,
           userTotalInvested: 0,
           unrealisedInvestment: "",
+          expired: dateFromNano(BigInt(startTime + roundTime * i)),
         };
       }
 
@@ -148,7 +146,8 @@ export default function Tokensale() {
       const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), investment);
       if ("Ok" in approve) {
         const distributionActor = await actor.distributionCanister(provider);
-        await distributionActor.deposit(round, investment);
+        const response = await distributionActor.deposit(round, investment);
+        console.log(response);
 
         await getUserData();
         await getWicpBalance();
@@ -167,6 +166,31 @@ export default function Tokensale() {
     }
   }
 
+  function handleRoundsFilter(filter: "all" | "participated" | "active") {
+    if (filter === "active") {
+      setFilter("active");
+      setFilteredRoundsData(
+        Object.values(roundsData)
+          .filter((r) => r.expired > DateTime.now())
+          .map((r) => r.round)
+      );
+      return;
+    }
+
+    if (filter === "participated") {
+      setFilter("participated");
+      setFilteredRoundsData(
+        Object.values(roundsData)
+          .filter((r) => r.userTotalInvested > 0)
+          .map((r) => r.round)
+      );
+      return;
+    } else {
+      setFilter("all");
+      setFilteredRoundsData([]);
+    }
+  }
+
   function renderCard(data: IRoundData) {
     const totalTokens = bigIntToDecimal(data.totalTokens).getPrettyValue(3, ",") + " YC";
     const userWicpInvestedPercentage = isNaN(data.userTotalInvested / data.totalInvested)
@@ -176,8 +200,7 @@ export default function Tokensale() {
 
     let format = "yyyyMMddHHmm";
     const todayFormat = Number(DateTime.now().toFormat(format));
-    const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * (data.round + 1)));
-    const investDayFormat = Number(investDay.toFormat(format));
+    const investDayFormat = Number(data.expired.toFormat(format));
     const canInvest = investDayFormat >= todayFormat;
     const currentDate = investDayFormat === todayFormat;
     return (
@@ -195,9 +218,9 @@ export default function Tokensale() {
             }}
           >
             <div className="custom-full-width" style={{ color: currentDate ? "#ffffff" : "" }}>
-              #{data.round + 1}
+              #{data.round}
             </div>
-            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy HH:mm")}</div>
+            <div style={{ color: currentDate ? "#ffffff" : "" }}>{data.expired.toFormat("dd-MM-yyyy HH:mm")}</div>
           </Card.Header>
           <Card.Body>
             <ListGroup>
@@ -280,10 +303,20 @@ export default function Tokensale() {
 
   function renderFilters() {
     return (
-      <ButtonGroup>
-        <Button variant="secondary">All rounds</Button>
-        <Button variant="secondary">participated rounds</Button>
-        <Button variant="secondary">Active rounds</Button>
+      <ButtonGroup className="pb-5">
+        <Button onClick={() => handleRoundsFilter("all")} active={filter === "all"} variant="secondary">
+          All rounds
+        </Button>
+        <Button
+          onClick={() => handleRoundsFilter("participated")}
+          active={filter === "participated"}
+          variant="secondary"
+        >
+          participated rounds
+        </Button>
+        <Button onClick={() => handleRoundsFilter("active")} active={filter === "active"} variant="secondary">
+          Active rounds
+        </Button>
       </ButtonGroup>
     );
   }
@@ -292,7 +325,9 @@ export default function Tokensale() {
     return (
       <Container>
         <Row xs={1} md={2} lg={3} className="g-4">
-          {Object.values(roundsData).map(renderCard)}
+          {Object.values(roundsData)
+            .filter((r) => (filteredRoundsData.length === 0 ? r : filteredRoundsData.includes(r.round)))
+            .map(renderCard)}
         </Row>
       </Container>
     );
@@ -328,6 +363,11 @@ export default function Tokensale() {
           <Col xxs="12">{"Principal: " + principal}</Col>
           <Col xxs="12">{"WICP Balance: " + wicpBalance}</Col>
         </Row>
+      </Container>
+      <Container>
+        <div style={{ justifyContent: "flex-end" }} className="custom-full-width">
+          {renderFilters()}
+        </div>
       </Container>
       {renderCards()}
     </div>
