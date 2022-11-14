@@ -184,8 +184,8 @@ export default function Tokensale() {
       <Col key={data.round}>
         <Card
           style={{ textAlign: "left" }}
-          border={currentDate ? "success" : ""}
-          className={canInvest ? "" : "past-date-card"}
+          border={currentDate ? "success" : userWicpInvestedPercentage ? "warning" : ""}
+          className={canInvest ? "" : userWicpInvestedPercentage ? "" : "past-date-card"}
         >
           <Card.Header
             as="h6"
@@ -197,7 +197,7 @@ export default function Tokensale() {
             <div className="custom-full-width" style={{ color: currentDate ? "#ffffff" : "" }}>
               #{data.round + 1}
             </div>
-            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy")}</div>
+            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy hh:mm")}</div>
           </Card.Header>
           <Card.Body>
             <ListGroup>
