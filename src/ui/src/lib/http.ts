@@ -57,6 +57,10 @@ export async function getStart(): Promise<number> {
   return (await axios.get<number>(TokenSaleUrlBuilder("getStart"))).data;
 }
 
+export async function getRoundTime(): Promise<number> {
+  return (await axios.get<number>(TokenSaleUrlBuilder("getRoundTime"))).data;
+}
+
 export async function fetchRounds(): Promise<TokenSaleRound[]> {
   return (await axios.get<TokenSaleRound[]>(TokenSaleUrlBuilder("fetchRounds"))).data;
 }

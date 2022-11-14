@@ -10,7 +10,14 @@ import { distributionCanisterId, treasuryCanisterId } from "../declarations/cons
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, identityProviderAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import { dateFromNano } from "../lib/dateHelper";
-import { fetchRounds, getLastRound, getStart, getTokensPerRound, fetchRoundsByPrincipal } from "../lib/http";
+import {
+  fetchRounds,
+  getLastRound,
+  getStart,
+  getTokensPerRound,
+  fetchRoundsByPrincipal,
+  getRoundTime,
+} from "../lib/http";
 import { bigIntToDecimal } from "../lib/util";
 import WalletConnector from "./wallet-connector";
 
@@ -24,13 +31,18 @@ interface IRoundData {
   unrealisedInvestment: string;
 }
 
+interface ITimeData {
+  startTime: number;
+  roundTime: number;
+}
+
 export default function Tokensale() {
   const [connected] = useRecoilState(connectedAtom);
   const [principal] = useRecoilState(principalAtom);
   const [provider] = useRecoilState(identityProviderAtom);
 
   const [wicpBalance, setWicpBalance] = useState(0);
-  const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
+  const [roundTime, setRoundTime] = useState<ITimeData>({ startTime: 0, roundTime: 0 });
   const [roundsData, setRoundsData] = useState<{ [value: number]: IRoundData }>([]);
   const [roundsInitialized, setRoundsInitialized] = useState(false);
 
@@ -54,8 +66,9 @@ export default function Tokensale() {
 
   async function initialize() {
     try {
-      const start = await getStart();
-      setStartDate(dateFromNano(BigInt(start)));
+      const startTime = await getStart();
+      const roundTime = await getRoundTime();
+      setRoundTime({ startTime, roundTime });
       await getRoundsData();
     } catch (error) {
       console.log(error);
@@ -71,9 +84,10 @@ export default function Tokensale() {
       let roundsData: { [value: number]: IRoundData } = [];
 
       for (let i = 0; i <= maxRounds; i++) {
+        const totalInvested = rounds.find((r) => r.day === i)?.amount;
         roundsData[i] = {
           round: i,
-          totalInvested: rounds.find((r) => r.day).amount / decimals ?? 0,
+          totalInvested: !totalInvested ? 0 : totalInvested / decimals,
           totalTokens: tokensPerRound,
           userTotalInvested: 0,
           unrealisedInvestment: "",
@@ -155,12 +169,14 @@ export default function Tokensale() {
 
   function renderCard(data: IRoundData) {
     const totalTokens = bigIntToDecimal(data.totalTokens).getPrettyValue(3, ",") + " YC";
-    const userWicpInvestedPercentage = (data.userTotalInvested / data.totalInvested) * 100;
+    const userWicpInvestedPercentage = isNaN(data.userTotalInvested / data.totalInvested)
+      ? 0
+      : (data.userTotalInvested / data.totalInvested) * 100;
     const userYcClaim = data.totalTokens * (userWicpInvestedPercentage / 100);
 
     let format = "yyyyMMdd";
-    const today = Number(DateTime.now().toFormat(format));
-    const investDay = Number(startDate.plus({ days: data.round }).toFormat(format));
+    const today = DateTime.now();
+    const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * data.round));
     const canInvest = investDay >= today;
     const currentDate = investDay === today;
     return (
@@ -180,9 +196,7 @@ export default function Tokensale() {
             <div className="custom-full-width" style={{ color: currentDate ? "#ffffff" : "" }}>
               #{data.round + 1}
             </div>
-            <div style={{ color: currentDate ? "#ffffff" : "" }}>
-              {startDate.plus({ days: data.round }).toFormat("dd-MM-yyyy")}
-            </div>
+            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy")}</div>
           </Card.Header>
           <Card.Body>
             <ListGroup>
