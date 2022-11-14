@@ -70,7 +70,7 @@ const Description = (param: { distribuptionTime: Date }) => {
             </Button>
           </Col>
           <Col xs="12" md="4">
-            <Button disabled href="#/dao" className="btn btn-lg button-size btn-outline-dark">
+            <Button onClick={() => navigate("/dao/active")} className="btn btn-lg button-size btn-outline-dark">
               Enter Dao
             </Button>
           </Col>
