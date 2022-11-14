@@ -14,6 +14,7 @@ import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
 import Distributions from "./components/distribution";
 import bigDecimal from "js-big-decimal";
 import util from "./lib/util";
+import Tokensale from "./components/tokensale";
 
 const APP = () => {
   const currentLocation = useLocation();
@@ -29,6 +30,7 @@ const APP = () => {
         <CCNav></CCNav>
 
         <Routes>
+          <Route path="/tokensale" element={<Tokensale />} />
           <Route path="/dao" element={<Dao />}>
             <Route
               path="/dao/accepted"
