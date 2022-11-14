@@ -3,7 +3,20 @@ import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import { DateTime } from "luxon";
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner } from "react-bootstrap";
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  Col,
+  Container,
+  Dropdown,
+  DropdownButton,
+  Form,
+  InputGroup,
+  ListGroup,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { distributionCanisterId } from "../declarations/constants";
@@ -80,7 +93,7 @@ export default function Tokensale() {
       const roundTime = await getRoundTime();
       let roundsData: { [value: number]: IRoundData } = [];
 
-      for (let i = 1; i < maxRounds; i++) {
+      for (let i = 1; i < maxRounds + 1; i++) {
         const totalInvested = rounds.find((r) => r.day === i)?.amount;
         roundsData[i] = {
           round: i,
@@ -317,6 +330,10 @@ export default function Tokensale() {
         <Button onClick={() => handleRoundsFilter("active")} active={filter === "active"} variant="secondary">
           Active rounds
         </Button>
+        <DropdownButton as={ButtonGroup} disabled title="Sorting">
+          <Dropdown.Item eventKey="1">Sort by invested</Dropdown.Item>
+          <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>
+        </DropdownButton>
       </ButtonGroup>
     );
   }
