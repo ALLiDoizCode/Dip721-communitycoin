@@ -174,7 +174,7 @@ export default function Tokensale() {
       : (data.userTotalInvested / data.totalInvested) * 100;
     const userYcClaim = data.totalTokens * (userWicpInvestedPercentage / 100);
 
-    let format = "yyyyMMddhhmm";
+    let format = "yyyyMMddHHmm";
     const todayFormat = Number(DateTime.now().toFormat(format));
     const investDay = dateFromNano(BigInt(roundTime.startTime + roundTime.roundTime * (data.round + 1)));
     const investDayFormat = Number(investDay.toFormat(format));
@@ -197,7 +197,7 @@ export default function Tokensale() {
             <div className="custom-full-width" style={{ color: currentDate ? "#ffffff" : "" }}>
               #{data.round + 1}
             </div>
-            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy hh:mm")}</div>
+            <div style={{ color: currentDate ? "#ffffff" : "" }}>{investDay.toFormat("dd-MM-yyyy HH:mm")}</div>
           </Card.Header>
           <Card.Body>
             <ListGroup>
@@ -283,7 +283,7 @@ export default function Tokensale() {
       <ButtonGroup>
         <Button variant="secondary">All rounds</Button>
         <Button variant="secondary">participated rounds</Button>
-        <Button variant="secondary">Right</Button>
+        <Button variant="secondary">Active rounds</Button>
       </ButtonGroup>
     );
   }
