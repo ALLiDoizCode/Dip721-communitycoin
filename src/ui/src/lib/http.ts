@@ -61,6 +61,10 @@ export async function fetchRounds(): Promise<TokenSaleRound[]> {
   return (await axios.get<TokenSaleRound[]>(TokenSaleUrlBuilder("fetchRounds"))).data;
 }
 
+export async function fetchRound(round: number): Promise<TokenSaleRound[]> {
+  return (await axios.get<TokenSaleRound[]>(TokenSaleUrlBuilder(`fetchRound/${round}`))).data;
+}
+
 export async function fetchRoundsByPrincipal(principal: string): Promise<TokenSaleRound[]> {
   return (await axios.get<TokenSaleRound[]>(TokenSaleUrlBuilder(`fetchRoundsByPrincipal/${principal}`))).data;
 }

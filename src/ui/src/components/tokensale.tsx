@@ -3,200 +3,283 @@ import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import { DateTime } from "luxon";
 import React, { useEffect, useState } from "react";
-import { Button, Col, Container, Form, Modal, Row, Spinner, Table } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, ListGroup, Row, Spinner, Table } from "react-bootstrap";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { distributionCanisterId, treasuryCanisterId } from "../declarations/constants";
 import { _SERVICE } from "../declarations/token/token.did";
 import { connectedAtom, identityProviderAtom, principalAtom, ycBalanceAtom } from "../lib/atoms";
 import { dateFromNano } from "../lib/dateHelper";
-import {
-  fetchRounds,
-  getLastRound,
-  getStart,
-  getTokensPerRound,
-  TokenSaleRound,
-  fetchRoundsByPrincipal,
-} from "../lib/http";
+import { fetchRounds, getLastRound, getStart, getTokensPerRound, fetchRoundsByPrincipal } from "../lib/http";
 import { bigIntToDecimal } from "../lib/util";
 import WalletConnector from "./wallet-connector";
 
 const decimals = 100000000;
+
+interface IRoundData {
+  round: number;
+  totalTokens: number;
+  totalInvested: number;
+  userTotalInvested: number;
+  unrealisedInvestment: string;
+}
 
 export default function Tokensale() {
   const [connected] = useRecoilState(connectedAtom);
   const [principal] = useRecoilState(principalAtom);
   const [provider] = useRecoilState(identityProviderAtom);
 
-  const [maxRounds, setMaxRounds] = useState(0);
-  const [tokensPerRound, setTokensPerRound] = useState(0);
-  const [rounds, setRounds] = useState<TokenSaleRound[]>([]);
-  const [userInvestedRounds, setUserInvestedRounds] = useState<TokenSaleRound[]>([]);
-  const [balance, setBalance] = useState(0);
-  const [investDay, setInvestDay] = useState(-1);
-  const [investAmount, setInvestAmount] = useState(0.0);
+  const [wicpBalance, setWicpBalance] = useState(0);
   const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
-  const [isLoading, setIsLoading] = useState(false);
+  const [roundsData, setRoundsData] = useState<{ [value: number]: IRoundData }>([]);
+  const [roundsInitialized, setRoundsInitialized] = useState(false);
+
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [isLoadingTransfer, setIsLoadingTransfer] = useState<{ [value: number]: boolean }>([]);
 
   useEffect(() => {
-    if (maxRounds === 0) {
-      initialize();
-    }
+    initialize();
   }, []);
 
   useEffect(() => {
-    if (!Principal.fromText(principal).isAnonymous()) {
-      getUserInvestedRounds();
+    if (roundsInitialized && connected) {
+      getUserData();
       getWicpBalance();
     }
-  }, [connected]);
+
+    if (!connected) {
+      getRoundsData();
+    }
+  }, [roundsInitialized, connected]);
 
   async function initialize() {
     try {
-      const maxRounds = await getLastRound();
-      setMaxRounds(maxRounds);
-
-      const tokensPerRound = await getTokensPerRound();
-      setTokensPerRound(tokensPerRound);
-
-      const rounds = await fetchRounds();
-      setRounds(rounds);
-
       const start = await getStart();
       setStartDate(dateFromNano(BigInt(start)));
+      await getRoundsData();
     } catch (error) {
       console.log(error);
     }
   }
 
-  async function getUserInvestedRounds() {
+  async function getRoundsData() {
     try {
-      const userInvestedRounds = await fetchRoundsByPrincipal(principal.toString());
-      setUserInvestedRounds(userInvestedRounds);
-
+      setIsLoadingPage(true);
+      const maxRounds = await getLastRound();
+      const tokensPerRound = await getTokensPerRound();
       const rounds = await fetchRounds();
-      setRounds(rounds);
+      let roundsData: { [value: number]: IRoundData } = [];
+
+      for (let i = 0; i <= maxRounds; i++) {
+        roundsData[i] = {
+          round: i,
+          totalInvested: rounds.find((r) => r.day).amount / decimals ?? 0,
+          totalTokens: tokensPerRound,
+          userTotalInvested: 0,
+          unrealisedInvestment: "",
+        };
+      }
+
+      setRoundsData(roundsData);
+      setRoundsInitialized(true);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoadingPage(false);
     }
+  }
+
+  async function getUserData() {
+    const userInvestedRounds = await fetchRoundsByPrincipal(principal.toString());
+    const rounds = await fetchRounds();
+
+    userInvestedRounds.forEach((u) => {
+      setRoundsData((prevState) => ({
+        ...prevState,
+        [u.day]: {
+          ...roundsData[u.day],
+          totalInvested: rounds.find((r) => r.day === u.day).amount / decimals ?? 0,
+          userTotalInvested: u.amount / decimals ?? 0,
+        },
+      }));
+    });
+  }
+
+  function setUnrealizedInvestmentForRound(round: number, amount: string) {
+    setRoundsData((prevState) => ({ ...prevState, [round]: { ...prevState[round], unrealisedInvestment: amount } }));
   }
 
   async function getWicpBalance() {
     try {
       const wicpActor = await actor.wicpCanister();
       const balance = await wicpActor.balanceOf(Principal.fromText(principal));
-      setBalance(Number(balance) / decimals);
+      setWicpBalance(Number(balance) / decimals);
     } catch (error) {
       console.log(error);
     }
   }
 
-  async function wicpTransfer() {
+  async function wicpTransfer(round: number) {
     try {
-      setIsLoading(true);
+      setIsLoadingTransfer((prevState) => ({ ...prevState, [round]: true }));
+      const dayInvestAmount = roundsData[round].unrealisedInvestment;
+      console.log(dayInvestAmount);
+      if (!dayInvestAmount) {
+        console.log("Please specify a valid amount");
+        return;
+      }
+
+      const investment = BigInt(Number(dayInvestAmount) * decimals);
       const wicpActor = await actor.wicpCanister(provider);
-      const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), BigInt(investAmount));
+      const approve = await wicpActor.approve(Principal.fromText(distributionCanisterId), investment);
       if ("Ok" in approve) {
         const distributionActor = await actor.distributionCanister(provider);
-        await distributionActor.deposit(investDay, BigInt(investAmount));
+        await distributionActor.deposit(round, investment);
 
-        await getUserInvestedRounds();
+        await getUserData();
         await getWicpBalance();
-        setInvestDay(-1);
+        setUnrealizedInvestmentForRound(round, "");
       }
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false);
+      setIsLoadingTransfer((prevState) => ({ ...prevState, [round]: false }));
     }
   }
 
-  function renderRow(day: number) {
-    const totalTokens = bigIntToDecimal(tokensPerRound).getPrettyValue(3, ",") + " YC";
-    const totalInvested = rounds.find((r) => r.day === day)?.amount / decimals ?? 0;
-    const userInvested = userInvestedRounds.find((r) => r.day === day)?.amount / decimals ?? 0;
-    const userInvestedPercentage = Number.isNaN((userInvested / totalInvested) * 100)
-      ? 0
-      : (userInvested / totalInvested) * 100;
+  function handleWicpInputChange(round: number, amount: string) {
+    if (!amount || amount.match(/^\d{1,}(\.\d{0,8})?$/)) {
+      setUnrealizedInvestmentForRound(round, amount);
+    }
+  }
+
+  function renderCard(data: IRoundData) {
+    const totalTokens = bigIntToDecimal(data.totalTokens).getPrettyValue(3, ",") + " YC";
+    const userWicpInvestedPercentage = (data.userTotalInvested / data.totalInvested) * 100;
+    const userYcClaim = data.totalTokens * (userWicpInvestedPercentage / 100);
 
     let format = "yyyyMMdd";
     const today = Number(DateTime.now().toFormat(format));
-    const investDay = Number(startDate.plus({ days: day }).toFormat(format));
+    const investDay = Number(startDate.plus({ days: data.round }).toFormat(format));
     const canInvest = investDay >= today;
     const currentDate = investDay === today;
     return (
-      <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
-        <td style={{ verticalAlign: "middle" }}>#{day + 1}</td>
-        <td style={{ verticalAlign: "middle" }}>{startDate.plus({ days: day }).toFormat("dd-MM-yyyy")}</td>
-        <td style={{ verticalAlign: "middle" }}>{totalTokens}</td>
-        <td style={{ verticalAlign: "middle" }}>{new bigDecimal(totalInvested).getPrettyValue(8, ",")} WICP</td>
-        <td style={{ verticalAlign: "middle" }}>
-          {isNaN(userInvested)
-            ? "Not invested"
-            : new bigDecimal(userInvested).getPrettyValue(8, ",") +
-              " WICP" +
-              ` (${userInvestedPercentage.toFixed(2)}%)`}
-        </td>
-        <td style={{ verticalAlign: "middle" }}>
-          <button disabled={!connected || !canInvest} onClick={() => setInvestDay(day)} className="btn btn-success">
-            Buy
-          </button>
-        </td>
-      </tr>
+      <Col key={data.round}>
+        <Card
+          style={{ textAlign: "left" }}
+          border={currentDate ? "success" : ""}
+          className={canInvest ? "" : "past-date-card"}
+        >
+          <Card.Header
+            as="h6"
+            className="custom-card-header"
+            style={{
+              background: currentDate ? "#198755" : "",
+            }}
+          >
+            <div className="custom-full-width" style={{ color: currentDate ? "#ffffff" : "" }}>
+              #{data.round + 1}
+            </div>
+            <div style={{ color: currentDate ? "#ffffff" : "" }}>
+              {startDate.plus({ days: data.round }).toFormat("dd-MM-yyyy")}
+            </div>
+          </Card.Header>
+          <Card.Body>
+            <ListGroup>
+              <ListGroup.Item as="li">
+                <div>
+                  <div className="fw-bold">Total tokens</div>
+                  {totalTokens}
+                </div>
+              </ListGroup.Item>
+              <ListGroup.Item as="li">
+                <div>
+                  <div className="fw-bold">Total invested</div>
+                  {isNaN(data.totalInvested) ? 0 : new bigDecimal(data.totalInvested).getPrettyValue(8, ",")} WICP
+                </div>
+              </ListGroup.Item>
+              <ListGroup.Item as="li">
+                <div>
+                  <div className="fw-bold">Your investment</div>
+                  {new bigDecimal(data.userTotalInvested).getPrettyValue(8, ",")} WICP
+                </div>
+              </ListGroup.Item>
+              <ListGroup.Item as="li">
+                <div>
+                  <div className="fw-bold">Your claim</div>
+                  <div className="custom-list-group-item">
+                    <span>{bigIntToDecimal(userYcClaim).getPrettyValue(3, ",")} YC</span>
+                    <span>({userWicpInvestedPercentage.toFixed(2)}%)</span>
+                  </div>
+                </div>
+              </ListGroup.Item>
+            </ListGroup>
+          </Card.Body>
+          <Card.Footer className="text-muted">
+            {canInvest && connected ? (
+              <div className="pt-1 pb-1 custom-full-width">
+                <InputGroup style={{ marginRight: 8 }}>
+                  <Form.Control
+                    disabled={isLoadingTransfer[data.round]}
+                    onChange={(e) => handleWicpInputChange(data.round, e.target.value)}
+                    type="text"
+                    value={data.unrealisedInvestment}
+                    placeholder="0"
+                  />
+                  <InputGroup.Text id="basic-addon2">WICP</InputGroup.Text>
+                </InputGroup>
+                <Button
+                  disabled={
+                    isLoadingTransfer[data.round] ||
+                    data.unrealisedInvestment === "0" ||
+                    data.unrealisedInvestment === ""
+                  }
+                  onClick={() => wicpTransfer(data.round)}
+                  className="btn btn-success"
+                >
+                  {isLoadingTransfer[data.round] ? (
+                    <Spinner animation="border" role="status" size="sm"></Spinner>
+                  ) : (
+                    "Invest"
+                  )}
+                </Button>
+              </div>
+            ) : !connected && canInvest ? (
+              <div className="pt-1 pb-1 custom-full-width">
+                <Button style={{ width: "100%" }} variant="light" disabled>
+                  Not connected
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-1 pb-1 custom-full-width">
+                <Button style={{ width: "100%" }} variant="light" disabled>
+                  Expired
+                </Button>
+              </div>
+            )}
+          </Card.Footer>
+        </Card>
+      </Col>
     );
   }
 
-  function renderModal() {
+  function renderCards() {
     return (
-      <Modal backdrop="static" show={investDay >= 0} onHide={() => setInvestDay(-1)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Deposit for round {investDay + 1}</Modal.Title>
-        </Modal.Header>
-
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-              <Form.Label>Investment amount in WICP</Form.Label>
-              <Form.Control
-                onChange={(e) => setInvestAmount(Number(e.target.value) * decimals)}
-                type="number"
-                placeholder="0"
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-
-        <Modal.Footer>
-          <Button disabled={isLoading} onClick={() => setInvestDay(0)} variant="secondary">
-            Close
-          </Button>
-          <Button disabled={isLoading} onClick={wicpTransfer} variant="primary">
-            {isLoading ? <Spinner animation="border" role="status" size="sm"></Spinner> : "Approve"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <Container>
+        <Row xs={1} md={2} lg={3} className="g-4">
+          {Object.values(roundsData).map(renderCard)}
+        </Row>
+      </Container>
     );
   }
 
-  function renderTable() {
-    let days: number[] = [];
-    for (let i = 0; i < maxRounds; i++) {
-      days.push(i);
-    }
+  if (isLoadingPage) {
     return (
-      <Table hover size="sm">
-        <thead>
-          <tr>
-            <th>Round</th>
-            <th>Start date</th>
-            <th>Total tokens</th>
-            <th>Total invested</th>
-            <th>Your investment</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>{days.map(renderRow)}</tbody>
-      </Table>
+      <Container>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Container>
     );
   }
 
@@ -218,11 +301,10 @@ export default function Tokensale() {
             )}
           </Col>
           <Col xxs="12">{"Principal: " + principal}</Col>
-          <Col xxs="12">{"WICP Balance: " + balance}</Col>
+          <Col xxs="12">{"WICP Balance: " + wicpBalance}</Col>
         </Row>
       </Container>
-      <div style={{ background: "#ffffff" }}>{renderTable()}</div>
-      {renderModal()}
+      {renderCards()}
     </div>
   );
 }

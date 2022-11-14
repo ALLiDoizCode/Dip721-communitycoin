@@ -7,3 +7,24 @@
 .current-date {
     background-color: #13cf4897;
 }
+
+.past-date-card {
+    opacity: 0.5;
+}
+
+.custom-card-header {
+    display: flex;
+    flex-grow: 1;
+    height: 64px;
+    align-items: center;
+}
+
+.custom-list-group-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.custom-full-width {
+    display: flex;
+    flex-grow: 1;
+}
