@@ -77,7 +77,7 @@ const Dao = () => {
         </Row>
         <Row>
           <Col xxs="6">
-            <h1>Cig Dao (Beta 0.0.1)</h1>
+            <h1>Cig Dao</h1>
           </Col>
           <Col xxs="6" className="text-right text-end">
             <WalletConnector className="btn-group-dao"></WalletConnector>
