@@ -36,7 +36,7 @@ const Description = (param: {distribuptionTime: Date}) => {
           "value": 3
         },
         {
-          "name": "Passive Income",
+          "name": "Distributed to Holders",
           "value": 3
         },
         {
@@ -44,7 +44,7 @@ const Description = (param: {distribuptionTime: Date}) => {
           "value": 2
         },
         {
-          "name": "Venture Capital Treasury",
+          "name": "Dao Treasury",
           "value": 3
         },
         {
@@ -106,12 +106,12 @@ const Description = (param: {distribuptionTime: Date}) => {
             <Col md="12" lg="6">
         <p>YourCoin is the governance token for the Cig Dao.
         Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
-        <p>Every transaction done with YC will cost 11% distributing passive income to holders.</p>
+        <p>Every transaction done with YC will be taxed 11%:</p>
         <ul>
             <li>Three percent will be burnt</li>
-            <li>Three percent distributed as passive income</li>
-            <li>Two percent distributed to marketing treasury</li>
-            <li>Three percent distributed to VC treasury</li>
+            <li>Three percent distributed back to all holders</li>
+            <li>Two percent distributed to Marketing Treasury</li>
+            <li>Three percent distributed to DAO Treasury</li>
         </ul>
             </Col>
             <Col className="hidden-sm" md="12"  lg="6">

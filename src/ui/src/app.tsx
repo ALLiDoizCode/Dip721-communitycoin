@@ -75,15 +75,15 @@ const APP = () => {
             path='*'
             element={<>
                 <Description distribuptionTime={distribuptionTime}></Description>
-                <Tokenomics></Tokenomics>
-                <Distributions distribuptionTime={distribuptionTime} distributionLength={182} tokenDistributedCount={1000000000}></Distributions>
+                <Tokenomics maxSupply={"1,000,000,000,000,000.00000"}></Tokenomics>
+                <Distributions distribuptionTime={distribuptionTime} distributionLength={182} tokenDistributedCount={"250,000,000,000"}></Distributions>
                 <RoadMap></RoadMap>
                 <Team></Team>
             </>
             }
             />
         </Routes>
-        </ThemeProvider>;
+        </ThemeProvider>
         
     </>
     

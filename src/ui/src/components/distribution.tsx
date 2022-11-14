@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 
-const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: number, distributionLength: number}) => {
+const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: string, distributionLength: number}) => {
 
     
     return <>
@@ -13,8 +13,8 @@ const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: n
                 ${param.distribuptionTime.toLocaleDateString() + " at " + param.distribuptionTime.toLocaleTimeString()}. 
                 ${param.tokenDistributedCount} of Your Tokens will be distributed according to the schedule below:`}
                 </p>
- <p>{`${param.tokenDistributedCount} of Your Tokens (% of the total amount of Your Tokens to be distributed) 
- will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of ${param.tokenDistributedCount / param.distributionLength}
+ <p>{`${param.tokenDistributedCount} of Your Tokens will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of 
+ ${Number(param.tokenDistributedCount.replaceAll(",", "").replaceAll(".", "")) / param.distributionLength}
   Your tokens each beginning on date and time UTC. 
 At the end of each 23 hour period referred to above, the respective set number of Your Tokens set forth above will be
  distributed pro rata amongst all authorized purchasers, based on the total ether (“$ICP”) contributed during those periods, respectively, as follows: 

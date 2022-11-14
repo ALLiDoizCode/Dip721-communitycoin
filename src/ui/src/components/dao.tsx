@@ -7,12 +7,10 @@ import { connectedAtom, identityProviderAtom, loadingAtom, principalAtom, succes
 import WalletConnector from "./wallet-connector";
 import "../styles/dao-styles.css";
 import { getProposal } from "../lib/http";
-import ReactGA from 'react-ga';
-import util, { bigIntToDecimal, bigIntToDecimalPrettyString } from "../lib/util";
+import  { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
 import { Principal } from "@dfinity/principal";
-ReactGA.initialize('G-G7HPNGQVM6');
-ReactGA.pageview(window.location.pathname + window.location.search);
+
 const Dao = () => {
     const [loading, setLoading] = useRecoilState(loadingAtom);
     const [connected, setConnected] = useRecoilState(connectedAtom);
@@ -71,7 +69,7 @@ const Dao = () => {
         </Alert>
         </Row>
         <Row>
-            <Col xxs="6"><h1>Cig Dao</h1></Col>
+            <Col xxs="6"><h1>Cig Dao (Beta 0.0.1)</h1></Col>
             <Col xxs="6" className="text-right text-end">
             <WalletConnector className="btn-group-dao"></WalletConnector>
             <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
