@@ -126,7 +126,7 @@ export default function Tokensale() {
     const currentDate = investDay === today;
     return (
       <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
-        <td style={{ verticalAlign: "middle" }}>#{day}</td>
+        <td style={{ verticalAlign: "middle" }}>#{day + 1}</td>
         <td style={{ verticalAlign: "middle" }}>{startDate.plus({ days: day }).toFormat("dd-MM-yyyy")}</td>
         <td style={{ verticalAlign: "middle" }}>{totalTokens}</td>
         <td style={{ verticalAlign: "middle" }}>{new bigDecimal(totalInvested).getPrettyValue(8, ",")} WICP</td>
@@ -150,7 +150,7 @@ export default function Tokensale() {
     return (
       <Modal backdrop="static" show={investDay >= 0} onHide={() => setInvestDay(-1)}>
         <Modal.Header closeButton>
-          <Modal.Title>Deposit for day {investDay}</Modal.Title>
+          <Modal.Title>Deposit for round {investDay + 1}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
@@ -187,7 +187,7 @@ export default function Tokensale() {
       <Table hover size="sm">
         <thead>
           <tr>
-            <th>Day</th>
+            <th>Round</th>
             <th>Start date</th>
             <th>Total tokens</th>
             <th>Total invested</th>
