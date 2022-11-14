@@ -37,7 +37,7 @@ const Team = () => {
                   <Card>
                   <Card.Img variant="top" src="remco.jpeg" />
                   <Card.Body>
-                    <Card.Title>Remco</Card.Title>
+                    <Card.Title>Rem.Codes</Card.Title>
                     <Card.Text>
                       Crypto Enthusiast with 10+ years of programming experience. Self proclaimed awesome guy and beer enthusiast.
                     </Card.Text>
