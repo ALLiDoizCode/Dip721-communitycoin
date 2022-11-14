@@ -21,6 +21,8 @@ import {
 import { bigIntToDecimal } from "../lib/util";
 import WalletConnector from "./wallet-connector";
 
+const decimals = 100000000;
+
 export default function Tokensale() {
   const [connected] = useRecoilState(connectedAtom);
   const [principal] = useRecoilState(principalAtom);
@@ -30,7 +32,7 @@ export default function Tokensale() {
   const [tokensPerRound, setTokensPerRound] = useState(0);
   const [rounds, setRounds] = useState<TokenSaleRound[]>([]);
   const [userInvestedRounds, setUserInvestedRounds] = useState<TokenSaleRound[]>([]);
-  const [balance, setBalance] = useState("");
+  const [balance, setBalance] = useState(0);
   const [investDay, setInvestDay] = useState(-1);
   const [investAmount, setInvestAmount] = useState(0.0);
   const [startDate, setStartDate] = useState<DateTime>(DateTime.now());
@@ -83,7 +85,7 @@ export default function Tokensale() {
     try {
       const wicpActor = await actor.wicpCanister();
       const balance = await wicpActor.balanceOf(Principal.fromText(principal));
-      setBalance(new bigDecimal(balance).getPrettyValue(8, ","));
+      setBalance(Number(balance) / decimals);
     } catch (error) {
       console.log(error);
     }
@@ -111,15 +113,17 @@ export default function Tokensale() {
 
   function renderRow(day: number) {
     const totalTokens = bigIntToDecimal(tokensPerRound).getPrettyValue(3, ",") + " YC";
-    const totalInvested = rounds.find((r) => r.day === day)?.amount / 100000000 ?? 0;
-    const userInvested = userInvestedRounds.find((r) => r.day === day)?.amount / 100000000 ?? 0;
+    const totalInvested = rounds.find((r) => r.day === day)?.amount / decimals ?? 0;
+    const userInvested = userInvestedRounds.find((r) => r.day === day)?.amount / decimals ?? 0;
     const userInvestedPercentage = Number.isNaN((userInvested / totalInvested) * 100)
       ? 0
       : (userInvested / totalInvested) * 100;
 
-    const today = DateTime.now();
-    const canInvest = startDate.plus({ days: day }) >= today;
-    const currentDate = startDate.plus({ days: day }).toFormat("dd-MM-yyyy") === today.toFormat("dd-MM-yyyy");
+    let format = "yyyyMMdd";
+    const today = Number(DateTime.now().toFormat(format));
+    const investDay = Number(startDate.plus({ days: day }).toFormat(format));
+    const canInvest = investDay >= today;
+    const currentDate = investDay === today;
     return (
       <tr key={day} className={canInvest ? (currentDate ? "current-date" : "") : "past-date"}>
         <td style={{ verticalAlign: "middle" }}>#{day}</td>
@@ -154,7 +158,7 @@ export default function Tokensale() {
             <Form.Group className="mb-3" controlId="formBasicEmail">
               <Form.Label>Investment amount in WICP</Form.Label>
               <Form.Control
-                onChange={(e) => setInvestAmount(Number(e.target.value) * 100000000)}
+                onChange={(e) => setInvestAmount(Number(e.target.value) * decimals)}
                 type="number"
                 placeholder="0"
               />
