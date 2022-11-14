@@ -19,13 +19,13 @@ import actor from "../declarations/actor";
 import { Principal } from "@dfinity/principal";
 
 const Dao = () => {
-  const [loading, setLoading] = useRecoilState(loadingAtom);
-  const [connected, setConnected] = useRecoilState(connectedAtom);
+  const [loading] = useRecoilState(loadingAtom);
+  const [connected] = useRecoilState(connectedAtom);
   const [activeProposal, setActiveProposal] = React.useState(false);
   const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
-  const [provider, setProvider] = useRecoilState(identityProviderAtom);
-  const [principal, setPrincipal] = useRecoilState(principalAtom);
-  const [success, setSuccess] = useRecoilState(successAtom);
+  const [provider] = useRecoilState(identityProviderAtom);
+  const [principal] = useRecoilState(principalAtom);
+  const [success] = useRecoilState(successAtom);
 
   const currentLocation = useLocation();
   const navigate = useNavigate();

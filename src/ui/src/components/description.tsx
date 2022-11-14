@@ -1,8 +1,8 @@
 import { Principal } from "@dfinity/principal";
 import * as React from "react";
-import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
-import { useNavigate, useNavigation } from "react-router-dom";
-import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { PieChart, Pie, ResponsiveContainer } from "recharts";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
 import { identityProviderAtom } from "../lib/atoms";
