@@ -1,6 +1,7 @@
 import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
+import { useNavigate, useNavigation } from "react-router-dom";
 import { PieChart, Pie, LabelList, ResponsiveContainer } from "recharts";
 import { useRecoilState } from "recoil";
 import actor from "../declarations/actor";
@@ -11,7 +12,7 @@ const Description = (param: { distribuptionTime: Date }) => {
   const [burnWallet, setBurnWallet] = React.useState(BigInt(0));
   const [marketingTresury, setMarketingTreasury] = React.useState(BigInt(0));
   const [provider, setProvider] = useRecoilState(identityProviderAtom);
-
+  const navigate = useNavigate();
   async function unwrapCoinCanister(principal: string) {
     const coinCanister = await actor.coinCanister(provider);
     return await coinCanister.balanceOf(Principal.fromText(principal));
@@ -59,7 +60,7 @@ const Description = (param: { distribuptionTime: Date }) => {
         <h3 className="silenced">The coin that funds projects on the Internet Computer</h3>
         <Row style={{ maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
           <Col xs="12" md="4">
-            <Button disabled className="button-size" variant="success" size="lg">
+            <Button onClick={() => navigate("/tokensale")} className="button-size" variant="success" size="lg">
               Buy Now
             </Button>
           </Col>
