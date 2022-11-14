@@ -1,7 +1,8 @@
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
 
-const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: string, distributionLength: number}) => {
+const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: bigDecimal, distributionLength: number}) => {
 
     
     return <>
@@ -11,10 +12,10 @@ const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: s
             <Col md="12" lg="6">
             <p>{`The Your Token distribution will take place over 6 months starting on
                 ${param.distribuptionTime.toLocaleDateString() + " at " + param.distribuptionTime.toLocaleTimeString()}. 
-                ${param.tokenDistributedCount} of Your Tokens will be distributed according to the schedule below:`}
+                ${param.tokenDistributedCount.getPrettyValue(3, ",")} of Your Tokens will be distributed according to the schedule below:`}
                 </p>
- <p>{`${param.tokenDistributedCount} of Your Tokens will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of 
- ${Number(param.tokenDistributedCount.replaceAll(",", "").replaceAll(".", "")) / param.distributionLength}
+ <p>{`${param.tokenDistributedCount.getPrettyValue(3, ",")} of Your Tokens will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of 
+ ${(param.tokenDistributedCount.divide(new bigDecimal(param.distributionLength), 8)).getPrettyValue(3, ",")}
   Your tokens each beginning on date and time UTC. 
 At the end of each 23 hour period referred to above, the respective set number of Your Tokens set forth above will be
  distributed pro rata amongst all authorized purchasers, based on the total ether (“$ICP”) contributed during those periods, respectively, as follows: 

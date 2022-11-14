@@ -5,16 +5,20 @@ import { Pie, PieChart, ResponsiveContainer, Sankey } from "recharts";
 const Tokenomics = (param: {maxSupply: string}) => {
     const data01 = [
         {
+          "name": "Token Burn",
+          "value": 50
+        },
+        {
           "name": "Initial Liquidity",
-          "value": 40
+          "value": 20
         },
         {
           "name": "Token Distribution",
-          "value": 40
+          "value": 20
         },
         {
           "name": "Marketing",
-          "value": 20
+          "value": 10
         }
       ];
 
@@ -62,9 +66,10 @@ const Tokenomics = (param: {maxSupply: string}) => {
         <p>Your Coin is a deflationary token. Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
         <p>Max Supply: {param.maxSupply}</p>
         <ul>
-            <li>40% for Initial liquidity</li>
-            <li>40% for Token Distribution</li>
-            <li>20% for Marketing</li>
+            <li>50% to Burn</li>
+            <li>20% for Initial liquidity</li>
+            <li>20% for Token Distribution</li>
+            <li>10% for Marketing</li>
         </ul>
             </Col>
         </Row>

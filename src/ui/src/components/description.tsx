@@ -52,8 +52,6 @@ const Description = (param: {distribuptionTime: Date}) => {
           "value": 89
         }
       ];
-
-
     
     return <>
     <div className="padding">
@@ -104,7 +102,7 @@ const Description = (param: {distribuptionTime: Date}) => {
         </Row>
         <Row>
             <Col md="12" lg="6">
-        <p>YourCoin is the governance token for the Cig Dao.
+        <p>YourCoin is the governance token for the CigDao.
         Your Coin is also a novel defi self staking technology with a tax system that encourages holding.</p>
         <p>Every transaction done with YC will be taxed 11%:</p>
         <ul>

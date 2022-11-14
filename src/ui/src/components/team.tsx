@@ -61,7 +61,7 @@ const Team = () => {
     return <>
      <Container fluid className="darken">
         <h1>Team</h1>
-        <p>At crypto is good we don't believe in titles. The most important thing you need to know about us is that we are all developers except CajunCanadian who will do everything else</p>
+        <p>At CigDao we don't believe in titles. The most important thing you need to know about us is that we are all developers except CajunCanadian who will do everything else</p>
       <CardGroup style={{maxWidth: "80%", margin: "auto"}}>
         {teamArrayCard[0]}
         {teamArrayCard[1]}
