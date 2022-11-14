@@ -1,25 +1,25 @@
 import { Actor, ActorSubclass, HttpAgent } from "@dfinity/agent";
-import { coinCanisterId, daoCanisterId, icpHost } from "./constants";
-import  { idlFactory as daoIdl, _SERVICE as daoService } from './dao/dao.did';
-import {idlFactory as yourCoinIdl, _SERVICE as YourCoinInterface} from './yourcoin/yourcoin.did';
-import { AstroX } from "@connect2ic/core/providers/astrox"
-import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
+import { coinCanisterId, daoCanisterId, distributionCanisterId, icpHost, wicpCanisterId } from "./constants";
+import { idlFactory as daoIdl, _SERVICE as daoService } from "./dao/dao.did";
+import { idlFactory as yourCoinIdl, _SERVICE as YourCoinInterface } from "./yourcoin/yourcoin.did";
 import { getProvider } from "../lib/util";
+import { _SERVICE as WicpService, idlFactory as wicpFactory } from "./token/token.did";
+import { _SERVICE as DistributionService, idlFactory as distributionFactory } from "./distribution/distribution.did";
 
 async function createActor<T>(canisterId, idl): Promise<T> {
   return Actor.createActor(idl, {
     agent: new HttpAgent({
-      host: icpHost
+      host: icpHost,
     }),
-    canisterId
+    canisterId,
   });
 }
 
-async function createActorWrapper<T>( cid, idl, icConnector?: string) {
-
+async function createActorWrapper<T>(cid, idl, icConnector?: string) {
   if (icConnector) {
     const provider = getProvider(icConnector);
-    await provider.init()
+    await provider.init();
+    if (!(await provider.isConnected())) await provider.connect();
     const conn = await provider.createActor<T>(cid, idl);
     if (conn.isErr()) {
       throw Error("unable to create actor");
@@ -31,7 +31,11 @@ async function createActorWrapper<T>( cid, idl, icConnector?: string) {
   return await createActor<T>(cid, idl);
 }
 
-export default { 
-  daoCanister: (icConnector?: string)  => createActorWrapper<daoService>(daoCanisterId, daoIdl, icConnector),
-  coincanister: (icConnector?: string) => createActorWrapper<YourCoinInterface>(coinCanisterId, yourCoinIdl, icConnector)
+export default {
+  daoCanister: (icConnector?: string) => createActorWrapper<daoService>(daoCanisterId, daoIdl, icConnector),
+  coinCanister: (icConnector?: string) =>
+    createActorWrapper<YourCoinInterface>(coinCanisterId, yourCoinIdl, icConnector),
+  wicpCanister: (icConnector?: string) => createActorWrapper<WicpService>(wicpCanisterId, wicpFactory, icConnector),
+  distributionCanister: (icConnector?: string) =>
+    createActorWrapper<DistributionService>(distributionCanisterId, distributionFactory, icConnector),
 };

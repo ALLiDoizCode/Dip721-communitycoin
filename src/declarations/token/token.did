@@ -1,3 +1,19 @@
+type TxReceipt__1 = 
+ variant {
+   Err:
+    variant {
+      AmountTooSmall;
+      BlockUsed;
+      ErrorOperationStyle;
+      ErrorTo;
+      InsufficientAllowance;
+      InsufficientBalance;
+      LedgerTrap;
+      Other: text;
+      Unauthorized;
+    };
+   Ok: nat;
+ };
 type TxReceipt = 
  variant {
    Err:
@@ -30,7 +46,6 @@ type Token =
    balanceOf: (principal) -> (nat) query;
    bulkTransfer: (vec Holder) -> (vec Holder);
    burn: (nat) -> (TxReceipt);
-   chargeTax: (principal, nat) -> (TxReceipt);
    communityTransfer: (principal, nat) -> (TxReceipt);
    decimals: () -> (nat8) query;
    getAllowanceSize: () -> (nat) query;
@@ -58,7 +73,6 @@ type Token =
    totalSupply: () -> (nat) query;
    transfer: (principal, nat) -> (TxReceipt);
    transferFrom: (principal, principal, nat) -> (TxReceipt);
-   updateTransactionPercentage: (float64) -> ();
  };
 type Time = int;
 type Metadata = 
@@ -74,6 +88,7 @@ type Metadata =
 type Holder = 
  record {
    amount: nat;
-   holder: text;
+   holder: principal;
+   receipt: TxReceipt__1;
  };
 service : (text, text, text, nat8, nat, principal, nat) -> Token
