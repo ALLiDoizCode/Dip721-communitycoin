@@ -1,21 +1,34 @@
+import { Principal } from "@dfinity/principal";
 import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Button, Col, Container, Navbar, Row } from "react-bootstrap";
+import actor from "../declarations/actor";
+import { bigIntToDecimal } from "../lib/util";
 
-const Distributions = (param: {distribuptionTime: Date, tokenDistributedCount: bigDecimal, distributionLength: number}) => {
+const Distributions = (param: {distribuptionTime: Date, distributionLength: number}) => {
 
+
+    const [distributedAmount, setDistributedAmount] = React.useState<bigDecimal>(new bigDecimal(1));
+
+    React.useEffect(() => {
+        actor.coinCanister().then((canister) => {
+            canister.balanceOf(Principal.fromText("cjzlc-riaaa-aaaal-qbgwa-cai")).then(amount => {
+                setDistributedAmount(bigIntToDecimal(amount));
+            });
+        })
+      }, []);
     
     return <>
      <Container fluid className="darken">
         <h1>Distribution</h1>
         <Row>
             <Col md="12" lg="6">
-            <p>{`The Your Token distribution will take place over 6 months starting on
+            <p>{`The Your Token distribution will take place over 1 year starting on
                 ${param.distribuptionTime.toLocaleDateString() + " at " + param.distribuptionTime.toLocaleTimeString()}. 
-                ${param.tokenDistributedCount.getPrettyValue(3, ",")} of Your Tokens will be distributed according to the schedule below:`}
+                ${distributedAmount.getPrettyValue(3, ",")} of Your Tokens will be distributed according to the schedule below:`}
                 </p>
- <p>{`${param.tokenDistributedCount.getPrettyValue(3, ",")} of Your Tokens will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of 
- ${(param.tokenDistributedCount.divide(new bigDecimal(param.distributionLength), 8)).getPrettyValue(3, ",")}
+ <p>{`${distributedAmount.getPrettyValue(3, ",")} of Your Tokens will then be split evenly into ${param.distributionLength} consecutive 23 hour periods of 
+ ${(distributedAmount.divide(new bigDecimal(param.distributionLength), 0)).getPrettyValue(3, ",")}
   Your tokens each beginning on date and time UTC. 
 At the end of each 23 hour period referred to above, the respective set number of Your Tokens set forth above will be
  distributed pro rata amongst all authorized purchasers, based on the total ether (“$ICP”) contributed during those periods, respectively, as follows: 

@@ -12,8 +12,6 @@ import Team from "./components/team";
 import Tokenomics from "./components/tokenomics";
 import { fetchAcceptedProposals, fetchRejectedProposals } from "./lib/http";
 import Distributions from "./components/distribution";
-import bigDecimal from "js-big-decimal";
-import util from "./lib/util";
 import Tokensale from "./components/tokensale";
 
 const APP = () => {
@@ -81,8 +79,7 @@ const APP = () => {
                 <Tokenomics maxSupply={"1,000,000,000,000,000.00000"}></Tokenomics>
                 <Distributions
                   distribuptionTime={distribuptionTime}
-                  distributionLength={182}
-                  tokenDistributedCount={util.bigIntToDecimal(20000000000000000000)}
+                  distributionLength={365}
                 ></Distributions>
                 <RoadMap></RoadMap>
                 <Team></Team>
