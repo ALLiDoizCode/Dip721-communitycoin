@@ -2,7 +2,7 @@ import { Principal } from "@dfinity/principal";
 import * as React from "react";
 import { Row, Col, Card, Modal, Alert, Button } from "react-bootstrap";
 import { useRecoilState } from "recoil";
-import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom, successAtom } from "../lib/atoms";
+import { identityProviderAtom, connectedAtom, loadingAtom, ycBalanceAtom, successAtom, activeProposalAtom } from "../lib/atoms";
 import { Proposal } from "../lib/dao";
 import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
@@ -10,6 +10,7 @@ import bigDecimal from "js-big-decimal";
 import { daoCanisterId } from "../declarations/constants";
 import { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
+import { TwitterShareButton } from "react-share";
 
 function money_round(num) {
   return Math.round(num * 100) / 100;
@@ -24,7 +25,7 @@ const ActiveProposalComponent = () => {
   const [connected, setConnected] = useRecoilState(connectedAtom);
   const [loading, setLoading] = useRecoilState(loadingAtom);
   const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
-  const [activeProposal, setActiveProposal] = React.useState<undefined | Proposal>();
+  const [activeProposal, setActiveProposal] = useRecoilState(activeProposalAtom);
   const [provider, setProvider] = useRecoilState(identityProviderAtom);
 
   const [votingPercents, setVotingPercents] = React.useState({ yay: 1, nay: 1 });
