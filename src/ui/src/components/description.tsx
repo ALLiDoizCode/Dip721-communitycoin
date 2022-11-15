@@ -65,14 +65,14 @@ const Description = (param: { distribuptionTime: Date }) => {
             </Button>
           </Col>
           <Col xs="12" md="4">
-            <Button disabled className="button-size" variant="secondary" size="lg">
-              Coin Info
+            <Button onClick={() => navigate("/dao/active")} className="btn btn-lg button-size">
+              Enter Dao
             </Button>
           </Col>
           <Col xs="12" md="4">
-            <Button onClick={() => navigate("/dao/active")} className="btn btn-lg button-size btn-outline-dark">
-              Enter Dao
-            </Button>
+            <a href="https://icscan.io/canister/5gxp5-jyaaa-aaaag-qarma-cai" role="button" className="btn btn-secondary btn-lg button-size" >
+              Coin Info
+            </a>
           </Col>
         </Row>
         <br></br>
