@@ -75,7 +75,14 @@ shared(msg) actor class Token(
     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
     private var allowances = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Nat>>(1, Principal.equal, Principal.hash);
     private var wallet = Principal.fromText(Constants.wallet);
-    balances.put(wallet, totalSupply_);
+    private var burnWallet = Principal.fromText(Constants.burnWallet);
+    private var marketWallet = Principal.fromText(Constants.marketWallet);
+    let burnAmount = Utils.natToFloat(totalSupply_) * 0.5;
+    let walletAmount = Utils.natToFloat(totalSupply_) * 0.2;
+    let marketWalletAmount = Utils.natToFloat(totalSupply_) * 0.3;
+    balances.put(marketWallet, Utils.floatToNat(marketWalletAmount));
+    balances.put(wallet,  Utils.floatToNat(walletAmount));
+    balances.put(burnWallet,  Utils.floatToNat(burnAmount));
     private stable let genesis : TxRecord = {
         caller = ?owner_;
         op = #mint;
