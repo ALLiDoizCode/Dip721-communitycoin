@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import {
+  activeProposalAtom,
   connectedAtom,
   identityProviderAtom,
   loadingAtom,
@@ -17,11 +18,12 @@ import { getProposal } from "../lib/http";
 import { bigIntToDecimal } from "../lib/util";
 import actor from "../declarations/actor";
 import { Principal } from "@dfinity/principal";
+import { TwitterShareButton } from "react-share";
 
 const Dao = () => {
   const [loading] = useRecoilState(loadingAtom);
   const [connected] = useRecoilState(connectedAtom);
-  const [activeProposal, setActiveProposal] = React.useState(false);
+  const [activeProposal, setActiveProposal] = useRecoilState(activeProposalAtom);
   const [ycBalance, setYcBalance] = useRecoilState(ycBalanceAtom);
   const [provider] = useRecoilState(identityProviderAtom);
   const [principal] = useRecoilState(principalAtom);
@@ -44,10 +46,10 @@ const Dao = () => {
   async function refreshProposal() {
     try {
       const proposal = await getProposal();
-      setActiveProposal(true);
+      setActiveProposal(proposal);
     } catch (e) {
       if (e.response.status === 404) {
-        setActiveProposal(false);
+        setActiveProposal(undefined);
       }
     }
   }
@@ -80,11 +82,22 @@ const Dao = () => {
             <h1>Cig Dao</h1>
           </Col>
           <Col xxs="6" className="text-right text-end">
+          {!!activeProposal && 
+          <TwitterShareButton
+            url={window.location.href}
+            
+            via="CigDao" 
+            related={["CigDao_"]} 
+            hashtags={["CigDao", "ICP"]} 
+            title={`CigDao Proposal - ${activeProposal.title} has been posted, come vote`}>
+              <button className="btn btn-outline-dark btn-group-dao">Share Proposal <img width={"30px"} src="Logo blue.svg"/></button>
+            </TwitterShareButton>
+            }
             <WalletConnector className="btn-group-dao"></WalletConnector>
-            <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
+            <OverlayTrigger trigger={["hover", "focus"]} placement="top" overlay={popover}>
               <span>
                 <button
-                  disabled={!connected || activeProposal}
+                  disabled={!connected || !!activeProposal}
                   onClick={navCreateProposal}
                   className="btn btn-dark btn-group-dao"
                 >

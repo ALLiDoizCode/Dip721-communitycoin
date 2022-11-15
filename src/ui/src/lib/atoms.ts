@@ -3,7 +3,7 @@ import bigDecimal from "js-big-decimal";
 import { Principal } from "@dfinity/principal";
 import type { IConnector } from "@connect2ic/core/dist/declarations/src/providers/connectors";
 import { _SERVICE } from "../declarations/token/token.did";
-
+import type {Proposal} from '../lib/dao'
 const storageEffect =
   (key, storageType) =>
   ({ setSelf, onSet }) => {
@@ -53,4 +53,9 @@ export const principalAtom = atom<string>({
 export const proposalCostAtom = atom({
   key: "proposalcost",
   default: BigInt(0),
+});
+
+export const activeProposalAtom = atom<Proposal | undefined>({
+  key: "activeProposal",
+  default: undefined,
 });
