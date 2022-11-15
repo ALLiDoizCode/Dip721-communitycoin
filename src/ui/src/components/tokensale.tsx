@@ -34,6 +34,7 @@ import {
 } from "../lib/http";
 import { bigIntToDecimal } from "../lib/util";
 import WalletConnector from "./wallet-connector";
+import { orderBy } from "lodash";
 
 const decimals = 100000000;
 
@@ -60,6 +61,10 @@ export default function Tokensale() {
   const [roundsInitialized, setRoundsInitialized] = useState(false);
 
   const [filter, setFilter] = useState<"all" | "participated" | "active" | "unclaimed">("active");
+  const [sort, setSort] = useState<{ name: "Date" | "Total invested"; sort: "asc" | "desc" }>({
+    name: "Date",
+    sort: "asc",
+  });
 
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
@@ -217,7 +222,7 @@ export default function Tokensale() {
   function handleRoundsFilter(filter: "all" | "participated" | "active" | "unclaimed") {
     if (filter === "all") {
       setFilter("all");
-      setFilteredRoundsData([]);
+      setFilteredRoundsData(Object.values(roundsData).map((r) => r.round));
       return;
     }
 
@@ -386,38 +391,98 @@ export default function Tokensale() {
 
   function renderFilters() {
     return (
-      <ButtonGroup className="pb-5">
-        <Button onClick={() => handleRoundsFilter("active")} active={filter === "active"} variant="secondary">
-          Active rounds
-        </Button>
-        <Button onClick={() => handleRoundsFilter("all")} active={filter === "all"} variant="secondary">
-          All rounds
-        </Button>
-        <Button
-          onClick={() => handleRoundsFilter("participated")}
-          active={filter === "participated"}
-          variant="secondary"
+      <>
+        <ButtonGroup className="pb-5 custom-full-width">
+          <Button
+            className="custom-filter-button"
+            onClick={() => handleRoundsFilter("active")}
+            active={filter === "active"}
+            variant="outline-secondary"
+          >
+            Active rounds
+          </Button>
+          <Button
+            className="custom-filter-button"
+            onClick={() => handleRoundsFilter("participated")}
+            active={filter === "participated"}
+            variant="outline-secondary"
+          >
+            participated rounds
+          </Button>
+          <Button
+            className="custom-filter-button"
+            onClick={() => handleRoundsFilter("unclaimed")}
+            active={filter === "unclaimed"}
+            variant="outline-secondary"
+          >
+            Unclaimed
+          </Button>
+          <Button
+            className="custom-filter-button"
+            onClick={() => handleRoundsFilter("all")}
+            active={filter === "all"}
+            variant="outline-secondary"
+          >
+            All rounds
+          </Button>
+        </ButtonGroup>
+        {renderSorting()}
+      </>
+    );
+  }
+
+  function renderSorting() {
+    return (
+      <ButtonGroup style={{ paddingLeft: 16 }} className="pb-5">
+        <DropdownButton
+          as={ButtonGroup}
+          title={sort.name}
+          active
+          variant="outline-secondary"
+          className="custom-filter-button"
         >
-          participated rounds
-        </Button>
-        {/* <Button onClick={() => handleRoundsFilter("unclaimed")} active={filter === "unclaimed"} variant="secondary">
-          Unclaimed
-        </Button> */}
-        <DropdownButton as={ButtonGroup} disabled title="Sorting">
-          <Dropdown.Item eventKey="1">Sort by invested</Dropdown.Item>
-          <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>
+          <Dropdown.Item onClick={() => setSort((prevState) => ({ name: "Date", sort: prevState.sort }))}>
+            Date
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => setSort((prevState) => ({ name: "Total invested", sort: prevState.sort }))}>
+            Total invested
+          </Dropdown.Item>
         </DropdownButton>
+        <Button
+          active
+          className="custom-filter-button"
+          onClick={() =>
+            setSort((prevState) => ({ name: prevState.name, sort: prevState.sort === "asc" ? "desc" : "asc" }))
+          }
+          variant="outline-secondary"
+        >
+          {sort.sort}
+        </Button>
       </ButtonGroup>
     );
   }
 
   function renderCards() {
+    const rounds = Object.values(roundsData);
+    const filteredRounds = rounds.filter((r) => (!connected ? r : filteredRoundsData.includes(r.round)));
+    const orderedRounds = orderBy(
+      filteredRounds,
+      (f) => {
+        if (sort.name === "Date") {
+          return f.investRoundEnd;
+        }
+
+        if (sort.name === "Total invested") {
+          return f.totalInvested;
+        }
+        return f.round;
+      },
+      sort.sort
+    );
     return (
       <Container>
         <Row xs={1} md={2} lg={3} className="g-4">
-          {Object.values(roundsData)
-            .filter((r) => (filteredRoundsData.length === 0 ? r : filteredRoundsData.includes(r.round)))
-            .map(renderCard)}
+          {orderedRounds.map(renderCard)}
         </Row>
       </Container>
     );
@@ -466,10 +531,11 @@ export default function Tokensale() {
               <span className="visually-hidden">Loading...</span>
             </Spinner>
           ) : (
-            renderFilters()
+            connected && renderFilters()
           )}
         </div>
       </Container>
+
       {renderCards()}
     </div>
   );

@@ -28,3 +28,14 @@
     display: flex;
     flex-grow: 1;
 }
+
+.custom-filter-button {
+    background: #edede997 !important;
+    border: 2px solid #EDEDE9 !important; 
+    color: #7E7E7E !important;
+}
+
+.custom-filter-button.active {
+    background: #D5BDAF !important;
+    color: #FFFFFF !important;
+}
