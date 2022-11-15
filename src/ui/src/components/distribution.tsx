@@ -13,6 +13,7 @@ const Distributions = (param: {distribuptionTime: Date, distributionLength: numb
     React.useEffect(() => {
         actor.coinCanister().then((canister) => {
             canister.balanceOf(Principal.fromText("cjzlc-riaaa-aaaal-qbgwa-cai")).then(amount => {
+                console.log(amount);
                 setDistributedAmount(bigIntToDecimal(amount));
             });
         })

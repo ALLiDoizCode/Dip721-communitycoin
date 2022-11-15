@@ -36,7 +36,7 @@ const CCNav = () => {
       </Container>
     </Navbar>
 
-    <img className="round-border" src="cryptoisgood.png">
+    <img width={"500px"} className="round-border" src="cigdaologo.png">
     </img>
     </>
     

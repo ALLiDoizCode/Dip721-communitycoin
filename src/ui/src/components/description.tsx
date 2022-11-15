@@ -60,7 +60,7 @@ const Description = (param: { distribuptionTime: Date }) => {
         <h3 className="silenced">The coin that funds projects on the Internet Computer</h3>
         <Row style={{ maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
           <Col xs="12" md="4">
-            <Button onClick={() => navigate("/tokensale")} className="button-size" variant="success" size="lg">
+            <Button disabled onClick={() => navigate("/tokensale")} className="button-size" variant="success" size="lg">
               Buy Now
             </Button>
           </Col>
