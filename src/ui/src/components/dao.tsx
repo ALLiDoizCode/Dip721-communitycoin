@@ -90,7 +90,7 @@ const Dao = () => {
             related={["CigDao_"]} 
             hashtags={["CigDao", "ICP"]} 
             title={`CigDao Proposal - ${activeProposal.title} has been posted, come vote`}>
-              <button className="btn btn-outline-dark btn-group-dao">Share Proposal <img width={"30px"} src="Logo blue.svg"/></button>
+              <button className="btn btn-outline-dark btn-group-dao">Share Proposal <img width={"30px"} src="Logoblue.svg"/></button>
             </TwitterShareButton>
             }
             <WalletConnector className="btn-group-dao"></WalletConnector>

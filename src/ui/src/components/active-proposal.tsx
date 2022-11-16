@@ -8,7 +8,7 @@ import { getProposal } from "../lib/http";
 import "../styles/proposal-styles.css";
 import bigDecimal from "js-big-decimal";
 import { daoCanisterId } from "../declarations/constants";
-import { bigIntToDecimal } from "../lib/util";
+import { bigIntToDecimal, DECIMALS } from "../lib/util";
 import actor from "../declarations/actor";
 import { TwitterShareButton } from "react-share";
 
@@ -59,7 +59,7 @@ const ActiveProposalComponent = () => {
       setLoading(true);
       const coinCanister = await actor.coinCanister(provider);
       const daoCanister = await actor.daoCanister(provider);
-      const workableVotingPower = votingPower.multiply(new bigDecimal(100000)).floor();
+      const workableVotingPower = votingPower.multiply(new bigDecimal(DECIMALS)).floor();
       await coinCanister.approve(Principal.fromText(daoCanisterId), BigInt(workableVotingPower.getValue()));
       await daoCanister.vote(activeProposal.id, BigInt(workableVotingPower.getValue()), approve);
       setVotingModal(false);

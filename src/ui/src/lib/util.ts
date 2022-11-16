@@ -5,10 +5,11 @@ import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet";
 import bigDecimal from "js-big-decimal";
 import { icpHost, whiteListedCanister } from "../declarations/constants";
 export type consumer<T> = (t:T) => void;
+export const DECIMALS = 100000000;
 
 export function bigIntToDecimal(big: BigInt | number) {
     var result = new bigDecimal(big?.toString() || 1);
-    var decimal = new bigDecimal(100000000);
+    var decimal = new bigDecimal(DECIMALS);
     return result.divide(decimal, 8);
 }
 
