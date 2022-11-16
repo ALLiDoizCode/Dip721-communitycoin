@@ -77,7 +77,7 @@ const Tokenomics = () => {
                 </ResponsiveContainer>
             </Col>
             <Col md="12" lg="6">
-        <p>Your Coin is a deflationary token. Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
+        <p>Your Coin is a deflationary token. Tokenomics are designed to empower the average person. </p>
         <p>Max Supply: {util.bigIntToDecimalPrettyString(maxSupply)}</p>
         <ul>
             <li>50% to Burn</li>
