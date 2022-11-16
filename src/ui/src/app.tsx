@@ -76,7 +76,7 @@ const APP = () => {
             element={
               <>
                 <Description distribuptionTime={distribuptionTime}></Description>
-                <Tokenomics maxSupply={"1,000,000,000,000,000.00000"}></Tokenomics>
+                <Tokenomics></Tokenomics>
                 <Distributions
                   distribuptionTime={distribuptionTime}
                   distributionLength={365}

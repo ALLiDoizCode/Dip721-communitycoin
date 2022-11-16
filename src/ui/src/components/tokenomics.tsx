@@ -1,8 +1,22 @@
+import { Principal } from "@dfinity/principal";
+import bigDecimal from "js-big-decimal";
 import * as React from "react";
 import { Col, Container, Row, Tooltip } from "react-bootstrap";
 import { Pie, PieChart, ResponsiveContainer, Sankey } from "recharts";
+import actor from "../declarations/actor";
+import util from "../lib/util";
 
-const Tokenomics = (param: {maxSupply: string}) => {
+const Tokenomics = () => {
+  const [maxSupply, setMaxSupply] = React.useState(1n);
+
+  React.useEffect(() => {
+    actor.coinCanister().then((canister) => {
+      canister.getMetadata().then(data => {
+        setMaxSupply(data.totalSupply);
+      });
+    })
+  }, []);
+
     const data01 = [
         {
           "name": "Token Burn",
@@ -64,7 +78,7 @@ const Tokenomics = (param: {maxSupply: string}) => {
             </Col>
             <Col md="12" lg="6">
         <p>Your Coin is a deflationary token. Tokenomics are designed to empower the average person. No wallet can hold more then 1 percent of the supply. </p>
-        <p>Max Supply: {param.maxSupply}</p>
+        <p>Max Supply: {util.bigIntToDecimalPrettyString(maxSupply)}</p>
         <ul>
             <li>50% to Burn</li>
             <li>20% for Initial liquidity</li>
