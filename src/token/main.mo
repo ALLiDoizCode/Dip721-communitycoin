@@ -227,15 +227,15 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        ignore CommunityService.distribute(amount,holders);
+        await CommunityService.distribute(amount,holders);
+        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0);
         ignore addRecord(
             msg.caller, "transfer",
             [
                 ("to", #Principal(to)),
                 ("amount", #U64(u64(amount))),
-                ("fee", #U64(u64(0))),
                 ("tax", #U64(u64(0))),
-                ("type", #Text("tax"))
+                ("hash", #Text(hash))
             ]
         );
         txcounter += 1;
@@ -254,13 +254,14 @@ shared(msg) actor class Token(
         if(msg.caller != communityCanister) {return #Err(#Unauthorized);};
         if (_balanceOf(msg.caller) < value) { return #Err(#InsufficientBalance); };
         _transfer(msg.caller, to, value);
+        let hash = await _putTransacton(value, Constants.communityCanister, Principal.toText(to), 0);
         ignore addRecord(
             msg.caller, "transfer",
             [
                 ("to", #Principal(to)),
                 ("amount", #U64(u64(value))),
-                ("fee", #U64(u64(0))),
-                ("tax", #U64(u64(0)))
+                ("tax", #U64(u64(0))),
+                ("hash", #Text(hash))
             ]
         );
         txcounter += 1;
@@ -271,7 +272,7 @@ shared(msg) actor class Token(
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
-        ignore _chargeTax(msg.caller, tax);
+        ignore await _chargeTax(msg.caller, tax);
         _chargeFee(msg.caller, fee);
         _transfer(msg.caller, to, value - tax);
         let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax);
@@ -295,11 +296,13 @@ shared(msg) actor class Token(
         for(value in holders.vals()){
             if (_balanceOf(msg.caller) < value.amount) { return response };
             _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
+            let hash = await _putTransacton(value.amount, Constants.communityCanister, value.holder, 0);
             ignore addRecord(
                 msg.caller, "transfer",
                 [
                     ("to", #Principal(Principal.fromText(value.holder))),
                     ("amount", #U64(u64(value.amount))),
+                    ("hash", #Text(hash))
                 ]
             );
             txcounter += 1;
@@ -320,7 +323,7 @@ shared(msg) actor class Token(
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
         let allowed : Nat = _allowance(from, msg.caller);
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
-        ignore _chargeTax(msg.caller, tax);
+        ignore await _chargeTax(msg.caller, tax);
         _chargeFee(from, fee);
         _transfer(from, to, value);
         let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax);

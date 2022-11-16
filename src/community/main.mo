@@ -70,15 +70,17 @@ actor {
         ignore marketingFee(community_amount);
         ignore burnFee(community_amount);
         for (holding in holders.vals()) {
-            sum := sum + holding.amount;
+            if(holding.holder != Constants.burnWallet){
+                sum := sum + holding.amount;
+            };
         };
         for (holding in holders.vals()) {
             let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
-            let earnings = holder_amount * percentage;
+            let earnings = Float.mul(holder_amount,percentage);
             let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
             recipents := Array.append(recipents,[recipent]);
         };
-        let _ = TokenService.bulkTransfer(recipents);
+        ignore TokenService.bulkTransfer(recipents);
     };
 
     public shared({caller}) func treasuryFee(value:Float): async () {
