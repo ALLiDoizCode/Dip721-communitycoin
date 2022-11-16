@@ -29,6 +29,7 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
             <tr>
             <th>Id</th>
             <th>Title</th>
+            <th>Type</th>
             <th>Yay</th>
             <th>Nay</th>
             <th>Created At</th>
@@ -40,6 +41,7 @@ const ProposalList = (props: {proposalFunction: ProposalFunction}) => {
                     <tr key={props.id}>
                         <td>{props.id}</td>
                         <td>{props.title}</td>
+                        <td>{props.type}</td>
                         <td>{bigIntToDecimal(props.yay).getPrettyValue(3, ",")}</td>
                         <td>{bigIntToDecimal(props.nay).getPrettyValue(3, ",")}</td>
                         <td>{new Date(Number(props.timeStamp/1000000)).toLocaleDateString()}</td>
