@@ -33,9 +33,9 @@ module {
 
     public func floatToNat(value:Float): Nat {
         let int = Float.toInt(value);
-        let nat64 = Nat64.fromIntWrap(int);
-        return Nat64.toNat(nat64)
+        return textToNat(Int.toText(int))
     };
+
     public func includesText(string: Text, term: Text): Bool {
         let stringArray = Iter.toArray<Char>(toLowerCase(string).chars());
         let termArray = Iter.toArray<Char>(toLowerCase(term).chars());
@@ -85,6 +85,20 @@ module {
             let charToNum = Char.toNat32(v)-48;
             assert(charToNum >= 0 and charToNum <= 9);
             num := num * 10 +  charToNum;          
+        };
+
+        num;
+    };
+
+    public func textToNat( txt : Text) : Nat {
+        assert(txt.size() > 0);
+        let chars = txt.chars();
+
+        var num : Nat = 0;
+        for (v in chars){
+            let charToNum = Char.toNat32(v)-48;
+            assert(charToNum >= 0 and charToNum <= 9);
+            num := num * 10 +  Nat32.toNat(charToNum);          
         };
 
         num;

@@ -10,7 +10,7 @@ dfx canister --network ic install token\
         \"Your Coin\",
         \"YC\",
         8,
-        100000000000000000,
+        100000000000000000000,
         principal \"$(dfx identity get-principal)\", 
         0, 
         )" \
