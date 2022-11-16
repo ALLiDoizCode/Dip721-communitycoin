@@ -41,7 +41,7 @@ const CreateProposal = () => {
                         <Form.Group className="mb-3" controlId="formProposalType">
                             <Form.Select onChange={(event) => setStep((Number(event?.target?.value)) || 1)} aria-label="Proposal Type">
                                 <option value="1">Choose Proposal Type</option>
-                                <option value="2">Tax Proposal</option>
+                                {/* <option value="2">Tax Proposal</option> */}
                                 <option value="3">Treasury Consideration</option>
                                 <option value="4">Treasury Execution</option>
                                 <option value="5">Upgrade Dao</option>
