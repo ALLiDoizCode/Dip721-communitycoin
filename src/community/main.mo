@@ -79,18 +79,18 @@ actor {
         await marketingFee(Utils.natToFloat(amount));
         await burnFee(Utils.natToFloat(amount));
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister and holding.holder != Constants.treasuryWallet){
                 sum := sum + holding.amount;
             };
         };
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister and holding.holder != Constants.treasuryWallet){
                 reflectionCount := reflectionCount + 1;
-                reflectionAmount := reflectionAmount + holding.amount;
                 let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                 let earnings = Float.mul(holder_amount,percentage);
                 let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
                 recipents := Array.append(recipents,[recipent]);
+                reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
             };
         };
         ignore await TokenService.bulkTransfer(recipents);
