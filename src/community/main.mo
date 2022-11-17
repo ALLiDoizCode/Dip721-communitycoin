@@ -19,6 +19,9 @@ import Holder "../models/Holder";
 import Constants "../Constants";
 import TokenService "../services/TokenService";
 import Types "../models/types";
+import Http "../helpers/http";
+import Response "../models/Response";
+import JSON "../helpers/JSON";
 
 actor {
 
@@ -30,6 +33,9 @@ actor {
     private stable var treasuryPercentage:Float = 0.03;
     private stable var marketingPercentage:Float = 0.02;
     //private stable var maxHoldingPercentage:Float = 0.01;
+
+    private stable var reflectionCount:Nat = 0;
+    private stable var reflectionAmount:Nat = 0;
 
     private type Holder = Holder.Holder;
 
@@ -79,6 +85,8 @@ actor {
         };
         for (holding in holders.vals()) {
             if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister){
+                reflectionCount := reflectionCount + 1;
+                reflectionAmount := reflectionAmount + holding.amount;
                 let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                 let earnings = Float.mul(holder_amount,percentage);
                 let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
@@ -104,6 +112,30 @@ actor {
         let _amount = Utils.floatToNat(Float.mul(value, burnPercentage));
         let wallet = Principal.fromText(Constants.burnWallet);
         ignore await TokenService.communityTransfer(wallet,_amount);
+    };
+
+    public query func http_request(request : Http.Request) : async Http.Response {
+        let path = Iter.toArray(Text.tokens(request.url, #text("/")));
+        if (path.size() == 1) {
+            switch (path[0]) {
+                case ("reflectionCount") return _natResponse(reflectionCount);
+                case ("reflectionAmount") return _natResponse(reflectionAmount);
+                case (_) return return Http.BAD_REQUEST();
+            };
+        } else {
+            return Http.BAD_REQUEST();
+        };
+    };
+
+    private func _natResponse(value : Nat) : Http.Response {
+        let json = #Number(value);
+        let blob = Text.encodeUtf8(JSON.show(json));
+        let response : Http.Response = {
+            status_code = 200;
+            headers = [("Content-Type", "application/json")];
+            body = blob;
+            streaming_strategy = null;
+        };
     };
 
 };
