@@ -32,6 +32,8 @@ import Utils "../helpers/Utils";
 import SHA256 "mo:crypto/SHA/SHA256";
 import JSON "../helpers/JSON";
 import Transaction "../models/Transaction";
+import Http "../helpers/http";
+import Response "../models/Response";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -602,5 +604,28 @@ shared(msg) actor class Token(
             allowances.put(k, allowed_temp);
         };
         allowanceEntries := [];
+    };
+
+    public query func http_request(request : Http.Request) : async Http.Response {
+        let path = Iter.toArray(Text.tokens(request.url, #text("/")));
+        if (path.size() == 2) {
+            switch (path[0]) {
+                case ("balance") return _natResponse(_balanceOf(Principal.fromText(path[1])));
+                case (_) return return Http.BAD_REQUEST();
+            };
+        } else {
+            return Http.BAD_REQUEST();
+        };
+    };
+
+    private func _natResponse(value : Nat) : Http.Response {
+        let json = #Number(value);
+        let blob = Text.encodeUtf8(JSON.show(json));
+        let response : Http.Response = {
+            status_code = 200;
+            headers = [("Content-Type", "application/json")];
+            body = blob;
+            streaming_strategy = null;
+        };
     };
 };
