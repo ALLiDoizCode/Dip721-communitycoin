@@ -63,7 +63,7 @@ const Dao = () => {
       <Popover.Body>
         <ul>
           {activeProposal && <li>There is already an active proposal</li>}
-          {!connected && activeProposal && <li>Not signed-in</li>}
+          {!connected && <li>Not signed-in</li>}ß
         </ul>
       </Popover.Body>
     </Popover>

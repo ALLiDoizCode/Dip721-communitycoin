@@ -10,6 +10,7 @@ export interface Proposal {
     executed: boolean;
     nay: bigint;
     request?: Request | null;
+    type?: string
   }
   export interface TreasuryRequest {
     id: number;

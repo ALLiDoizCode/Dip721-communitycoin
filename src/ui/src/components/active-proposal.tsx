@@ -115,7 +115,7 @@ const ActiveProposalComponent = () => {
             <Col>
               <Card className="active-proposals">
                 <Card.Header as="h5">
-                  Title: <span className="proposal-title">{activeProposal.title}</span>
+                  Title: <span className="proposal-title">{activeProposal.title} {activeProposal?.type}</span>
                 </Card.Header>
                 <Card.Body>
                   <h5 className="card-label">Descripton:</h5>
