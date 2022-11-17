@@ -10,8 +10,6 @@ service : {
   treasuryFee: (float64) -> ();
   updateBurnPercentage: (float64) -> ();
   updateMarketingPercentage: (float64) -> ();
-  updateMaxHoldingPercentage: (float64) -> ();
   updateReflectionPercentage: (float64) -> ();
-  updateTransactionPercentage: (float64) -> ();
   updateTreasuryPercentage: (float64) -> ();
 }

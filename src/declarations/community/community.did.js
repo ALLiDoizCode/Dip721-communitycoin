@@ -7,9 +7,7 @@ export const idlFactory = ({ IDL }) => {
     'treasuryFee' : IDL.Func([IDL.Float64], [], []),
     'updateBurnPercentage' : IDL.Func([IDL.Float64], [], []),
     'updateMarketingPercentage' : IDL.Func([IDL.Float64], [], []),
-    'updateMaxHoldingPercentage' : IDL.Func([IDL.Float64], [], []),
     'updateReflectionPercentage' : IDL.Func([IDL.Float64], [], []),
-    'updateTransactionPercentage' : IDL.Func([IDL.Float64], [], []),
     'updateTreasuryPercentage' : IDL.Func([IDL.Float64], [], []),
   });
 };

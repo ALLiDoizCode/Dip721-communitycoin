@@ -281,7 +281,7 @@ shared ({ caller = owner }) actor class Collection({
                 skLowerBound = "transaction:" # skLowerBound;
                 skUpperBound = "transaction:" # skUpperBound;
                 limit = 1000;
-                ascending = null;
+                ascending = ?false;
             },
         );
 
@@ -313,7 +313,7 @@ shared ({ caller = owner }) actor class Collection({
                 skLowerBound = "transactionSender:" # skLowerBound;
                 skUpperBound = "transactionSender:" # skUpperBound;
                 limit = 1000;
-                ascending = null;
+                ascending = ?false;
             },
         );
 
@@ -345,7 +345,7 @@ shared ({ caller = owner }) actor class Collection({
                 skLowerBound = "transactionReceiver:" # skLowerBound;
                 skUpperBound = "transactionReceiver:" # skUpperBound;
                 limit = 1000;
-                ascending = null;
+                ascending = ?false;
             },
         );
 

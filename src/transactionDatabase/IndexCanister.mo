@@ -56,7 +56,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   };
 
   // Partition PostCollectionService canisters by the group passed in
-  public shared({caller = creator}) func createPostCollectionServiceCanisterByGroup(group: Text): async ?Text {
+  public shared({caller = creator}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
     let pk = "group#" # group;
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
@@ -75,7 +75,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000);
-    let newPostCollectionServiceCanister = await Collection.Collection({
+    let newCollectionServiceCanister = await Collection.Collection({
       partitionKey = pk;
       scalingOptions = {
         autoScalingHook = autoScaleCollectionServiceCanister;
@@ -85,9 +85,9 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       };
       owners = controllers;
     });
-    let newPostCollectionServiceCanisterPrincipal = Principal.fromActor(newPostCollectionServiceCanister);
+    let newCollectionServiceCanisterPrincipal = Principal.fromActor(newCollectionServiceCanister);
     await CA.updateCanisterSettings({
-      canisterId = newPostCollectionServiceCanisterPrincipal;
+      canisterId = newCollectionServiceCanisterPrincipal;
       settings = {
         controllers = controllers;
         compute_allocation = ?0;
@@ -96,12 +96,12 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       }
     });
 
-    let newPostCollectionServiceCanisterId = Principal.toText(newPostCollectionServiceCanisterPrincipal);
+    let newCollectionServiceCanisterId = Principal.toText(newCollectionServiceCanisterPrincipal);
     // After creating the new PostCollection Service canister, add it to the pkToCanisterMap
-    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newPostCollectionServiceCanisterId);
+    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newCollectionServiceCanisterId);
 
-    Debug.print("new PostCollection service canisterId=" # newPostCollectionServiceCanisterId);
-    newPostCollectionServiceCanisterId;
+    Debug.print("new PostCollection service canisterId=" # newCollectionServiceCanisterId);
+    newCollectionServiceCanisterId;
   };
 
   /// !! Do not use this method without caller authorization

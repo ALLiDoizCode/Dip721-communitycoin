@@ -12,5 +12,6 @@ module {
         fee:Int;
         timeStamp:Time.Time;
         hash:Text;
+        transactionType:Text;
     };
 }

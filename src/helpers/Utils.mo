@@ -116,6 +116,7 @@ module {
         transactionHashMap.put("fee", #Number(transaction.fee));
         transactionHashMap.put("timeStamp", #Number(transaction.timeStamp));
         transactionHashMap.put("hash", #String(transaction.hash));
+        transactionHashMap.put("transactionType", #String(transaction.transactionType));
 
         #Object(transactionHashMap);
     };

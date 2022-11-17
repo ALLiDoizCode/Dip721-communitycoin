@@ -9,4 +9,5 @@ module {
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
     public let communityCanister = "fppg4-cyaaa-aaaap-aanza-cai";
     public let databaseCanister = "rmc3i-vqaaa-aaaal-qbfqq-cai";
+    public let distributionCanister = "cjzlc-riaaa-aaaal-qbgwa-cai";
 };

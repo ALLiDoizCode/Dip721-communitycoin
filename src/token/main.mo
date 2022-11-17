@@ -133,7 +133,7 @@ shared(msg) actor class Token(
         if (to_balance_new != 0) { balances.put(to, to_balance_new); };
     };
 
-    private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int) : async Text {
+    private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text) : async Text {
         let now = Time.now();
 
         let _transaction = {
@@ -143,6 +143,7 @@ shared(msg) actor class Token(
             fee = tax;
             timeStamp = now;
             hash = "";
+            transactionType = transactionType;
         };
 
         let hash = Utils._transactionToHash(_transaction);
@@ -154,6 +155,7 @@ shared(msg) actor class Token(
             fee = tax;
             timeStamp = now;
             hash = hash;
+            transactionType = transactionType;
         };
 
         let _canisters = await DatabaseService.canister.getCanistersByPK("group#ledger");
@@ -217,6 +219,8 @@ shared(msg) actor class Token(
         var holders:[Holder] = [];
         let to = Principal.fromText(Constants.communityCanister);
         if (_balanceOf(sender) < amount) { return #Err(#InsufficientBalance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         _transfer(sender, to, amount);
         for((principal,amount) in balances.entries()) {
             let _holder:Holder = {
@@ -227,8 +231,8 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        await CommunityService.distribute(amount,holders);
-        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0);
+        ignore CommunityService.distribute(amount,holders);
+        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         ignore addRecord(
             msg.caller, "transfer",
             [
@@ -238,8 +242,7 @@ shared(msg) actor class Token(
                 ("hash", #Text(hash))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(_txcounter);
     };
 
     private func _transactionToHash(transaction:Transaction): Text {
@@ -253,8 +256,10 @@ shared(msg) actor class Token(
         let communityCanister = Principal.fromText(Constants.communityCanister);
         if(msg.caller != communityCanister) {return #Err(#Unauthorized);};
         if (_balanceOf(msg.caller) < value) { return #Err(#InsufficientBalance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         _transfer(msg.caller, to, value);
-        let hash = await _putTransacton(value, Constants.communityCanister, Principal.toText(to), 0);
+        let hash = await _putTransacton(value, Constants.communityCanister, Principal.toText(to), 0, "dao");
         ignore addRecord(
             msg.caller, "transfer",
             [
@@ -264,18 +269,19 @@ shared(msg) actor class Token(
                 ("hash", #Text(hash))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(_txcounter);
     };
 
     public shared(msg) func transfer(to: Principal, value: Nat) : async TxReceipt {
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         ignore await _chargeTax(msg.caller, tax);
         _chargeFee(msg.caller, fee);
         _transfer(msg.caller, to, value - tax);
-        let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax);
+        let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
         ignore addRecord(
             msg.caller, "transfer",
             [
@@ -285,8 +291,7 @@ shared(msg) actor class Token(
                 ("hash", #Text(hash))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(_txcounter);
     };
 
     public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
@@ -295,8 +300,10 @@ shared(msg) actor class Token(
         if(msg.caller != communityCanister) {return response};
         for(value in holders.vals()){
             if (_balanceOf(msg.caller) < value.amount) { return response };
+            txcounter := txcounter + 1;
+            var _txcounter = txcounter;
             _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
-            let hash = await _putTransacton(value.amount, Constants.communityCanister, value.holder, 0);
+            let hash = await _putTransacton(value.amount, Constants.communityCanister, value.holder, 0, "reflections");
             ignore addRecord(
                 msg.caller, "transfer",
                 [
@@ -305,11 +312,10 @@ shared(msg) actor class Token(
                     ("hash", #Text(hash))
                 ]
             );
-            txcounter += 1;
             let _holder:Holder = {
                 holder = value.holder;
                 amount = value.amount;
-                receipt = #Ok(txcounter - 1);
+                receipt = #Ok(_txcounter);
             };
             response := Array.append(response,[_holder]);
         };
@@ -323,10 +329,12 @@ shared(msg) actor class Token(
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
         let allowed : Nat = _allowance(from, msg.caller);
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         ignore await _chargeTax(msg.caller, tax);
         _chargeFee(from, fee);
         _transfer(from, to, value);
-        let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax);
+        let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "tranfer");
         let allowed_new : Nat = allowed - value - fee;
         if (allowed_new != 0) {
             let allowance_from = Types.unwrap(allowances.get(from));
@@ -350,14 +358,15 @@ shared(msg) actor class Token(
                 ("hash", #Text(hash))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(_txcounter);
     };
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
     /// If this function is called again it overwrites the current allowance with value.
     public shared(msg) func approve(spender: Principal, value: Nat) : async TxReceipt {
         if(_balanceOf(msg.caller) < fee) { return #Err(#InsufficientBalance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         _chargeFee(msg.caller, fee);
         let v = value + fee;
         if (value == 0 and Option.isSome(allowances.get(msg.caller))) {
@@ -382,14 +391,15 @@ shared(msg) actor class Token(
                 ("fee", #U64(u64(fee)))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(_txcounter);
     };
 
     public shared(msg) func mint(to: Principal, value: Nat): async TxReceipt {
         if(msg.caller != owner_) {
             return #Err(#Unauthorized);
         };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         let to_balance = _balanceOf(to);
         totalSupply_ += value;
         balances.put(to, to_balance + value);
@@ -401,8 +411,7 @@ shared(msg) actor class Token(
                 ("fee", #U64(u64(0)))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(txcounter);
     };
 
     public shared(msg) func burn(amount: Nat): async TxReceipt {
@@ -410,6 +419,8 @@ shared(msg) actor class Token(
         if(from_balance < amount) {
             return #Err(#InsufficientBalance);
         };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
         totalSupply_ -= amount;
         balances.put(msg.caller, from_balance - amount);
         ignore addRecord(
@@ -420,8 +431,7 @@ shared(msg) actor class Token(
                 ("fee", #U64(u64(0)))
             ]
         );
-        txcounter += 1;
-        return #Ok(txcounter - 1);
+        return #Ok(txcounter);
     };
 
     public query func logo() : async Text {

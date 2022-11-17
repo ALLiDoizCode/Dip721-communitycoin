@@ -32,15 +32,16 @@ module {
             ("amount", #int(transaction.amount)),
             ("fee", #int(transaction.fee)),
             ("timeStamp", #int(transaction.timeStamp)),
-            ("hash", #text(transaction.hash))
+            ("hash", #text(transaction.hash)),
+            ("transactionType", #text(transaction.transactionType))
         ];
         await CanDB.put(db, {
             sk = _sk;
             attributes = attributes;
         });
-        ignore  _putTransactionId(db, attributes, transaction.hash);
-        ignore  _putTransactionSender(db, attributes, transaction.hash, transaction.sender, timeStamp);
-        ignore  _putTransactionReceiver(db, attributes, transaction.hash, transaction.receiver, timeStamp);
+        ignore  await _putTransactionId(db, attributes, transaction.hash);
+        ignore  await _putTransactionSender(db, attributes, transaction.hash, transaction.sender, timeStamp);
+        ignore  await _putTransactionReceiver(db, attributes, transaction.hash, transaction.receiver, timeStamp);
         transaction.hash;
     };
 
@@ -79,8 +80,9 @@ module {
         let fee = Entity.getAttributeMapValueForKey(attributes, "fee");
         let timeStamp = Entity.getAttributeMapValueForKey(attributes, "timeStamp");
         let hash = Entity.getAttributeMapValueForKey(attributes, "hash");
+        let transactionType = Entity.getAttributeMapValueForKey(attributes, "transactionType");
 
-        switch(sender, receiver, amount, fee, timeStamp, hash) {
+        switch(sender, receiver, amount, fee, timeStamp, hash, transactionType) {
             case (
                 ?(#text(sender)),
                 ?(#text(receiver)),
@@ -88,6 +90,7 @@ module {
                 ?(#int(fee)),
                 ?(#int(timeStamp)),
                 ?(#text(hash)),
+                ?(#text(transactionType)),
             ) 
             { 
                  ?{
@@ -97,6 +100,7 @@ module {
                     fee = fee;
                     timeStamp = timeStamp;
                     hash = hash;
+                    transactionType = transactionType;
                  };
             };
             case _ { 
