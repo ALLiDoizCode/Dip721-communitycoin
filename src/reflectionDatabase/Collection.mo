@@ -23,7 +23,7 @@ import Response "../models/Response";
 import Constants "../Constants";
 import Crud "./Crud";
 import Transaction "../models/Transaction";
-import Holder "../models/Holder";
+import Reflection "../models/Reflection";
 
 shared({ caller = owner }) actor class Collection({
     // the primary key of this canister
@@ -39,7 +39,7 @@ shared({ caller = owner }) actor class Collection({
     private type JSON = JSON.JSON;
     private type ApiError = Response.ApiError;
     private type Transaction = Transaction.Transaction;
-    private type Holder = Holder.Holder;
+    private type Reflection = Reflection.Reflection;
 
     /// @required (may wrap, but must be present in some form in the canister)
     stable let db = CanDB.init({
@@ -94,10 +94,10 @@ shared({ caller = owner }) actor class Collection({
         Cycles.balance();
     };
 
-    public shared({ caller }) func putHolder(holder: Holder) : async Text {
+    public shared({ caller }) func putReflection(reflection: Reflection) : async Text {
         let canister = Principal.toText(caller);
         assert(Constants.dip20Canister == canister);
-        await Crud.putHolder(db,holder);
+        await Crud.putReflection(db,reflection);
         
     };
 
@@ -115,12 +115,11 @@ shared({ caller = owner }) actor class Collection({
         } else if (path.size() == 2) {
             switch (path[0]) {
                 case ("skExists") return _skExistsResponse(path[1]);
-                case ("getHolder") return _holderResponse(path[1]);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else if (path.size() == 3) {
             switch (path[0]) {
-                case ("fetchHolders") return _fetchHolderResponse(path[1],path[2]);
+                case ("fetchReflections") return _fetchReflectionResponse(path[1],path[2]);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else {
@@ -150,30 +149,30 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchHolderResponse(start : Text, end : Text) : Http.Response {
-        let transactionsHashMap : HashMap.HashMap<Text, JSON> = HashMap.HashMap<Text, JSON>(
+    private func _fetchReflectionResponse(start : Text, end : Text) : Http.Response {
+        let reflectionsHashMap : HashMap.HashMap<Text, JSON> = HashMap.HashMap<Text, JSON>(
             0,
             Text.equal,
             Text.hash,
         );
-        let result = _fetchHolders(start, end);
-        var transactions:[JSON] = [];
+        let result = _fetcReflections(start, end);
+        var reflections:[JSON] = [];
 
-        for (holder in result.holders.vals()) {
-            let json = Utils._holderToJson(holder);
-            transactions := Array.append(transactions,[json]);
+        for (reflection in result.reflections.vals()) {
+            let json = Utils._reflectionToJson(reflection);
+            reflections := Array.append(reflections,[json]);
         };
-        transactionsHashMap.put("transactions", #Array(transactions));
+        reflectionsHashMap.put("reflections", #Array(reflections));
         switch(result.sk){
             case(?exist){
-                transactionsHashMap.put("sk", #String(exist));
+                reflectionsHashMap.put("sk", #String(exist));
             };
             case(null){
 
             };
         };
         
-        let json = #Object(transactionsHashMap);
+        let json = #Object(reflectionsHashMap);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
             status_code = 200;
@@ -183,42 +182,23 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _holderResponse(value : Text) : Http.Response {
-        let exist = _getHolder(value);
-        switch(exist) {
-            case(?exist){
-                let json = Utils._holderToJson(exist);
-                let blob = Text.encodeUtf8(JSON.show(json));
-                let response : Http.Response = {
-                    status_code = 200;
-                    headers = [("Content-Type", "application/json")];
-                    body = blob;
-                    streaming_strategy = null;
-                };
-            };
-            case(null){
-                return Http.NOT_FOUND();
-            };
-        };
-    };
-
-    private func _fetchHolders(skLowerBound: Text, skUpperBound: Text): {holders:[Holder]; sk:?Text} {
-        var holders : [Holder] = [];
+    private func _fetcReflections(skLowerBound: Text, skUpperBound: Text): {reflections:[Reflection]; sk:?Text} {
+        var reflections : [Reflection] = [];
         let result = CanDB.scan(
             db,
             {
-                skLowerBound = "holder:" # skLowerBound;
-                skUpperBound = "holder:" # skUpperBound;
-                limit = 1000;
+                skLowerBound = "Reflection:" # skLowerBound;
+                skUpperBound = "Reflection:" # skUpperBound;
+                limit = 10000;
                 ascending = null;
             },
         );
 
         for (obj in result.entities.vals()) {
-            let holder = Crud.unwrapHolder(obj);
-            switch (holder) {
-                case (?holder) {
-                    holders := Array.append(holders, [holder]);
+            let reflection = Crud.unwrapReflection(obj);
+            switch (reflection) {
+                case (?reflection) {
+                    reflections := Array.append(reflections, [reflection]);
                 };
                 case (null) {
 
@@ -226,15 +206,8 @@ shared({ caller = owner }) actor class Collection({
             };
         };
         {
-            holders = holders;
+            reflections = reflections;
             sk = result.nextKey;
-        };
-    };
-
-    private func _getHolder(value: Text): ?Holder {
-        switch (CanDB.get(db, { sk = "holder:" # value})) {
-            case null { null };
-            case (?entity) { Crud.unwrapHolder(entity) };
         };
     };
 

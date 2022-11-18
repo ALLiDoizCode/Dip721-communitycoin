@@ -15,6 +15,7 @@ import Nat32 "mo:base/Nat32";
 import JSON "../helpers/JSON";
 import Transaction "../models/Transaction";
 import Holder "../models/Holder";
+import Reflection "../models/Reflection";
 import SHA256 "mo:crypto/SHA/SHA256";
 import Blob "mo:base/Blob";
 import Hex "mo:encoding/Hex";
@@ -24,6 +25,7 @@ module {
     private type JSON = JSON.JSON;
     private type Transaction = Transaction.Transaction;
     private type Holder = Holder.Holder;
+    private type Reflection = Reflection.Reflection;
 
     public func natToFloat(value:Nat): Float {
         //var nat64 = Nat64.fromNat(value);
@@ -129,6 +131,19 @@ module {
         );
         transactionHashMap.put("holder", #String(holder.holder));
         transactionHashMap.put("amount", #Number(holder.amount));
+
+        #Object(transactionHashMap);
+    };
+
+    public func _reflectionToJson(reflection: Reflection): JSON {
+        let transactionHashMap : HashMap.HashMap<Text, JSON> = HashMap.HashMap<Text, JSON>(
+            0,
+            Text.equal,
+            Text.hash,
+        );
+
+        transactionHashMap.put("amount", #Number(reflection.amount));
+        transactionHashMap.put("timestamp", #Number(reflection.timestamp));
 
         #Object(transactionHashMap);
     };

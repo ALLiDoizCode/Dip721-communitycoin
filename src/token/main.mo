@@ -28,12 +28,14 @@ import Holder "../models/Holder";
 import Constants "../Constants";
 import CommunityService "../services/CommunityService";
 import DatabaseService "../services/DatabaseService";
+import ReflectionDatabaseService "../services/ReflectionDatabaseService";
 import Utils "../helpers/Utils";
 import SHA256 "mo:crypto/SHA/SHA256";
 import JSON "../helpers/JSON";
 import Transaction "../models/Transaction";
 import Http "../helpers/http";
 import Response "../models/Response";
+import Reflection "../models/Reflection";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -45,6 +47,7 @@ shared(msg) actor class Token(
     _fee: Nat,
     ) = this {
 
+    private type Reflection = Reflection.Reflection;
     type Holder = Holder.Holder;
     type Operation = Types.Operation;
     type TransactionStatus = Types.TransactionStatus;
@@ -174,6 +177,28 @@ shared(msg) actor class Token(
         };
     };
 
+    private func _putReflection(amount:Nat) : async Text {
+        let now = Time.now();
+
+        let reflection = {
+            amount = amount;
+            timestamp = now;
+        };
+
+        let _canisters = await ReflectionDatabaseService.canister.getCanistersByPK("group#ledger");
+        let canisters = List.fromArray<Text>(_canisters);
+        let exist = List.last(canisters);
+
+        switch(exist){
+            case(?exist){
+                return await ReflectionDatabaseService.putReflection(exist,reflection);
+            };
+            case(null){
+                return "";
+            };
+        };
+    };
+
     private func _balanceOf(who: Principal) : Nat {
         switch (balances.get(who)) {
             case (?balance) { return balance; };
@@ -280,7 +305,7 @@ shared(msg) actor class Token(
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        ignore await _chargeTax(msg.caller, tax);
+        ignore _chargeTax(msg.caller, tax);
         _chargeFee(msg.caller, fee);
         _transfer(msg.caller, to, value - tax);
         let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
@@ -306,6 +331,7 @@ shared(msg) actor class Token(
             var _txcounter = txcounter;
             _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
             let hash = await _putTransacton(value.amount, Constants.communityCanister, value.holder, 0, "reflections");
+            ignore _putReflection(value.amount);
             ignore addRecord(
                 msg.caller, "transfer",
                 [

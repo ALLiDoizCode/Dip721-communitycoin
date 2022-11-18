@@ -49,18 +49,18 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     // Auto-Scaling Authorization - if the request to auto-scale the partition is not coming from an existing canister in the partition, reject it
     if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
       Debug.print("creating an additional canister for pk=" # pk);
-      await createPostCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)])
+      await createCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)])
     } else {
       throw Error.reject("not authorized");
     };
   };
 
-  // Partition PostCollectionService canisters by the group passed in
+  // Partition CollectionService canisters by the group passed in
   public shared({caller = creator}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
     let pk = "group#" # group;
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
-      ?(await createPostCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)]));
+      ?(await createCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)]));
     // the partition already exists, so don't create a new canister
     } else {
       Debug.print(pk # " already exists");
@@ -68,10 +68,10 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     };
   };
 
-  // Spins up a new PostCollectionService canister with the provided pk and controllers
-  func createPostCollectionServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
-    Debug.print("creating new PostCollection service canister with pk=" # pk);
-    // Pre-load 300 billion cycles for the creation of a new PostCollection Service canister
+  // Spins up a new CollectionService canister with the provided pk and controllers
+  func createCollectionServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
+    Debug.print("creating new Collection service canister with pk=" # pk);
+    // Pre-load 300 billion cycles for the creation of a new Collection Service canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000);
@@ -97,10 +97,10 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     });
 
     let newCollectionServiceCanisterId = Principal.toText(newCollectionServiceCanisterPrincipal);
-    // After creating the new PostCollection Service canister, add it to the pkToCanisterMap
+    // After creating the new Collection Service canister, add it to the pkToCanisterMap
     pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newCollectionServiceCanisterId);
 
-    Debug.print("new PostCollection service canisterId=" # newCollectionServiceCanisterId);
+    Debug.print("new Collection service canisterId=" # newCollectionServiceCanisterId);
     newCollectionServiceCanisterId;
   };
 

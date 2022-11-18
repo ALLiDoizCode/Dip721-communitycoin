@@ -49,18 +49,18 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     // Auto-Scaling Authorization - if the request to auto-scale the partition is not coming from an existing canister in the partition, reject it
     if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
       Debug.print("creating an additional canister for pk=" # pk);
-      await createPostCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)])
+      await createCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)])
     } else {
       throw Error.reject("not authorized");
     };
   };
 
-  // Partition PostCollectionService canisters by the group passed in
-  public shared({caller = creator}) func createPostCollectionServiceCanisterByGroup(group: Text): async ?Text {
+  // Partition CollectionService canisters by the group passed in
+  public shared({caller = creator}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
     let pk = "group#" # group;
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
-      ?(await createPostCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)]));
+      ?(await createCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)]));
     // the partition already exists, so don't create a new canister
     } else {
       Debug.print(pk # " already exists");
@@ -68,14 +68,14 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     };
   };
 
-  // Spins up a new PostCollectionService canister with the provided pk and controllers
-  func createPostCollectionServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
-    Debug.print("creating new PostCollection service canister with pk=" # pk);
-    // Pre-load 300 billion cycles for the creation of a new PostCollection Service canister
+  // Spins up a new CollectionService canister with the provided pk and controllers
+  func createCollectionServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
+    Debug.print("creating new Collection service canister with pk=" # pk);
+    // Pre-load 300 billion cycles for the creation of a new Collection Service canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
     // left over for the new canister when it is created
     Cycles.add(300_000_000_000);
-    let newPostCollectionServiceCanister = await Collection.Collection({
+    let newCollectionServiceCanister = await Collection.Collection({
       partitionKey = pk;
       scalingOptions = {
         autoScalingHook = autoScaleCollectionServiceCanister;
@@ -85,9 +85,9 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       };
       owners = controllers;
     });
-    let newPostCollectionServiceCanisterPrincipal = Principal.fromActor(newPostCollectionServiceCanister);
+    let newCollectionServiceCanisterPrincipal = Principal.fromActor(newCollectionServiceCanister);
     await CA.updateCanisterSettings({
-      canisterId = newPostCollectionServiceCanisterPrincipal;
+      canisterId = newCollectionServiceCanisterPrincipal;
       settings = {
         controllers = controllers;
         compute_allocation = ?0;
@@ -96,12 +96,12 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       }
     });
 
-    let newPostCollectionServiceCanisterId = Principal.toText(newPostCollectionServiceCanisterPrincipal);
-    // After creating the new PostCollection Service canister, add it to the pkToCanisterMap
-    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newPostCollectionServiceCanisterId);
+    let newCollectionServiceCanisterId = Principal.toText(newCollectionServiceCanisterPrincipal);
+    // After creating the new Collection Service canister, add it to the pkToCanisterMap
+    pkToCanisterMap := CanisterMap.add(pkToCanisterMap, pk, newCollectionServiceCanisterId);
 
-    Debug.print("new PostCollection service canisterId=" # newPostCollectionServiceCanisterId);
-    newPostCollectionServiceCanisterId;
+    Debug.print("new Collection service canisterId=" # newCollectionServiceCanisterId);
+    newCollectionServiceCanisterId;
   };
 
   /// !! Do not use this method without caller authorization

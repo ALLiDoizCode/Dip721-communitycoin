@@ -11,7 +11,7 @@ import Prim "mo:prim";
 import Principal "mo:base/Principal";
 import Response "../models/Response";
 import Transaction "../models/Transaction";
-import Holder "../models/Holder";
+import Reflection "../models/Reflection";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
@@ -22,13 +22,14 @@ import ULID "mo:ulid/ULID";
 module {
 
     private type Transaction = Transaction.Transaction;
-    private type Holder = Holder.Holder;
+    private type Reflection = Reflection.Reflection;
 
-    public func putHolder(db:CanDB.DB, holder: Holder) : async Text {
-        let _sk = "holder:" # holder.holder;
+    public func putReflection(db:CanDB.DB, reflection: Reflection) : async Text {
+        let now = Time.now();
+        let _sk = "Reflection:" # Int.toText(now);
         let attributes:[(Entity.AttributeKey, Entity.AttributeValue)] = [
-            ("holder", #text(holder.holder)),
-            ("amount", #int(holder.amount)),
+            ("amount", #int(reflection.amount)),
+            ("timestamp", #int(reflection.timestamp)),
         ];
         await CanDB.put(db, {
             sk = _sk;
@@ -37,20 +38,20 @@ module {
         _sk;
     };
 
-    public func unwrapHolder(entity: Entity.Entity): ?Holder {
+    public func unwrapReflection(entity: Entity.Entity): ?Reflection {
         let { sk; attributes } = entity;
-        let holder = Entity.getAttributeMapValueForKey(attributes, "holder");
         let amount = Entity.getAttributeMapValueForKey(attributes, "amount");
-        switch(holder, amount) {
+        let timestamp = Entity.getAttributeMapValueForKey(attributes, "timestamp");
+        switch(amount, timestamp) {
             case (
-                ?(#text(holder)),
                 ?(#int(amount)),
+                ?(#int(timestamp)),
             ) 
             { 
                 let value = Nat64.fromIntWrap(amount);
                  ?{
-                    holder = holder;
                     amount = Nat64.toNat(value);
+                    timestamp = timestamp;
                  };
             };
             case _ { 

@@ -12,6 +12,10 @@
       "main": "src/transactionDatabase/IndexCanister.mo",
       "type": "motoko"
     },
+    "reflectionDatabase": {
+      "main": "src/reflectionDatabase/IndexCanister.mo",
+      "type": "motoko"
+    },
     "ui": {
       "frontend": {
         "entrypoint": "src/ui/src/index.html"
