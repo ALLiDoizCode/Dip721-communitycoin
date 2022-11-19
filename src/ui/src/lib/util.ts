@@ -3,6 +3,8 @@ import { AstroX } from "@connect2ic/core/providers/astrox";
 import { PlugWallet } from "@connect2ic/core/providers/plug-wallet";
 import { StoicWallet } from "@connect2ic/core/providers/stoic-wallet";
 import bigDecimal from "js-big-decimal";
+import Provider from '@psychedelic/plug-inpage-provider';
+
 import { icpHost, whiteListedCanister } from "../declarations/constants";
 export type consumer<T> = (t:T) => void;
 export const DECIMALS = 100000000;
@@ -21,6 +23,16 @@ export function getProvider(connector: string) {
     return (() => {
         switch(connector) {
             case "plug":
+                const ua = navigator.userAgent.toLowerCase();
+                const isAndroid = ua.indexOf('android') > -1;
+                const isApple = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1;
+            
+                const isMobile = isAndroid || isApple;
+                const myWindow = window as any;
+                if (!myWindow.ic?.plug && isMobile) {
+                Provider.exposeProviderWithWalletConnect({ window, debug: true });
+                }
+            
                 return new PlugWallet({
                     whitelist: whiteListedCanister,
                     host: icpHost,
