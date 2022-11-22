@@ -79,21 +79,33 @@ shared(msg) actor class Token(
     private stable var allowanceEntries : [(Principal, [(Principal, Nat)])] = [];
     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
     private var allowances = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Nat>>(1, Principal.equal, Principal.hash);
-    private var wallet = Principal.fromText(Constants.wallet);
+
+    private let supply = Utils.natToFloat(totalSupply_);
+
+    private var distributionWallet = Principal.fromText(Constants.distributionCanister);
+    private var liquidityWallet = Principal.fromText(Constants.liquidityWallet);
     private var burnWallet = Principal.fromText(Constants.burnWallet);
-    private var marketWallet = Principal.fromText(Constants.marketWallet);
+    private var teamWallet = Principal.fromText(Constants.teamWallet);
+    private var marketingWallet = Principal.fromText(Constants.marketingWallet);
+
     let burnAmount = Utils.natToFloat(Nat.div(totalSupply_,2));
-    let walletAmount = Float.mul(burnAmount,0.4);
-    let marketWalletAmount = Float.mul(burnAmount,0.6);
+    let distributionWalletAmount = Float.mul(supply,0.2);
+    let liquidityWalletAmount = Float.mul(supply,0.2);
+    let marketingWalletAmount = Float.mul(supply,0.01);
+    let teamWalletAmount = Float.mul(supply,0.09);
+
     balances.put(burnWallet,  Utils.floatToNat(burnAmount));
-    balances.put(wallet, Utils.floatToNat(walletAmount));
-    balances.put(marketWallet, Utils.floatToNat(marketWalletAmount));
+    balances.put(distributionWallet, Utils.floatToNat(distributionWalletAmount));
+    balances.put(liquidityWallet, Utils.floatToNat(liquidityWalletAmount));
+    balances.put(teamWallet, Utils.floatToNat(teamWalletAmount));
+    balances.put(marketingWallet, Utils.floatToNat(marketingWalletAmount));
+
     private stable let genesis : TxRecord = {
         caller = ?owner_;
         op = #mint;
         index = 0;
         from = blackhole;
-        to = wallet;
+        to = burnWallet;
         amount = totalSupply_;
         fee = 0;
         timestamp = Time.now();
@@ -119,6 +131,10 @@ shared(msg) actor class Token(
         };
         // don't wait for result, faster
         ignore c.insert(record);
+    };
+
+    public query func total(): async Nat {
+        Utils.floatToNat(burnAmount + distributionWalletAmount + marketingWalletAmount + teamWalletAmount + liquidityWalletAmount);
     };
 
     private func _chargeFee(from: Principal, fee: Nat) {

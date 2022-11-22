@@ -71,6 +71,7 @@ export interface Token {
   'setName' : ActorMethod<[string], undefined>,
   'setOwner' : ActorMethod<[Principal], undefined>,
   'symbol' : ActorMethod<[], string>,
+  'total' : ActorMethod<[], bigint>,
   'totalSupply' : ActorMethod<[], bigint>,
   'transfer' : ActorMethod<[Principal, bigint], TxReceipt>,
   'transferFrom' : ActorMethod<[Principal, Principal, bigint], TxReceipt>,

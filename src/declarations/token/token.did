@@ -56,6 +56,7 @@ type Token =
    setName: (text) -> () oneway;
    setOwner: (principal) -> () oneway;
    symbol: () -> (text) query;
+   total: () -> (nat) query;
    totalSupply: () -> (nat) query;
    transfer: (principal, nat) -> (TxReceipt);
    transferFrom: (principal, principal, nat) -> (TxReceipt);

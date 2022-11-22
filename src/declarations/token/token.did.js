@@ -104,6 +104,7 @@ export const idlFactory = ({ IDL }) => {
     'setName' : IDL.Func([IDL.Text], [], ['oneway']),
     'setOwner' : IDL.Func([IDL.Principal], [], ['oneway']),
     'symbol' : IDL.Func([], [IDL.Text], ['query']),
+    'total' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'transferFrom' : IDL.Func(
