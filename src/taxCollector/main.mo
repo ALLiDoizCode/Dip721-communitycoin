@@ -79,12 +79,12 @@ actor {
         await marketingFee(Utils.natToFloat(amount));
         await burnFee(Utils.natToFloat(amount));
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
                 sum := sum + holding.amount;
             };
         };
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.communityCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
                 reflectionCount := reflectionCount + 1;
                 let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                 let earnings = Float.mul(holder_amount,percentage);
@@ -99,19 +99,19 @@ actor {
     public shared({caller}) func treasuryFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, treasuryPercentage));
         let wallet = Principal.fromText(Constants.treasuryWallet);
-        ignore await TokenService.communityTransfer(wallet,_amount);
+        ignore await TokenService.taxTransfer(wallet,_amount);
     };
 
     public shared({caller}) func marketingFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, marketingPercentage));
         let wallet = Principal.fromText(Constants.marketingWallet);
-        ignore await TokenService.communityTransfer(wallet,_amount);
+        ignore await TokenService.taxTransfer(wallet,_amount);
     };
 
     public shared({caller}) func burnFee(value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, burnPercentage));
         let wallet = Principal.fromText(Constants.burnWallet);
-        ignore await TokenService.communityTransfer(wallet,_amount);
+        ignore await TokenService.burn(_amount);
     };
 
     public query func http_request(request : Http.Request) : async Http.Response {

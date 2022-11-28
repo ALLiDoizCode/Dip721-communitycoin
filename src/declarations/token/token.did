@@ -31,7 +31,6 @@ type Token =
    bulkTransfer: (vec Holder) -> (vec Holder);
    burn: (nat) -> (TxReceipt);
    chargeTax: (principal, nat) -> (TxReceipt);
-   communityTransfer: (principal, nat) -> (TxReceipt);
    decimals: () -> (nat8) query;
    getAllowanceSize: () -> (nat) query;
    getHolders: (nat, nat) -> (vec record {
@@ -56,6 +55,7 @@ type Token =
    setName: (text) -> () oneway;
    setOwner: (principal) -> () oneway;
    symbol: () -> (text) query;
+   taxTransfer: (principal, nat) -> (TxReceipt);
    total: () -> (nat) query;
    totalSupply: () -> (nat) query;
    transfer: (principal, nat) -> (TxReceipt);

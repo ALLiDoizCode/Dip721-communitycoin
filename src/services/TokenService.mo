@@ -15,17 +15,22 @@ module {
         await canister.transfer(Principal.fromText(holder.holder),holder.amount);
     };
 
-    public func communityTransfer(sender:Principal,amount:Nat): async TxReceipt {
-        await canister.communityTransfer(sender,amount);
+    public func taxTransfer(sender:Principal,amount:Nat): async TxReceipt {
+        await canister.taxTransfer(sender,amount);
     };
 
     public func bulkTransfer(holders:[Holder]): async [Holder] {
         await canister.bulkTransfer(holders);
     };
 
+    public func burn(amount: Nat): async TxReceipt {
+        await canister.burn(amount);
+    };
+
     private let canister = actor(Constants.dip20Canister) : actor { 
         transfer: (Principal, Nat)  -> async TxReceipt;
-        communityTransfer: (Principal, Nat)  -> async TxReceipt;
-        bulkTransfer: ([Holder]) -> async [Holder]; 
+        taxTransfer: (Principal, Nat)  -> async TxReceipt;
+        bulkTransfer: ([Holder]) -> async [Holder];
+        burn: (Nat) -> async TxReceipt; 
     };
 }

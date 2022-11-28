@@ -13,7 +13,7 @@ module {
         await canister.distribute(amount,holders);
     };
 
-    private let canister = actor(Constants.communityCanister) : actor { 
+    private let canister = actor(Constants.taxCollectorCanister) : actor { 
         distribute: (Nat, [Holder])  -> async ();
     };
 }

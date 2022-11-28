@@ -77,7 +77,6 @@ export const idlFactory = ({ IDL }) => {
     'bulkTransfer' : IDL.Func([IDL.Vec(Holder)], [IDL.Vec(Holder)], []),
     'burn' : IDL.Func([IDL.Nat], [TxReceipt], []),
     'chargeTax' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
-    'communityTransfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'decimals' : IDL.Func([], [IDL.Nat8], ['query']),
     'getAllowanceSize' : IDL.Func([], [IDL.Nat], ['query']),
     'getHolders' : IDL.Func(
@@ -104,6 +103,7 @@ export const idlFactory = ({ IDL }) => {
     'setName' : IDL.Func([IDL.Text], [], ['oneway']),
     'setOwner' : IDL.Func([IDL.Principal], [], ['oneway']),
     'symbol' : IDL.Func([], [IDL.Text], ['query']),
+    'taxTransfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'total' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),

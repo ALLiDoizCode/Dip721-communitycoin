@@ -1,7 +1,7 @@
 {
   "canisters": {
-    "community": {
-      "main": "src/community/main.mo",
+    "taxCollector": {
+      "main": "src/taxCollector/main.mo",
       "type": "motoko"
     },
    "token": {
