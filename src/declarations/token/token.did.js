@@ -67,6 +67,7 @@ export const idlFactory = ({ IDL }) => {
     'status_code' : IDL.Nat16,
   });
   const Token = IDL.Service({
+    '_burn' : IDL.Func([], [TxReceipt], []),
     'allowance' : IDL.Func(
         [IDL.Principal, IDL.Principal],
         [IDL.Nat],
@@ -104,7 +105,6 @@ export const idlFactory = ({ IDL }) => {
     'setOwner' : IDL.Func([IDL.Principal], [], ['oneway']),
     'symbol' : IDL.Func([], [IDL.Text], ['query']),
     'taxTransfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
-    'total' : IDL.Func([], [IDL.Nat], ['query']),
     'totalSupply' : IDL.Func([], [IDL.Nat], ['query']),
     'transfer' : IDL.Func([IDL.Principal, IDL.Nat], [TxReceipt], []),
     'transferFrom' : IDL.Func(

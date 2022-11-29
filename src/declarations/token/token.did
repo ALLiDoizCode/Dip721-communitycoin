@@ -25,6 +25,7 @@ type TokenInfo =
  };
 type Token = 
  service {
+   _burn: () -> (TxReceipt);
    allowance: (principal, principal) -> (nat) query;
    approve: (principal, nat) -> (TxReceipt);
    balanceOf: (principal) -> (nat) query;
@@ -56,7 +57,6 @@ type Token =
    setOwner: (principal) -> () oneway;
    symbol: () -> (text) query;
    taxTransfer: (principal, nat) -> (TxReceipt);
-   total: () -> (nat) query;
    totalSupply: () -> (nat) query;
    transfer: (principal, nat) -> (TxReceipt);
    transferFrom: (principal, principal, nat) -> (TxReceipt);

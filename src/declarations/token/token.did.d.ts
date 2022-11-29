@@ -46,6 +46,7 @@ export type StreamingStrategy = {
   };
 export type Time = bigint;
 export interface Token {
+  '_burn' : ActorMethod<[], TxReceipt>,
   'allowance' : ActorMethod<[Principal, Principal], bigint>,
   'approve' : ActorMethod<[Principal, bigint], TxReceipt>,
   'balanceOf' : ActorMethod<[Principal], bigint>,
@@ -71,7 +72,6 @@ export interface Token {
   'setOwner' : ActorMethod<[Principal], undefined>,
   'symbol' : ActorMethod<[], string>,
   'taxTransfer' : ActorMethod<[Principal, bigint], TxReceipt>,
-  'total' : ActorMethod<[], bigint>,
   'totalSupply' : ActorMethod<[], bigint>,
   'transfer' : ActorMethod<[Principal, bigint], TxReceipt>,
   'transferFrom' : ActorMethod<[Principal, Principal, bigint], TxReceipt>,

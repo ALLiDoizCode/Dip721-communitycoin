@@ -81,6 +81,7 @@ shared(msg) actor class Token(
     private var allowances = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Nat>>(1, Principal.equal, Principal.hash);
 
     private let supply = Utils.natToFloat(totalSupply_);
+    private stable var isBurnt = false;
 
     private var distributionWallet = Principal.fromText(Constants.distributionCanister);
     private var liquidityWallet = Principal.fromText(Constants.liquidityWallet);
@@ -88,17 +89,11 @@ shared(msg) actor class Token(
     private var teamWallet = Principal.fromText(Constants.teamWallet);
     private var marketingWallet = Principal.fromText(Constants.marketingWallet);
 
-    let burnAmount = Utils.natToFloat(Nat.div(totalSupply_,2));
+    let burnAmount:Nat = 50000000000000000000;
     let distributionWalletAmount = Float.mul(supply,0.2);
     let liquidityWalletAmount = Float.mul(supply,0.2);
     let marketingWalletAmount = Float.mul(supply,0.01);
     let teamWalletAmount = Float.mul(supply,0.09);
-
-    balances.put(burnWallet,  Utils.floatToNat(burnAmount));
-    balances.put(distributionWallet, Utils.floatToNat(distributionWalletAmount));
-    balances.put(liquidityWallet, Utils.floatToNat(liquidityWalletAmount));
-    balances.put(teamWallet, Utils.floatToNat(teamWalletAmount));
-    balances.put(marketingWallet, Utils.floatToNat(marketingWalletAmount));
 
     private stable let genesis : TxRecord = {
         caller = ?owner_;
@@ -132,10 +127,6 @@ shared(msg) actor class Token(
         };
         // don't wait for result, faster
         ignore c.insert(record);
-    };
-
-    public query func total(): async Nat {
-        Utils.floatToNat(burnAmount + distributionWalletAmount + marketingWalletAmount + teamWalletAmount + liquidityWalletAmount);
     };
 
     private func _chargeFee(from: Principal, fee: Nat) {
@@ -475,6 +466,30 @@ shared(msg) actor class Token(
             [
                 ("from", #Principal(msg.caller)),
                 ("amount", #U64(u64(amount))),
+                ("fee", #U64(u64(0))),
+                ("hash", #Text(hash))
+            ]
+        );
+        return #Ok(txcounter);
+    };
+
+    public shared({caller}) func setup(): async TxReceipt {
+        assert(caller == owner_);
+        assert(isBurnt == false);
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
+        balances.put(distributionWallet, Utils.floatToNat(distributionWalletAmount));
+        balances.put(liquidityWallet, Utils.floatToNat(liquidityWalletAmount));
+        balances.put(teamWallet, Utils.floatToNat(teamWalletAmount));
+        balances.put(marketingWallet, Utils.floatToNat(marketingWalletAmount));
+        totalSupply_ -= burnAmount;
+        burnt := burnt + burnAmount;
+        isBurnt := true;
+        let hash = await _putTransacton(burnAmount, "", "", 0, "burn");
+        ignore addRecord(
+            msg.caller, "burn",
+            [
+                ("amount", #U64(u64(burnAmount))),
                 ("fee", #U64(u64(0))),
                 ("hash", #Text(hash))
             ]
