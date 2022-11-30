@@ -36,6 +36,9 @@ import Transaction "../models/Transaction";
 import Http "../helpers/http";
 import Response "../models/Response";
 import Reflection "../models/Reflection";
+import TopUpService "../services/TopUpService";
+import Cycles "mo:base/ExperimentalCycles";
+import Prim "mo:prim";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -127,6 +130,40 @@ shared(msg) actor class Token(
         };
         // don't wait for result, faster
         ignore c.insert(record);
+    };
+
+    public query func getMemorySize(): async Nat {
+        let size = Prim.rts_memory_size();
+        size;
+    };
+
+    public query func getHeapSize(): async Nat {
+        let size = Prim.rts_heap_size();
+        size;
+    };
+
+    public query func getCycles(): async Nat {
+        Cycles.balance();
+    };
+
+    private func _getMemorySize(): Nat {
+        let size = Prim.rts_memory_size();
+        size;
+    };
+
+    private func _getHeapSize(): Nat {
+        let size = Prim.rts_heap_size();
+        size;
+    };
+
+    private func _getCycles(): Nat {
+        Cycles.balance();
+    };
+
+    private func _topUp(): async () {
+        if (_getCycles() <= Constants.cyclesThreshold){
+            await TopUpService.topUp();
+        }
     };
 
     private func _chargeFee(from: Principal, fee: Nat) {
@@ -308,6 +345,7 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func transfer(to: Principal, value: Nat) : async TxReceipt {
+        ignore _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
@@ -330,6 +368,7 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
+        ignore _topUp();
         var response:[Holder] = [];
         let communityCanister = Principal.fromText(Constants.taxCollectorCanister);
         if(msg.caller != communityCanister) {return response};
@@ -360,6 +399,7 @@ shared(msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
+        ignore _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
@@ -400,6 +440,7 @@ shared(msg) actor class Token(
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
     /// If this function is called again it overwrites the current allowance with value.
     public shared(msg) func approve(spender: Principal, value: Nat) : async TxReceipt {
+        ignore _topUp();
         if(_balanceOf(msg.caller) < fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
@@ -451,6 +492,7 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func burn(amount: Nat): async TxReceipt {
+        ignore _topUp();
         let from_balance = _balanceOf(msg.caller);
         if(from_balance < amount) {
             return #Err(#InsufficientBalance);

@@ -23,6 +23,7 @@ import Response "../models/Response";
 import Constants "../Constants";
 import Crud "./Crud";
 import Transaction "../models/Transaction";
+import TopUpService "../services/TopUpService";
 import Holder "../models/Holder";
 
 shared ({ caller = owner }) actor class Collection({
@@ -95,10 +96,17 @@ shared ({ caller = owner }) actor class Collection({
     };
 
     public shared ({ caller }) func putTransaction(transaction : Transaction) : async Text {
+        ignore _topUp();
         let canister = Principal.toText(caller);
         assert (Constants.dip20Canister == canister);
         await Crud.putTransaction(db, transaction);
 
+    };
+
+    private func _topUp(): async () {
+        if (_getCycles() <= Constants.cyclesThreshold){
+            await TopUpService.topUp();
+        }
     };
 
     public query func http_request(request : Http.Request) : async Http.Response {

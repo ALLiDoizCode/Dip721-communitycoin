@@ -24,6 +24,7 @@ import Constants "../Constants";
 import Crud "./Crud";
 import Transaction "../models/Transaction";
 import Reflection "../models/Reflection";
+import TopUpService "../services/TopUpService";
 
 shared({ caller = owner }) actor class Collection({
     // the primary key of this canister
@@ -57,6 +58,12 @@ shared({ caller = owner }) actor class Collection({
 
     private func _skExists(sk : Text) : Bool {
         CanDB.skExists(db, sk);
+    };
+
+    private func _topUp(): async () {
+        if (_getCycles() <= Constants.cyclesThreshold){
+            await TopUpService.topUp();
+        }
     };
 
     /// @required public API (Do not delete or change)
@@ -95,6 +102,7 @@ shared({ caller = owner }) actor class Collection({
     };
 
     public shared({ caller }) func putReflection(reflection: Reflection) : async Text {
+        ignore _topUp();
         let canister = Principal.toText(caller);
         assert(Constants.dip20Canister == canister);
         await Crud.putReflection(db,reflection);

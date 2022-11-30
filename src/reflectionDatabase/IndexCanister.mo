@@ -15,6 +15,8 @@ import JSON "../helpers/JSON";
 import Array "mo:base/Array";
 import Collection "./Collection";
 import Admin "mo:candb/CanDBAdmin";
+import TopUpService "../services/TopUpService";
+import Constants "../Constants";
 
 shared ({caller = owner}) actor class IndexCanister() = this {
 
@@ -45,7 +47,14 @@ shared ({caller = owner}) actor class IndexCanister() = this {
     }
   };
 
+  private func _topUp(): async () {
+      if (_getCycles() <= Constants.cyclesThreshold){
+          await TopUpService.topUp();
+      }
+  };
+
   public shared({caller = caller}) func autoScaleCollectionServiceCanister(pk: Text): async Text {
+    ignore _topUp();
     // Auto-Scaling Authorization - if the request to auto-scale the partition is not coming from an existing canister in the partition, reject it
     if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
       Debug.print("creating an additional canister for pk=" # pk);
@@ -57,6 +66,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Partition CollectionService canisters by the group passed in
   public shared({caller = creator}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
+    ignore _topUp();
     let pk = "group#" # group;
     let canisterIds = getCanisterIdsIfExists(pk);
     if (canisterIds == []) {
@@ -70,6 +80,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   // Spins up a new CollectionService canister with the provided pk and controllers
   func createCollectionServiceCanister(pk: Text, controllers: ?[Principal]): async Text {
+    ignore _topUp();
     Debug.print("creating new Collection service canister with pk=" # pk);
     // Pre-load 300 billion cycles for the creation of a new Collection Service canister
     // Note that canister creation costs 100 billion cycles, meaning there are 200 billion
@@ -107,6 +118,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   /// !! Do not use this method without caller authorization
   /// Upgrade user canisters in a PK range, i.e. rolling upgrades (limit is fixed at upgrading the canisters of 5 PKs per call)
   public shared({ caller = caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
+    ignore _topUp();
     // !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
     if (caller != owner) { // basic authorization
       return {
@@ -137,6 +149,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   /// !! Do not use this method without caller authorization
   /// Spins down all canisters belonging to a specific user (transfers cycles back to the index canister, and stops/deletes all canisters)
   public shared({caller = caller}) func deleteCanistersByPK(pk: Text): async ?Admin.CanisterCleanupStatusMap {
+    ignore _topUp();
     // !!! Recommend Adding to prevent anyone from being able to delete your service actor canisters
     if (caller != owner) return null; // authorization 
     

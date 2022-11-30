@@ -22,6 +22,8 @@ import Types "../models/types";
 import Http "../helpers/http";
 import Response "../models/Response";
 import JSON "../helpers/JSON";
+import Cycles "mo:base/ExperimentalCycles";
+import TopUpService "../services/TopUpService";
 
 actor {
 
@@ -44,22 +46,60 @@ actor {
         transactionPercentage := value;
     };*/
 
+    public query func getMemorySize(): async Nat {
+        let size = Prim.rts_memory_size();
+        size;
+    };
+
+    public query func getHeapSize(): async Nat {
+        let size = Prim.rts_heap_size();
+        size;
+    };
+
+    public query func getCycles(): async Nat {
+        Cycles.balance();
+    };
+
+    private func _getMemorySize(): Nat {
+        let size = Prim.rts_memory_size();
+        size;
+    };
+
+    private func _getHeapSize(): Nat {
+        let size = Prim.rts_heap_size();
+        size;
+    };
+
+    private func _getCycles(): Nat {
+        Cycles.balance();
+    };
+
+    private func _topUp(): async () {
+      if (_getCycles() <= Constants.cyclesThreshold){
+          await TopUpService.topUp();
+      }
+    };
+
     public shared({caller}) func updateBurnPercentage(value:Float): async() {
+        ignore _topUp();
         assert(caller == Principal.fromText(Constants.daoCanister));
         burnPercentage := value;
     };
 
     public shared({caller}) func updateReflectionPercentage(value:Float): async() {
+        ignore _topUp();
         assert(caller == Principal.fromText(Constants.daoCanister));
         reflectionPercentage := value;
     };
 
     public shared({caller}) func updateTreasuryPercentage(value:Float): async() {
+        ignore _topUp();
         assert(caller == Principal.fromText(Constants.daoCanister));
         treasuryPercentage := value;
     };
 
     public shared({caller}) func updateMarketingPercentage(value:Float): async() {
+        ignore _topUp();
         assert(caller == Principal.fromText(Constants.daoCanister));
         marketingPercentage := value;
     };
@@ -70,6 +110,7 @@ actor {
     };*/
 
     public shared({caller}) func distribute(amount:Nat,holders:[Holder]): async () {
+        ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
         var recipents:[Holder] = [];
         //var community_amount = Float.mul(Utils.natToFloat(amount), transactionPercentage);

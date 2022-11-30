@@ -24,6 +24,7 @@ import Response "../models/Response";
 import Constants "../Constants";
 import Transaction "../models/Transaction";
 import Reflection "../models/Reflection";
+import TopUpService "../services/TopUpService";
 
 shared({ caller = owner }) actor class Collection({
     // the primary key of this canister
