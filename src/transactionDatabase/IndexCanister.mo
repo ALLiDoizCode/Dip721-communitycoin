@@ -138,7 +138,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
       // the scaling options parameter that will be passed to the constructor of the upgraded canister
       scalingOptions = {
         autoScalingHook = autoScaleCollectionServiceCanister;
-        sizeLimit = #heapSize(200_000_000); // Scale out at 200MB
+        sizeLimit = #heapSize(475_000_000); // Scale out at 200MB
       };
       // the owners parameter that will be passed to the constructor of the upgraded canister
       owners = ?[owner, Principal.fromActor(this)];
