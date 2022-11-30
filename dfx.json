@@ -16,14 +16,9 @@
       "main": "src/reflectionDatabase/IndexCanister.mo",
       "type": "motoko"
     },
-    "ui": {
-      "frontend": {
-        "entrypoint": "src/ui/src/index.html"
-      },
-      "source": [
-        "dist/ui/"
-      ],
-      "type": "assets"
+    "testDatabase": {
+      "main": "src/testDatabase/IndexCanister.mo",
+      "type": "motoko"
     }
   },
   "defaults": {

@@ -514,7 +514,7 @@ shared(msg) actor class Token(
     };
 
     public query func totalSupply() : async Nat {
-        return totalSupply_;
+        return Utils.floatToNat(supply);
     };
 
     public query func getTokenFee() : async Nat {
