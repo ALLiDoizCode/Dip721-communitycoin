@@ -38,7 +38,7 @@ const canisterEnvVariables = initCanisterEnv();
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-const frontendDirectory = "dip721_communitycoin_assets";
+const frontendDirectory = "ui";
 
 const asset_entry = path.join("src", frontendDirectory, "src", "index.html");
 
@@ -78,7 +78,7 @@ module.exports = {
   module: {
    rules: [
      { test: /\.(ts|tsx|jsx)$/, loader: "ts-loader" },
-     { test: /\.css$/, use: ['style-loader','css-loader'] }
+     { test: /\.(sa|sc|c)ss$/, use: ['style-loader','css-loader', 'sass-loader'] }
    ]
   },
   plugins: [
