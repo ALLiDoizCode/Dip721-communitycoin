@@ -378,7 +378,7 @@ shared(msg) actor class Token(
             var _txcounter = txcounter;
             _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
             let hash = await _putTransacton(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
-            ignore _putReflection(value.amount);
+            ignore await _putReflection(value.amount);
             ignore addRecord(
                 msg.caller, "transfer",
                 [
