@@ -15,10 +15,6 @@
     "reflectionDatabase": {
       "main": "src/reflectionDatabase/IndexCanister.mo",
       "type": "motoko"
-    },
-    "testDatabase": {
-      "main": "src/testDatabase/IndexCanister.mo",
-      "type": "motoko"
     }
   },
   "defaults": {
