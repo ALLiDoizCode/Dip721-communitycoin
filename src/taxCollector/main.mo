@@ -120,12 +120,12 @@ actor {
         await marketingFee(Utils.natToFloat(amount));
         await burnFee(Utils.natToFloat(amount));
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet and holding.holder != Constants.marketingWallet){
                 sum := sum + holding.amount;
             };
         };
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet){
+            if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet and holding.holder != Constants.marketingWallet){
                 reflectionCount := reflectionCount + 1;
                 let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                 let earnings = Float.mul(holder_amount,percentage);
