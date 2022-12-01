@@ -65,7 +65,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   };
 
   // Partition CollectionService canisters by the group passed in
-  public shared({caller = creator}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
+  public shared({caller}) func createCollectionServiceCanisterByGroup(group: Text): async ?Text {
+    assert(caller ==  owner);
     ignore _topUp();
     let pk = "group#" # group;
     let canisterIds = getCanisterIdsIfExists(pk);
@@ -116,7 +117,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   /// !! Do not use this method without caller authorization
   /// Upgrade user canisters in a PK range, i.e. rolling upgrades (limit is fixed at upgrading the canisters of 5 PKs per call)
-  public shared({ caller = caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
+  public shared({ caller }) func upgradeGroupCanistersInPKRange(lowerPK: Text, upperPK: Text, wasmModule: Blob): async Admin.UpgradePKRangeResult {
     ignore _topUp();
     // !!! Recommend Adding to prevent anyone from being able to upgrade the wasm of your service actor canisters
     if (caller != owner) { // basic authorization
@@ -147,7 +148,8 @@ shared ({caller = owner}) actor class IndexCanister() = this {
 
   /// !! Do not use this method without caller authorization
   /// Spins down all canisters belonging to a specific user (transfers cycles back to the index canister, and stops/deletes all canisters)
-  public shared({caller = caller}) func deleteCanistersByPK(pk: Text): async ?Admin.CanisterCleanupStatusMap {
+  public shared({caller}) func deleteCanistersByPK(pk: Text): async ?Admin.CanisterCleanupStatusMap {
+    assert(caller == owner);
     ignore _topUp();
     /* !!! Recommend Adding to prevent anyone from being able to delete your service actor canisters
     if (caller != owner) return null; // authorization 
