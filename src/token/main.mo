@@ -21,7 +21,6 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
-import ExperimentalCycles "mo:base/ExperimentalCycles";
 import Cap "./cap/Cap";
 import Root "./cap/Root";
 import Holder "../models/Holder";
@@ -129,7 +128,7 @@ shared(msg) actor class Token(
             caller = caller;
         };
         // don't wait for result, faster
-        ignore c.insert(record);
+        let _ = await c.insert(record);
     };
 
     public query func getMemorySize(): async Nat {
@@ -143,7 +142,7 @@ shared(msg) actor class Token(
     };
 
     public query func getCycles(): async Nat {
-        Cycles.balance();
+        Prim.cyclesBalance();
     };
 
     private func _getMemorySize(): Nat {
@@ -157,7 +156,7 @@ shared(msg) actor class Token(
     };
 
     private func _getCycles(): Nat {
-        Cycles.balance();
+        Prim.cyclesBalance();
     };
 
     private func _topUp(): async () {
@@ -303,9 +302,9 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        ignore TaxCollectorService.distribute(amount,holders);
+        await TaxCollectorService.distribute(amount,holders);
         let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
-        ignore addRecord(
+        await addRecord(
             msg.caller, "transfer",
             [
                 ("to", #Principal(to)),
@@ -332,7 +331,7 @@ shared(msg) actor class Token(
         var _txcounter = txcounter;
         _transfer(msg.caller, to, value);
         let hash = await _putTransacton(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
-        ignore addRecord(
+        await addRecord(
             msg.caller, "transfer",
             [
                 ("to", #Principal(to)),
@@ -345,30 +344,37 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func transfer(to: Principal, value: Nat) : async TxReceipt {
-        ignore _topUp();
+        await _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        ignore _chargeTax(msg.caller, tax);
-        _chargeFee(msg.caller, fee);
-        _transfer(msg.caller, to, value - tax);
-        let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
-        ignore addRecord(
-            msg.caller, "transfer",
-            [
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(value - tax))),
-                ("tax", #U64(u64(tax))),
-                ("hash", #Text(hash))
-            ]
-        );
-        return #Ok(_txcounter);
+        let taxResult = await _chargeTax(msg.caller, tax);
+        switch(taxResult){
+            case(#Ok(value)){
+                _chargeFee(msg.caller, fee);
+                _transfer(msg.caller, to, value - tax);
+                let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
+                await addRecord(
+                    msg.caller, "transfer",
+                    [
+                        ("to", #Principal(to)),
+                        ("amount", #U64(u64(value - tax))),
+                        ("tax", #U64(u64(tax))),
+                        ("hash", #Text(hash))
+                    ]
+                );
+                return #Ok(_txcounter);
+            };
+            case(#Err(value)){
+                #Err(value)
+            }
+        };
     };
 
     public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
-        ignore _topUp();
+        await _topUp();
         var response:[Holder] = [];
         let communityCanister = Principal.fromText(Constants.taxCollectorCanister);
         if(msg.caller != communityCanister) {return response};
@@ -378,8 +384,8 @@ shared(msg) actor class Token(
             var _txcounter = txcounter;
             _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
             let hash = await _putTransacton(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
-            ignore await _putReflection(value.amount);
-            ignore addRecord(
+            let reflectiopn = await _putReflection(value.amount);
+            await addRecord(
                 msg.caller, "transfer",
                 [
                     ("to", #Principal(Principal.fromText(value.holder))),
@@ -399,7 +405,7 @@ shared(msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
-        ignore _topUp();
+        await _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
@@ -407,40 +413,47 @@ shared(msg) actor class Token(
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        ignore await _chargeTax(msg.caller, tax);
-        _chargeFee(from, fee);
-        _transfer(from, to, value);
-        let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "tranfer");
-        let allowed_new : Nat = allowed - value - fee;
-        if (allowed_new != 0) {
-            let allowance_from = Types.unwrap(allowances.get(from));
-            allowance_from.put(msg.caller, allowed_new);
-            allowances.put(from, allowance_from);
-        } else {
-            if (allowed != 0) {
-                let allowance_from = Types.unwrap(allowances.get(from));
-                allowance_from.delete(msg.caller);
-                if (allowance_from.size() == 0) { allowances.delete(from); }
-                else { allowances.put(from, allowance_from); };
+        let taxResult = await _chargeTax(msg.caller, tax);
+        switch(taxResult){
+            case(#Ok(value)){
+                _chargeFee(from, fee);
+                _transfer(from, to, value);
+                let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "tranfer");
+                let allowed_new : Nat = allowed - value - fee;
+                if (allowed_new != 0) {
+                    let allowance_from = Types.unwrap(allowances.get(from));
+                    allowance_from.put(msg.caller, allowed_new);
+                    allowances.put(from, allowance_from);
+                } else {
+                    if (allowed != 0) {
+                        let allowance_from = Types.unwrap(allowances.get(from));
+                        allowance_from.delete(msg.caller);
+                        if (allowance_from.size() == 0) { allowances.delete(from); }
+                        else { allowances.put(from, allowance_from); };
+                    };
+                };
+                await addRecord(
+                    msg.caller, "transferFrom",
+                    [
+                        ("from", #Principal(from)),
+                        ("to", #Principal(to)),
+                        ("amount", #U64(u64(value))),
+                        ("tax", #U64(u64(tax))),
+                        ("hash", #Text(hash))
+                    ]
+                );
+                return #Ok(_txcounter);
+            };
+            case(#Err(value)){
+                #Err(value)
             };
         };
-        ignore addRecord(
-            msg.caller, "transferFrom",
-            [
-                ("from", #Principal(from)),
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(value))),
-                ("tax", #U64(u64(tax))),
-                ("hash", #Text(hash))
-            ]
-        );
-        return #Ok(_txcounter);
     };
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
     /// If this function is called again it overwrites the current allowance with value.
     public shared(msg) func approve(spender: Principal, value: Nat) : async TxReceipt {
-        ignore _topUp();
+        await _topUp();
         if(_balanceOf(msg.caller) < fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
@@ -460,7 +473,7 @@ shared(msg) actor class Token(
             allowance_caller.put(spender, v);
             allowances.put(msg.caller, allowance_caller);
         };
-        ignore addRecord(
+        await addRecord(
             msg.caller, "approve",
             [
                 ("to", #Principal(spender)),
@@ -492,7 +505,7 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func burn(amount: Nat): async TxReceipt {
-        ignore _topUp();
+        await _topUp();
         let from_balance = _balanceOf(msg.caller);
         if(from_balance < amount) {
             return #Err(#InsufficientBalance);
@@ -503,7 +516,7 @@ shared(msg) actor class Token(
         balances.put(msg.caller, from_balance - amount);
         burnt := burnt + amount;
         let hash = await _putTransacton(amount, Principal.toText(msg.caller), "", 0, "burn");
-        ignore addRecord(
+        await addRecord(
             msg.caller, "burn",
             [
                 ("from", #Principal(msg.caller)),
@@ -643,7 +656,7 @@ shared(msg) actor class Token(
             historySize = txcounter;
             deployTime = genesis.timestamp;
             holderNumber = balances.size();
-            cycles = ExperimentalCycles.balance();
+            cycles = Cycles.balance();
         }
     };
 
