@@ -22,11 +22,11 @@ import Cycles "mo:base/ExperimentalCycles";
 import Response "../models/Response";
 import Constants "../Constants";
 import Crud "./Crud";
-import Transaction "../models/Transaction";
 import Reflection "../models/Reflection";
 import TopUpService "../services/TopUpService";
+import Holder "../models/Holder";
 
-shared({ caller = owner }) actor class Collection({
+shared ({ caller = owner }) actor class Collection({
     // the primary key of this canister
     partitionKey : Text;
     // the scaling options that determine when to auto-scale out this canister storage partition
@@ -36,11 +36,11 @@ shared({ caller = owner }) actor class Collection({
 }) {
 
     private stable var transactiontId : Int = 1;
-  
+
     private type JSON = JSON.JSON;
     private type ApiError = Response.ApiError;
-    private type Transaction = Transaction.Transaction;
-    private type Reflection = Reflection.Reflection;
+    private type ReflectionTransaction = Reflection.ReflectionTransaction;
+    private type Holder = Holder.Holder;
 
     /// @required (may wrap, but must be present in some form in the canister)
     stable let db = CanDB.init({
@@ -60,14 +60,8 @@ shared({ caller = owner }) actor class Collection({
         CanDB.skExists(db, sk);
     };
 
-    private func _topUp(): async () {
-        if (_getCycles() <= Constants.cyclesThreshold){
-            await TopUpService.topUp();
-        }
-    };
-
     /// @required public API (Do not delete or change)
-    public shared({ caller = caller }) func transferCycles() : async () {
+    public shared ({ caller = caller }) func transferCycles() : async () {
         if (caller == owner) {
             return await CA.transferCycles(caller);
         };
@@ -101,15 +95,18 @@ shared({ caller = owner }) actor class Collection({
         Cycles.balance();
     };
 
-    public shared({ caller }) func putReflection(reflection: Reflection) : async Text {
+    public shared ({ caller }) func putReflections(parentHash:Text, transactions : [ReflectionTransaction]) : async Text {
         ignore _topUp();
         let canister = Principal.toText(caller);
-        assert (Constants.dip20Canister == canister
-        or Constants.loadBalancer_1 == canister 
-        or Constants.loadBalancer_2 == canister 
-        or Constants.loadBalancer_3 == canister);
-        await Crud.putReflection(db,reflection);
-        
+        assert (Constants.dip20Canister == canister);
+        await Crud.putReflections(db, parentHash, transactions);
+
+    };
+
+    private func _topUp(): async () {
+        if (_getCycles() <= Constants.cyclesThreshold){
+            await TopUpService.topUp();
+        }
     };
 
     public query func http_request(request : Http.Request) : async Http.Response {
@@ -126,14 +123,10 @@ shared({ caller = owner }) actor class Collection({
         } else if (path.size() == 2) {
             switch (path[0]) {
                 case ("skExists") return _skExistsResponse(path[1]);
+                case ("fetchReflections") return _reflectionsResponse(path[1]);
                 case (_) return return Http.BAD_REQUEST();
             };
-        } else if (path.size() == 3) {
-            switch (path[0]) {
-                case ("fetchReflections") return _fetchReflectionResponse(path[1],path[2]);
-                case (_) return return Http.BAD_REQUEST();
-            };
-        } else {
+        }else {
             return Http.BAD_REQUEST();
         };
     };
@@ -160,65 +153,32 @@ shared({ caller = owner }) actor class Collection({
         };
     };
 
-    private func _fetchReflectionResponse(start : Text, end : Text) : Http.Response {
-        let reflectionsHashMap : HashMap.HashMap<Text, JSON> = HashMap.HashMap<Text, JSON>(
-            0,
-            Text.equal,
-            Text.hash,
-        );
-        let result = _fetcReflections(start, end);
-        var reflections:[JSON] = [];
-
-        for (reflection in result.reflections.vals()) {
-            let json = Utils._reflectionToJson(reflection);
-            reflections := Array.append(reflections,[json]);
-        };
-        reflectionsHashMap.put("reflections", #Array(reflections));
-        switch(result.sk){
-            case(?exist){
-                reflectionsHashMap.put("sk", #String(exist));
+    private func _reflectionsResponse(value : Text) : Http.Response {
+        let exist = _fetchTransaction(value);
+        var jsonArray:[JSON] = []; 
+        switch (exist) {
+            case (?exist) {
+                for(reflection in exist.vals()) {
+                    jsonArray := Array.append(jsonArray,[#String(reflection)]);
+                };
+                let blob = Text.encodeUtf8(JSON.show(#Array(jsonArray)));
+                let response : Http.Response = {
+                    status_code = 200;
+                    headers = [("Content-Type", "application/json")];
+                    body = blob;
+                    streaming_strategy = null;
+                };
             };
-            case(null){
-
+            case (null) {
+                return Http.NOT_FOUND();
             };
-        };
-        
-        let json = #Object(reflectionsHashMap);
-        let blob = Text.encodeUtf8(JSON.show(json));
-        let response : Http.Response = {
-            status_code = 200;
-            headers = [("Content-Type", "application/json")];
-            body = blob;
-            streaming_strategy = null;
         };
     };
 
-    private func _fetcReflections(skLowerBound: Text, skUpperBound: Text): {reflections:[Reflection]; sk:?Text} {
-        var reflections : [Reflection] = [];
-        let result = CanDB.scan(
-            db,
-            {
-                skLowerBound = "Reflection:" # skLowerBound;
-                skUpperBound = "Reflection:" # skUpperBound;
-                limit = 10000;
-                ascending = null;
-            },
-        );
-
-        for (obj in result.entities.vals()) {
-            let reflection = Crud.unwrapReflection(obj);
-            switch (reflection) {
-                case (?reflection) {
-                    reflections := Array.append(reflections, [reflection]);
-                };
-                case (null) {
-
-                };
-            };
-        };
-        {
-            reflections = reflections;
-            sk = result.nextKey;
+    private func _fetchTransaction(value : Text) : ?[Text] {
+        switch (CanDB.get(db, { sk = "reflectons:" # value })) {
+            case null { null };
+            case (?entity) { Crud.unwrapReflections(entity) };
         };
     };
 

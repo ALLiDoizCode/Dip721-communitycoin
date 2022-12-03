@@ -12,8 +12,10 @@ import Principal "mo:base/Principal";
 //import Response "./Models/Response";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
+import Nat "mo:base/Nat";
 import Time "mo:base/Time";
 import Float "mo:base/Float";
+import Error "mo:base/Error";
 import Utils "../helpers/Utils";
 import Holder "../models/Holder";
 import Constants "../Constants";
@@ -38,6 +40,7 @@ actor {
 
     private stable var reflectionCount:Nat = 0;
     private stable var reflectionAmount:Nat = 0;
+    private var log = "";
 
     private type Holder = Holder.Holder;
 
@@ -110,6 +113,7 @@ actor {
     };*/
 
     public shared({caller}) func distribute(amount:Nat,holders:[Holder]): async () {
+        log := Nat.toText(holders.size());
         ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
         var recipents:[Holder] = [];
@@ -120,6 +124,7 @@ actor {
         await marketingFee(Utils.natToFloat(amount));
         await burnFee(Utils.natToFloat(amount));
         for (holding in holders.vals()) {
+            log := "loop 1";
             if(holding.holder != Constants.burnWallet 
             and holding.holder != Constants.distributionCanister
             and holding.holder != Constants.taxCollectorCanister 
@@ -131,24 +136,35 @@ actor {
                 sum := sum + holding.amount;
             };
         };
+        log := "loop 1 end";
         for (holding in holders.vals()) {
-            if(holding.holder != Constants.burnWallet 
-            and holding.holder != Constants.distributionCanister 
-            and holding.holder != Constants.taxCollectorCanister 
-            and holding.holder != Constants.treasuryWallet 
-            and holding.holder != Constants.teamWallet 
-            and holding.holder != Constants.marketingWallet
-            and holding.holder != Constants.liquidityWallet
-            ){
-                reflectionCount := reflectionCount + 1;
-                let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
-                let earnings = Float.mul(holder_amount,percentage);
-                let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
-                recipents := Array.append(recipents,[recipent]);
-                reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
-            };
+            log := "loop 2";
+            try {
+                if(holding.holder != Constants.burnWallet 
+                and holding.holder != Constants.distributionCanister 
+                and holding.holder != Constants.taxCollectorCanister 
+                and holding.holder != Constants.treasuryWallet 
+                and holding.holder != Constants.teamWallet 
+                and holding.holder != Constants.marketingWallet
+                and holding.holder != Constants.liquidityWallet
+                ){
+                    reflectionCount := reflectionCount + 1;
+                    let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
+                    let earnings = Float.mul(holder_amount,percentage);
+                    let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                    recipents := Array.append(recipents,[recipent]);
+                    reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+                };
+                log := "worked";
+            }catch(e){
+                log := "loop error" #Error.message(e);
+            }
         };
-        ignore await TokenService.bulkTransfer(recipents);
+        try{
+            let _ = await TokenService.bulkTransfer(recipents);
+        }catch(e){
+            log := Error.message(e);
+        };
     };
 
     public shared({caller}) func treasuryFee(value:Float): async () {
@@ -175,6 +191,7 @@ actor {
             switch (path[0]) {
                 case ("reflectionCount") return _natResponse(reflectionCount);
                 case ("reflectionAmount") return _natResponse(reflectionAmount);
+                case ("log") return _textResponse(log);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else {
@@ -184,6 +201,17 @@ actor {
 
     private func _natResponse(value : Nat) : Http.Response {
         let json = #Number(value);
+        let blob = Text.encodeUtf8(JSON.show(json));
+        let response : Http.Response = {
+            status_code = 200;
+            headers = [("Content-Type", "application/json")];
+            body = blob;
+            streaming_strategy = null;
+        };
+    };
+
+    private func _textResponse(value : Text) : Http.Response {
+        let json = #String(value);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
             status_code = 200;

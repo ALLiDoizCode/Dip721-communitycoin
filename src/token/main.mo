@@ -21,6 +21,7 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
+import Error "mo:base/Error";
 import Cap "./cap/Cap";
 import Root "./cap/Root";
 import Holder "../models/Holder";
@@ -39,6 +40,7 @@ import TopUpService "../services/TopUpService";
 import Cycles "mo:base/ExperimentalCycles";
 import Prim "mo:prim";
 
+
 shared(msg) actor class Token(
     _logo: Text,
     _name: Text,
@@ -50,6 +52,7 @@ shared(msg) actor class Token(
     ) = this {
 
     private type Reflection = Reflection.Reflection;
+    private type Transaction = Transaction.Transaction;
     type Holder = Holder.Holder;
     type Operation = Types.Operation;
     type TransactionStatus = Types.TransactionStatus;
@@ -66,7 +69,6 @@ shared(msg) actor class Token(
     // returns tx index or error msg
     public type TxReceipt = Types.TxReceipt;
     private type JSON = JSON.JSON;
-    private type Transaction = Transaction.Transaction;
     private stable var transactionPercentage:Float = 0.11;
     private stable var owner_ : Principal = _owner;
     private stable var logo_ : Text = _logo;
@@ -90,6 +92,8 @@ shared(msg) actor class Token(
     private var burnWallet = Principal.fromText(Constants.burnWallet);
     private var teamWallet = Principal.fromText(Constants.teamWallet);
     private var marketingWallet = Principal.fromText(Constants.marketingWallet);
+
+    private var log = "";
 
     let burnAmount:Nat = 50000000000000000000;
     let distributionWalletAmount = Float.mul(supply,0.2);
@@ -182,6 +186,32 @@ shared(msg) actor class Token(
         if (to_balance_new != 0) { balances.put(to, to_balance_new); };
     };
 
+    private func _transactonFactory(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text) : Transaction {
+        let now = Time.now();
+
+        let _transaction = {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = "";
+            transactionType = transactionType;
+        };
+
+        let hash = Utils._transactionToHash(_transaction);
+
+        {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = hash;
+            transactionType = transactionType;
+        };
+    };
+
     private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text) : async Text {
         let now = Time.now();
 
@@ -221,7 +251,16 @@ shared(msg) actor class Token(
         };
     };
 
-    private func _putReflection(amount:Nat) : async Text {
+    private func _reflectionFactory(amount:Nat) : Reflection {
+        let now = Time.now();
+
+        {
+            amount = amount;
+            timestamp = now;
+        };
+    };
+
+    /*private func _putReflection(amount:Nat) : async Text {
         let now = Time.now();
 
         let reflection = {
@@ -241,7 +280,7 @@ shared(msg) actor class Token(
                 return "";
             };
         };
-    };
+    };*/
 
     private func _balanceOf(who: Principal) : Nat {
         switch (balances.get(who)) {
@@ -282,7 +321,8 @@ shared(msg) actor class Token(
 
     public shared({caller})func chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
         let daoCanister = Principal.fromText(Constants.daoCanister);
-        assert(daoCanister == caller);
+        let taxCollectorCanister = Principal.fromText(Constants.taxCollectorCanister);
+        assert(daoCanister == caller or taxCollectorCanister == caller);
         await _chargeTax(sender,amount);
     };
 
@@ -302,7 +342,7 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        await TaxCollectorService.distribute(amount,holders);
+        ignore TaxCollectorService.distribute(amount,holders);
         let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         await addRecord(
             msg.caller, "transfer",
@@ -344,61 +384,70 @@ shared(msg) actor class Token(
     };
 
     public shared(msg) func transfer(to: Principal, value: Nat) : async TxReceipt {
-        await _topUp();
+        ignore _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        let taxResult = await _chargeTax(msg.caller, tax);
-        switch(taxResult){
-            case(#Ok(value)){
-                _chargeFee(msg.caller, fee);
-                _transfer(msg.caller, to, value - tax);
-                let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
-                await addRecord(
-                    msg.caller, "transfer",
-                    [
-                        ("to", #Principal(to)),
-                        ("amount", #U64(u64(value - tax))),
-                        ("tax", #U64(u64(tax))),
-                        ("hash", #Text(hash))
-                    ]
-                );
-                return #Ok(_txcounter);
-            };
-            case(#Err(value)){
-                #Err(value)
-            }
-        };
-    };
+        ignore await _chargeTax(msg.caller, tax);
+        _chargeFee(msg.caller, fee);
+        _transfer(msg.caller, to, value - tax);
+        let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
+        ignore addRecord(
+            msg.caller, "transfer",
+            [
+                ("to", #Principal(to)),
+                ("amount", #U64(u64(value - tax))),
+                ("tax", #U64(u64(tax))),
+                ("hash", #Text(hash))
+            ]
+        );
+        return #Ok(_txcounter);
+};
 
     public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
-        await _topUp();
+        ignore _topUp();
+        log := Nat.toText(holders.size());
         var response:[Holder] = [];
-        let communityCanister = Principal.fromText(Constants.taxCollectorCanister);
-        if(msg.caller != communityCanister) {return response};
+        var transactions:[Transaction] = [];
+        var reflections:[Reflection] = [];
+        let taxCollectorCanister = Principal.fromText(Constants.taxCollectorCanister);
+        if(msg.caller != taxCollectorCanister) {return response};
         for(value in holders.vals()){
-            if (_balanceOf(msg.caller) < value.amount) { return response };
-            txcounter := txcounter + 1;
-            var _txcounter = txcounter;
-            _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
-            let hash = await _putTransacton(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
-            let reflectiopn = await _putReflection(value.amount);
-            await addRecord(
-                msg.caller, "transfer",
-                [
-                    ("to", #Principal(Principal.fromText(value.holder))),
-                    ("amount", #U64(u64(value.amount))),
-                    ("hash", #Text(hash))
-                ]
-            );
-            let _holder:Holder = {
-                holder = value.holder;
-                amount = value.amount;
-                receipt = #Ok(_txcounter);
+            log := "start loop";
+            try{
+                if (_balanceOf(msg.caller) < value.amount) { return response };
+                txcounter := txcounter + 1;
+                var _txcounter = txcounter;
+                _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
+                let transaction = _transactonFactory(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
+                let reflection =  _reflectionFactory(value.amount);
+                transactions := Array.append(transactions,[transaction]);
+                reflections := Array.append(reflections,[reflection]);
+                /*ignore addRecord(
+                    msg.caller, "transfer",
+                    [
+                        ("to", #Principal(Principal.fromText(value.holder))),
+                        ("amount", #U64(u64(value.amount))),
+                    ]
+                );*/
+                let _holder:Holder = {
+                    holder = value.holder;
+                    amount = value.amount;
+                    receipt = #Ok(_txcounter);
+                };
+                response := Array.append(response,[_holder]);
+                log := "Worked";
+            }catch(e){
+                log := Error.message(e);
             };
-            response := Array.append(response,[_holder]);
+        };
+        try{
+            await Utils._loadBalanceTransactons(transactions);
+            await Utils._loadBalanceRefelctions(reflections);
+        }catch(e){
+            log := "LoadBalancer:" #Error.message(e);
         };
         return response;
     };
@@ -727,6 +776,7 @@ shared(msg) actor class Token(
         if (path.size() == 1) {
             switch (path[0]) {
                 case ("burnt") return _natResponse(burnt);
+                case ("log") return _textResponse(log);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else if (path.size() == 2) {
@@ -741,6 +791,17 @@ shared(msg) actor class Token(
 
     private func _natResponse(value : Nat) : Http.Response {
         let json = #Number(value);
+        let blob = Text.encodeUtf8(JSON.show(json));
+        let response : Http.Response = {
+            status_code = 200;
+            headers = [("Content-Type", "application/json")];
+            body = blob;
+            streaming_strategy = null;
+        };
+    };
+
+    private func _textResponse(value : Text) : Http.Response {
+        let json = #String(value);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
             status_code = 200;

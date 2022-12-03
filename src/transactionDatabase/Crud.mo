@@ -39,9 +39,9 @@ module {
             sk = _sk;
             attributes = attributes;
         });
-        ignore  await _putTransactionId(db, attributes, transaction.hash);
-        ignore  await _putTransactionSender(db, attributes, transaction.hash, transaction.sender, timeStamp);
-        ignore  await _putTransactionReceiver(db, attributes, transaction.hash, transaction.receiver, timeStamp);
+        ignore await _putTransactionId(db, attributes, transaction.hash);
+        ignore await _putTransactionSender(db, attributes, transaction.hash, transaction.sender, timeStamp);
+        ignore await _putTransactionReceiver(db, attributes, transaction.hash, transaction.receiver, timeStamp);
         transaction.hash;
     };
 

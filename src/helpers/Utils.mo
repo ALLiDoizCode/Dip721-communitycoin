@@ -5,6 +5,7 @@ import Float "mo:base/Float";
 import Array "mo:base/Array";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
+import List "mo:base/List";
 import Text "mo:base/Text";
 import Char "mo:base/Char";
 import Option "mo:base/Option";
@@ -19,6 +20,8 @@ import Reflection "../models/Reflection";
 import SHA256 "mo:crypto/SHA/SHA256";
 import Blob "mo:base/Blob";
 import Hex "mo:encoding/Hex";
+import LoadBalanceService "../services/LoadBalanceService";
+import Constants "../Constants";
 
 module {
 
@@ -26,6 +29,7 @@ module {
     private type Transaction = Transaction.Transaction;
     private type Holder = Holder.Holder;
     private type Reflection = Reflection.Reflection;
+    private type ReflectionTransaction = Reflection.ReflectionTransaction;
 
     public func natToFloat(value:Nat): Float {
         //var nat64 = Nat64.fromNat(value);
@@ -148,9 +152,84 @@ module {
         #Object(transactionHashMap);
     };
 
+    public func _reflectionTransactionToJson(transaction:ReflectionTransaction): JSON {
+        let transactionHashMap : HashMap.HashMap<Text, JSON> = HashMap.HashMap<Text, JSON>(
+            0,
+            Text.equal,
+            Text.hash,
+        );
+
+        transactionHashMap.put("reciever", #String(transaction.reciever));
+        transactionHashMap.put("amount", #Number(transaction.amount));
+
+        #Object(transactionHashMap);
+    };
+
     public func _transactionToHash(transaction: Transaction): Text {
         let json = _transactionToJson(transaction);
         let sum256 = SHA256.sum(Blob.toArray(Text.encodeUtf8(JSON.show(json))));
         Hex.encode(sum256);
+    };
+
+    public func _loadBalanceTransactons(transactions: [Transaction]): async() {
+        var transactionList = List.fromArray(transactions);
+        var chunkSize = 1;
+        if(transactions.size() > 3){
+            chunkSize := transactions.size()/3;
+        };
+        var chunks = List.chunks(chunkSize,transactionList);
+        var nodes = List.fromArray([Constants.loadBalancer_1,Constants.loadBalancer_2,Constants.loadBalancer_3]);
+
+        for(chunk in List.toIter(chunks)){
+            let _pop = List.pop(nodes);
+            let canister = _pop.0;
+            nodes := _pop.1;
+            switch(canister){
+                case(?canister){
+                    switch(chunk){
+                        case(?chunk){
+                            await LoadBalanceService.putTransactions(canister,List.toArray(chunk.1));
+                        };
+                        case(null){
+
+                        };
+                    };
+                };
+                case(null){
+
+                };
+            };
+        };
+    };
+
+    public func _loadBalanceRefelctions(transactions: [Reflection]): async() {
+        var transactionList = List.fromArray(transactions);
+        var chunkSize = 1;
+        if(transactions.size() > 3){
+            chunkSize := transactions.size()/3;
+        };
+        var chunks = List.chunks(chunkSize,transactionList);
+        var nodes = List.fromArray([Constants.loadBalancer_1,Constants.loadBalancer_2,Constants.loadBalancer_3]);
+
+        for(chunk in List.toIter(chunks)){
+            let _pop = List.pop(nodes);
+            let canister = _pop.0;
+            nodes := _pop.1;
+            switch(canister){
+                case(?canister){
+                    switch(chunk){
+                        case(?chunk){
+                            await LoadBalanceService.putReflections(canister,List.toArray(chunk.1));
+                        };
+                        case(null){
+
+                        };
+                    };
+                };
+                case(null){
+
+                };
+            };
+        };
     };
 }

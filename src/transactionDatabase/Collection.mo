@@ -98,7 +98,10 @@ shared ({ caller = owner }) actor class Collection({
     public shared ({ caller }) func putTransaction(transaction : Transaction) : async Text {
         ignore _topUp();
         let canister = Principal.toText(caller);
-        assert (Constants.dip20Canister == canister);
+        assert (Constants.dip20Canister == canister
+        or Constants.loadBalancer_1 == canister 
+        or Constants.loadBalancer_2 == canister 
+        or Constants.loadBalancer_3 == canister);
         await Crud.putTransaction(db, transaction);
 
     };

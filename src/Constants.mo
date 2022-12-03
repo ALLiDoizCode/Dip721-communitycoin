@@ -12,6 +12,9 @@ module {
     public let taxCollectorCanister = "fppg4-cyaaa-aaaap-aanza-cai";
     public let databaseCanister = "rmc3i-vqaaa-aaaal-qbfqq-cai";
     public let reflectionDatabaseCanister = "xa3um-eqaaa-aaaap-aaoyq-cai";
+    public let loadBalancer_1 = "7yue6-gyaaa-aaaan-qbgvq-cai";
+    public let loadBalancer_2 = "4xyzm-pqaaa-aaaap-aaqda-cai";
+    public let loadBalancer_3 = "clqed-riaaa-aaaak-qbiba-cai";
     public let distributionCanister = "cjzlc-riaaa-aaaal-qbgwa-cai";
 
     public let cyclesThreshold = 20000000000000;

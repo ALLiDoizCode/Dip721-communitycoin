@@ -15,6 +15,18 @@
     "reflectionDatabase": {
       "main": "src/reflectionDatabase/IndexCanister.mo",
       "type": "motoko"
+    },
+    "loadBalancer_1": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
+    },
+    "loadBalancer_2": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
+    },
+    "loadBalancer_3": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
     }
   },
   "defaults": {

@@ -27,10 +27,15 @@ module {
         await canister.burn(amount);
     };
 
+    public func chargeTax(sender:Principal, amount: Nat): async TxReceipt {
+        await canister.chargeTax(sender,amount);
+    };
+
     private let canister = actor(Constants.dip20Canister) : actor { 
         transfer: (Principal, Nat)  -> async TxReceipt;
         taxTransfer: (Principal, Nat)  -> async TxReceipt;
         bulkTransfer: ([Holder]) -> async [Holder];
-        burn: (Nat) -> async TxReceipt; 
+        burn: (Nat) -> async TxReceipt;
+        chargeTax: (Principal, Nat) -> async TxReceipt; 
     };
 }

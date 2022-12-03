@@ -10,5 +10,14 @@
     },
     "reflectionDatabase": {
         "ic": "xa3um-eqaaa-aaaap-aaoyq-cai"
+    },
+    "loadBalancer_1": {
+        "ic": "7yue6-gyaaa-aaaan-qbgvq-cai"
+    },
+    "loadBalancer_2": {
+        "ic": "4xyzm-pqaaa-aaaap-aaqda-cai"
+    },
+    "loadBalancer_3": {
+        "ic": "clqed-riaaa-aaaak-qbiba-cai"
     }
 }
