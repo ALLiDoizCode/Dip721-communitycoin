@@ -24,4 +24,12 @@ module {
 
         await canister.putReflections(reflections);
     };
+
+    public func fetchNodes() : async [Text] {
+        let canister = actor(Constants.loadBalancer_Index_Canister) : actor { 
+            fetchNodes: shared () -> async [Text]; 
+        };
+
+        await canister.fetchNodes();
+    };
 }

@@ -16,6 +16,10 @@
       "main": "src/reflectionDatabase/IndexCanister.mo",
       "type": "motoko"
     },
+    "loadBalancer_index": {
+      "main": "src/loadBalancer/index.mo",
+      "type": "motoko"
+    },
     "loadBalancer_1": {
       "main": "src/loadBalancer/main.mo",
       "type": "motoko"
@@ -25,6 +29,18 @@
       "type": "motoko"
     },
     "loadBalancer_3": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
+    },
+    "loadBalancer_4": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
+    },
+    "loadBalancer_5": {
+      "main": "src/loadBalancer/main.mo",
+      "type": "motoko"
+    },
+    "loadBalancer_6": {
       "main": "src/loadBalancer/main.mo",
       "type": "motoko"
     }

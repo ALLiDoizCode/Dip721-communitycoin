@@ -25,6 +25,7 @@ import Crud "./Crud";
 import Transaction "../models/Transaction";
 import Reflection "../models/Reflection";
 import TopUpService "../services/TopUpService";
+import LoadBalanceService "../services/LoadBalanceService";
 
 shared({ caller = owner }) actor class Collection({
     // the primary key of this canister
@@ -104,10 +105,10 @@ shared({ caller = owner }) actor class Collection({
     public shared({ caller }) func putReflection(reflection: Reflection) : async Text {
         ignore _topUp();
         let canister = Principal.toText(caller);
-        assert (Constants.dip20Canister == canister
-        or Constants.loadBalancer_1 == canister 
-        or Constants.loadBalancer_2 == canister 
-        or Constants.loadBalancer_3 == canister);
+        var nodes = await LoadBalanceService.fetchNodes();
+        nodes := Array.append(nodes,[Constants.dip20Canister]);
+        let exist = Array.find(nodes,func(e:Text):Bool{e == canister});
+        assert(exist != null);
         await Crud.putReflection(db,reflection);
         
     };

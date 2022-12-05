@@ -11,6 +11,9 @@
     "reflectionDatabase": {
         "ic": "xa3um-eqaaa-aaaap-aaoyq-cai"
     },
+    "loadBalancer_index": {
+        "ic": "p7sib-4yaaa-aaaap-qavua-cai"
+    },
     "loadBalancer_1": {
         "ic": "7yue6-gyaaa-aaaan-qbgvq-cai"
     },
@@ -19,5 +22,14 @@
     },
     "loadBalancer_3": {
         "ic": "clqed-riaaa-aaaak-qbiba-cai"
+    },
+    "loadBalancer_4":{
+        "ic": "fdv3s-7aaaa-aaaak-qbiqq-cai"
+    },
+    "loadBalancer_5":{
+        "ic": "6msql-kqaaa-aaaag-aa32a-cai"
+    },
+    "loadBalancer_6":{
+        "ic": "fkwqo-jiaaa-aaaak-qbira-cai"
     }
 }

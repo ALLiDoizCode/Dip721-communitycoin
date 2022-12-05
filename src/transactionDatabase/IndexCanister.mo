@@ -56,7 +56,7 @@ shared ({caller = owner}) actor class IndexCanister() = this {
   public shared({caller = caller}) func autoScaleCollectionServiceCanister(pk: Text): async Text {
     ignore _topUp();
     // Auto-Scaling Authorization - if the request to auto-scale the partition is not coming from an existing canister in the partition, reject it
-    if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk)) {
+    if (Utils.callingCanisterOwnsPK(caller, pkToCanisterMap, pk) or caller == owner) {
       Debug.print("creating an additional canister for pk=" # pk);
       await createCollectionServiceCanister(pk, ?[owner, Principal.fromActor(this)])
     } else {

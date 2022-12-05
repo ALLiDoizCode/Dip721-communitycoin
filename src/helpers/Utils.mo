@@ -172,13 +172,14 @@ module {
     };
 
     public func _loadBalanceTransactons(transactions: [Transaction]): async() {
+        let nodesArray = await LoadBalanceService.fetchNodes();
         var transactionList = List.fromArray(transactions);
         var chunkSize = 1;
-        if(transactions.size() > 3){
-            chunkSize := transactions.size()/3;
+        if(transactions.size() > nodesArray.size()){
+            chunkSize := transactions.size()/nodesArray.size();
         };
         var chunks = List.chunks(chunkSize,transactionList);
-        var nodes = List.fromArray([Constants.loadBalancer_1,Constants.loadBalancer_2,Constants.loadBalancer_3]);
+        var nodes = List.fromArray(nodesArray);
 
         for(chunk in List.toIter(chunks)){
             let _pop = List.pop(nodes);
@@ -203,13 +204,14 @@ module {
     };
 
     public func _loadBalanceRefelctions(transactions: [Reflection]): async() {
+        let nodesArray = await LoadBalanceService.fetchNodes();
         var transactionList = List.fromArray(transactions);
         var chunkSize = 1;
-        if(transactions.size() > 3){
-            chunkSize := transactions.size()/3;
+        if(transactions.size() > nodesArray.size()){
+            chunkSize := transactions.size()/nodesArray.size();
         };
         var chunks = List.chunks(chunkSize,transactionList);
-        var nodes = List.fromArray([Constants.loadBalancer_1,Constants.loadBalancer_2,Constants.loadBalancer_3]);
+        var nodes = List.fromArray(nodesArray);
 
         for(chunk in List.toIter(chunks)){
             let _pop = List.pop(nodes);

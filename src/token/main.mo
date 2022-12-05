@@ -453,8 +453,8 @@ shared(msg) actor class Token(
     };
 
     /// Transfers value amount of tokens from Principal from to Principal to.
-    public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
-        await _topUp();
+    /*public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
+        ignore _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
         if (_balanceOf(from) < value + fee) { return #Err(#InsufficientBalance); };
@@ -462,42 +462,35 @@ shared(msg) actor class Token(
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        let taxResult = await _chargeTax(msg.caller, tax);
-        switch(taxResult){
-            case(#Ok(value)){
-                _chargeFee(from, fee);
-                _transfer(from, to, value);
-                let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "tranfer");
-                let allowed_new : Nat = allowed - value - fee;
-                if (allowed_new != 0) {
-                    let allowance_from = Types.unwrap(allowances.get(from));
-                    allowance_from.put(msg.caller, allowed_new);
-                    allowances.put(from, allowance_from);
-                } else {
-                    if (allowed != 0) {
-                        let allowance_from = Types.unwrap(allowances.get(from));
-                        allowance_from.delete(msg.caller);
-                        if (allowance_from.size() == 0) { allowances.delete(from); }
-                        else { allowances.put(from, allowance_from); };
-                    };
-                };
-                await addRecord(
-                    msg.caller, "transferFrom",
-                    [
-                        ("from", #Principal(from)),
-                        ("to", #Principal(to)),
-                        ("amount", #U64(u64(value))),
-                        ("tax", #U64(u64(tax))),
-                        ("hash", #Text(hash))
-                    ]
-                );
-                return #Ok(_txcounter);
-            };
-            case(#Err(value)){
-                #Err(value)
+        ignore await _chargeTax(from, tax);
+        _chargeFee(from, fee);
+        _transfer(from, to, value - tax);
+        let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
+        let allowed_new : Nat = allowed - value - fee;
+        if (allowed_new != 0) {
+            let allowance_from = Types.unwrap(allowances.get(from));
+            allowance_from.put(msg.caller, allowed_new);
+            allowances.put(from, allowance_from);
+        } else {
+            if (allowed != 0) {
+                let allowance_from = Types.unwrap(allowances.get(from));
+                allowance_from.delete(msg.caller);
+                if (allowance_from.size() == 0) { allowances.delete(from); }
+                else { allowances.put(from, allowance_from); };
             };
         };
-    };
+        ignore addRecord(
+            msg.caller, "transferFrom",
+            [
+                ("from", #Principal(from)),
+                ("to", #Principal(to)),
+                ("amount", #U64(u64(value))),
+                ("tax", #U64(u64(tax))),
+                ("hash", #Text(hash))
+            ]
+        );
+        return #Ok(_txcounter);
+    };*/
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
     /// If this function is called again it overwrites the current allowance with value.

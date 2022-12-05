@@ -7,12 +7,13 @@ import Response "../models/Response";
 import JSON "../helpers/JSON";
 import Constants "../Constants";
 import Error "mo:base/Error";
+import Array "mo:base/Array";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
 
-actor  {
+actor class Node() {
 
     private var log = "";
 
@@ -21,26 +22,28 @@ actor  {
     private type JSON = JSON.JSON;
 
     public shared({caller}) func putTransactions(transactions:[Transaction]): async() {
-        log := "transaction database started work " #Nat.toText(transactions.size());
+        let _transactions = Array.filter<Transaction>(transactions,func(e:Transaction):Bool{e.amount > 0});
+        log := "transaction database started work " #Nat.toText(_transactions.size());
         let tokenCanister = Principal.fromText(Constants.dip20Canister);
         assert(caller == tokenCanister);
         try{
-            await DatabaseBatch.batchAwaitAllCanisterStatuses(transactions, 100);
-            log := "database Worked " #Nat.toText(transactions.size());
+            await DatabaseBatch.batchAwaitAllCanisterStatuses(_transactions, 100);
+            log := "database Worked " #Nat.toText(_transactions.size());
         }catch(e){
-            log := "reflection transaction:" #"Size: " #Nat.toText(transactions.size()) #Error.message(e);
+            log := "reflection transaction:" #"Size: " #Nat.toText(_transactions.size()) #" " #Error.message(e);
         };
     };
 
     public shared({caller}) func putReflections(reflections:[Reflection]): async() {
-        log := "reflection database started work " #Nat.toText(reflections.size());
+        let _reflections = Array.filter<Reflection>(reflections,func(e:Reflection):Bool{e.amount > 0});
+        log := "reflection database started work " #Nat.toText(_reflections.size());
         let tokenCanister = Principal.fromText(Constants.dip20Canister);
         assert(caller == tokenCanister);
         try{
-            await ReflectionDatabaseBatch.batchAwaitAllCanisterStatuses(reflections, 100);
-            log := "database Worked " #Nat.toText(reflections.size());
+            await ReflectionDatabaseBatch.batchAwaitAllCanisterStatuses(_reflections, 100);
+            log := "database Worked " #Nat.toText(_reflections.size());
         }catch(e){
-            log := "refelction:" #"Size: " #Nat.toText(reflections.size()) #Error.message(e) ;
+            log := "refelction:" #"Size: " #Nat.toText(_reflections.size()) #" " #Error.message(e) ;
         };
     };
 
