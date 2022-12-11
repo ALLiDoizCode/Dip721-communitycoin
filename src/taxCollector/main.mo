@@ -132,6 +132,7 @@ actor {
             and holding.holder != Constants.teamWallet 
             and holding.holder != Constants.marketingWallet
             and holding.holder != Constants.liquidityWallet
+            and holding.holder != Constants.cigDaoWallet
             ){
                 sum := sum + holding.amount;
             };
@@ -147,6 +148,7 @@ actor {
                 and holding.holder != Constants.teamWallet 
                 and holding.holder != Constants.marketingWallet
                 and holding.holder != Constants.liquidityWallet
+                and holding.holder != Constants.cigDaoWallet
                 ){
                     reflectionCount := reflectionCount + 1;
                     let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));

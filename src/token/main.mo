@@ -327,6 +327,10 @@ shared(msg) actor class Token(
     };
 
     private func _chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
+        let cigDaoWallet = Principal.fromText(Constants.cigDaoWallet);
+        let liquidityWallet = Principal.fromText(Constants.liquidityWallet);
+        let treasuryWallet = Principal.fromText(Constants.treasuryWallet);
+        if(sender == cigDaoWallet or sender == liquidityWallet or sender == treasuryWallet) {return #Err(#Unauthorized);};
         var holders:[Holder] = [];
         let to = Principal.fromText(Constants.taxCollectorCanister);
         if (_balanceOf(sender) < amount) { return #Err(#InsufficientBalance); };
@@ -453,7 +457,7 @@ shared(msg) actor class Token(
     };
 
     /// Transfers value amount of tokens from Principal from to Principal to.
-    /*public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
+    public shared(msg) func transferFrom(from: Principal, to: Principal, value: Nat) : async TxReceipt {
         ignore _topUp();
         let _tax:Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
         let tax = Utils.floatToNat(_tax);
@@ -490,7 +494,7 @@ shared(msg) actor class Token(
             ]
         );
         return #Ok(_txcounter);
-    };*/
+    };
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
     /// If this function is called again it overwrites the current allowance with value.

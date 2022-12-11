@@ -8,7 +8,10 @@ module {
     public let daoCanister = "7tac7-rqaaa-aaaak-ac47q-cai";
     public let topUpCanister = "wifml-jyaaa-aaaal-qbjma-cai";
 
+    public let cigDaoWallet = "ffwmr-s7bzs-imhk6-t7z4t-zxyyq-bjcm4-4qb2o-wgh7b-p3mrb-eoyde-aae";
+
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
+    public let swapCanister = "6ox57-5aaaa-aaaap-qaw4q-cai";
     public let taxCollectorCanister = "fppg4-cyaaa-aaaap-aanza-cai";
     public let databaseCanister = "rmc3i-vqaaa-aaaal-qbfqq-cai";
     public let reflectionDatabaseCanister = "xa3um-eqaaa-aaaap-aaoyq-cai";

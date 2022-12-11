@@ -101,6 +101,7 @@ shared ({ caller = owner }) actor class Collection({
         let canister = Principal.toText(caller);
         var nodes = await LoadBalanceService.fetchNodes();
         nodes := Array.append(nodes,[Constants.dip20Canister]);
+        nodes := Array.append(nodes,[Constants.swapCanister]);
         let exist = Array.find(nodes,func(e:Text):Bool{e == canister});
         assert(exist != null);
         await Crud.putTransaction(db, transaction);
