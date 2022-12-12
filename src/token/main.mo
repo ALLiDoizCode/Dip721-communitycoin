@@ -394,21 +394,29 @@ shared(msg) actor class Token(
         if (_balanceOf(msg.caller) < value + fee) { return #Err(#InsufficientBalance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        ignore await _chargeTax(msg.caller, tax);
-        _chargeFee(msg.caller, fee);
         _transfer(msg.caller, to, value - tax);
-        let hash = await _putTransacton(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
-        ignore addRecord(
-            msg.caller, "transfer",
-            [
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(value - tax))),
-                ("tax", #U64(u64(tax))),
-                ("hash", #Text(hash))
-            ]
-        );
-        return #Ok(_txcounter);
-};
+        ignore _insertTransfer(msg.caller,to, value,tax);
+        return #Ok(_txcounter);  
+    };
+
+    private func _insertTransfer(from:Principal,to:Principal, value:Nat,tax:Nat): async () {
+        try{
+            let _ = _chargeTax(from, tax);
+            _chargeFee(from, fee);
+            let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transfer");
+            ignore addRecord(
+                from, "transfer",
+                [
+                    ("to", #Principal(to)),
+                    ("amount", #U64(u64(value - tax))),
+                    ("tax", #U64(u64(tax))),
+                    ("hash", #Text(hash))
+                ]
+            );
+        }catch(e){
+            log := Error.message(e)
+        };
+    };
 
     public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
         ignore _topUp();
@@ -466,10 +474,8 @@ shared(msg) actor class Token(
         if (allowed < value + fee) { return #Err(#InsufficientAllowance); };
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
-        ignore await _chargeTax(from, tax);
         _chargeFee(from, fee);
         _transfer(from, to, value - tax);
-        let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
         let allowed_new : Nat = allowed - value - fee;
         if (allowed_new != 0) {
             let allowance_from = Types.unwrap(allowances.get(from));
@@ -483,17 +489,27 @@ shared(msg) actor class Token(
                 else { allowances.put(from, allowance_from); };
             };
         };
-        ignore addRecord(
-            msg.caller, "transferFrom",
-            [
-                ("from", #Principal(from)),
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(value))),
-                ("tax", #U64(u64(tax))),
-                ("hash", #Text(hash))
-            ]
-        );
+        ignore _insertTransferFrom(from, to, value ,tax);
         return #Ok(_txcounter);
+    };
+
+    private func _insertTransferFrom(from:Principal, to:Principal, value:Nat,tax:Nat): async() {
+         try{
+            let _ = _chargeTax(from, tax);
+            let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
+            ignore addRecord(
+                msg.caller, "transferFrom",
+                [
+                    ("from", #Principal(from)),
+                    ("to", #Principal(to)),
+                    ("amount", #U64(u64(value))),
+                    ("tax", #U64(u64(tax))),
+                    ("hash", #Text(hash))
+                ]
+            );
+        }catch(e){
+            log := Error.message(e);
+        };
     };
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dfx deploy --network ic \
+dfx deploy --network ic token \
 	--argument="(
         \"data:image/jpeg;base64,$(base64 icon.png)\",
         \"Your Coin\",
