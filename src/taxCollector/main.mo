@@ -78,8 +78,30 @@ actor {
         Cycles.balance();
     };
 
+    public query func getBurnerCount(): async Nat {
+        burned.size()
+    };
+
     public query func fetchTopBurners(): async [(Principal,Burner)] {
         _fetchTopBurners()
+    };
+
+    public query func fetchBurners(start: Nat, limit: Nat) : async [(Principal, Burner)] {
+        let temp =  Iter.toArray(burned.entries());
+        func order (a: (Principal, Burner), b: (Principal, Burner)) : Order.Order {
+            return Nat.compare(b.1.burnedAmount, a.1.burnedAmount);
+        };
+        let sorted = Array.sort(temp, order);
+        let limit_: Nat = if(start + limit > temp.size()) {
+            temp.size() - start
+        } else {
+            limit
+        };
+        let res = Array.init<(Principal, Burner)>(limit_, (Principal.fromText(Constants.treasuryWallet), {burnedAmount = 0;earnedAmount = 0;}));
+        for (i in Iter.range(0, limit_ - 1)) {
+            res[i] := sorted[i+start];
+        };
+        return Array.freeze(res);
     };
 
     public query func getBurner(owner:Principal): async ?Burner {
@@ -226,24 +248,6 @@ actor {
         let dip20Canister = Principal.fromText(Constants.dip20Canister);
         assert(caller == dip20Canister);
         _burnIt(sender,amount);
-    };
-
-    public query func getBurners(start: Nat, limit: Nat) : async [(Principal, Burner)] {
-        let temp =  Iter.toArray(burned.entries());
-        func order (a: (Principal, Burner), b: (Principal, Burner)) : Order.Order {
-            return Nat.compare(b.1.burnedAmount, a.1.burnedAmount);
-        };
-        let sorted = Array.sort(temp, order);
-        let limit_: Nat = if(start + limit > temp.size()) {
-            temp.size() - start
-        } else {
-            limit
-        };
-        let res = Array.init<(Principal, Burner)>(limit_, (Principal.fromText(Constants.treasuryWallet), {burnedAmount = 0;earnedAmount = 0;}));
-        for (i in Iter.range(0, limit_ - 1)) {
-            res[i] := sorted[i+start];
-        };
-        return Array.freeze(res);
     };
 
     private func _fetchTopBurners(): [(Principal,Burner)] {
