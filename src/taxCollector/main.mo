@@ -177,6 +177,7 @@ actor {
             and holding.holder != Constants.marketingWallet
             and holding.holder != Constants.liquidityWallet
             and holding.holder != Constants.cigDaoWallet
+            and holding.holder != Constants.swapCanister
             ){
                 sum := sum + holding.amount;
             };
@@ -192,6 +193,7 @@ actor {
                 and holding.holder != Constants.marketingWallet
                 and holding.holder != Constants.liquidityWallet
                 and holding.holder != Constants.cigDaoWallet
+                and holding.holder != Constants.swapCanister
                 ){
                     if(holding.holder == Constants.treasuryWallet){
                         let topBurners = _fetchTopBurners();
@@ -293,6 +295,7 @@ actor {
     private func _burnIt(owner:Principal,amount:Nat) {
         let _owner = Principal.toText(owner);
         if(_owner != Constants.distributionCanister
+            and _owner != Constants.swapCanister 
             and _owner != Constants.taxCollectorCanister 
             and _owner != Constants.teamWallet 
             and _owner != Constants.marketingWallet

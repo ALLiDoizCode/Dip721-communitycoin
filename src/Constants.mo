@@ -9,7 +9,7 @@ module {
     public let topUpCanister = "wifml-jyaaa-aaaal-qbjma-cai";
 
     public let cigDaoWallet = "ffwmr-s7bzs-imhk6-t7z4t-zxyyq-bjcm4-4qb2o-wgh7b-p3mrb-eoyde-aae";
-
+    
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
     public let swapCanister = "6ox57-5aaaa-aaaap-qaw4q-cai";
     public let taxCollectorCanister = "fppg4-cyaaa-aaaap-aanza-cai";
