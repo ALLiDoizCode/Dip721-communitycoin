@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import List "mo:base/List";
 import Blob "mo:base/Deque";
 import Buffer "mo:base/Buffer";
 import HashMap "mo:base/HashMap";
@@ -23,6 +24,7 @@ import TokenService "../services/TokenService";
 import Types "../models/types";
 import Http "../helpers/http";
 import Response "../models/Response";
+import Burner "../models/Burner";
 import JSON "../helpers/JSON";
 import Cycles "mo:base/ExperimentalCycles";
 import TopUpService "../services/TopUpService";
@@ -31,6 +33,7 @@ import Order "mo:base/Order";
 actor {
 
     private type TxReceipt = Types.TxReceipt;
+    private type Burner = Burner.Burner;
 
     //private stable var transactionPercentage:Float = 0.11;
     private stable var burnPercentage:Float = 0.03;
@@ -43,8 +46,8 @@ actor {
     private stable var reflectionAmount:Nat = 0;
     private var log = "";
 
-    private stable var burnedEntries : [(Principal,Nat)] = [];
-    private var burned = HashMap.fromIter<Principal,Nat>(burnedEntries.vals(), 0, Principal.equal, Principal.hash);
+    private stable var burnedEntries : [(Principal,Burner)] = [];
+    private var burned = HashMap.fromIter<Principal,Burner>(burnedEntries.vals(), 0, Principal.equal, Principal.hash);
 
     private type Holder = Holder.Holder;
 
@@ -73,6 +76,14 @@ actor {
 
     public query func getCycles(): async Nat {
         Cycles.balance();
+    };
+
+    public query func fetchTopBurners(): async [(Principal,Burner)] {
+        _fetchTopBurners()
+    };
+
+    public query func getBurner(owner:Principal): async ?Burner {
+        burned.get(owner);
     };
 
     private func _getMemorySize(): Nat {
@@ -140,7 +151,6 @@ actor {
             if(holding.holder != Constants.burnWallet 
             and holding.holder != Constants.distributionCanister
             and holding.holder != Constants.taxCollectorCanister 
-            and holding.holder != Constants.treasuryWallet 
             and holding.holder != Constants.teamWallet 
             and holding.holder != Constants.marketingWallet
             and holding.holder != Constants.liquidityWallet
@@ -155,19 +165,31 @@ actor {
             try {
                 if(holding.holder != Constants.burnWallet 
                 and holding.holder != Constants.distributionCanister 
-                and holding.holder != Constants.taxCollectorCanister 
-                and holding.holder != Constants.treasuryWallet 
+                and holding.holder != Constants.taxCollectorCanister  
                 and holding.holder != Constants.teamWallet 
                 and holding.holder != Constants.marketingWallet
                 and holding.holder != Constants.liquidityWallet
                 and holding.holder != Constants.cigDaoWallet
                 ){
-                    reflectionCount := reflectionCount + 1;
-                    let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
-                    let earnings = Float.mul(holder_amount,percentage);
-                    let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
-                    recipents := Array.append(recipents,[recipent]);
-                    reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+                    if(holding.holder == Constants.treasuryWallet){
+                        let topBurners = _fetchTopBurners();
+                        reflectionCount := reflectionCount + topBurners.size();
+                        let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
+                        let earnings = Float.mul(holder_amount,percentage);
+                        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
+                        for((spender, data) in topBurners.vals() ){
+                            _updateBurner(spender,Utils.floatToNat(share));
+                            let recipent:Holder = { holder = Principal.toText(spender); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
+                            recipents := Array.append(recipents,[recipent]);
+                        }
+                    }else {
+                        reflectionCount := reflectionCount + 1;
+                        let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
+                        let earnings = Float.mul(holder_amount,percentage);
+                        let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                        recipents := Array.append(recipents,[recipent]);
+                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+                    };
                 };
                 log := "worked";
             }catch(e){
@@ -206,10 +228,10 @@ actor {
         _burnIt(sender,amount);
     };
 
-    public query func getBurners(start: Nat, limit: Nat) : async [(Principal, Nat)] {
+    public query func getBurners(start: Nat, limit: Nat) : async [(Principal, Burner)] {
         let temp =  Iter.toArray(burned.entries());
-        func order (a: (Principal, Nat), b: (Principal, Nat)) : Order.Order {
-            return Nat.compare(b.1, a.1);
+        func order (a: (Principal, Burner), b: (Principal, Burner)) : Order.Order {
+            return Nat.compare(b.1.burnedAmount, a.1.burnedAmount);
         };
         let sorted = Array.sort(temp, order);
         let limit_: Nat = if(start + limit > temp.size()) {
@@ -217,11 +239,51 @@ actor {
         } else {
             limit
         };
-        let res = Array.init<(Principal, Nat)>(limit_, (Principal.fromText(Constants.treasuryWallet), 0));
+        let res = Array.init<(Principal, Burner)>(limit_, (Principal.fromText(Constants.treasuryWallet), {burnedAmount = 0;earnedAmount = 0;}));
         for (i in Iter.range(0, limit_ - 1)) {
             res[i] := sorted[i+start];
         };
         return Array.freeze(res);
+    };
+
+    private func _fetchTopBurners(): [(Principal,Burner)] {
+        let count = 50;
+        var result:[(Principal,Burner)] = [];
+        func order (a: (Principal, Burner), b: (Principal, Burner)) : Order.Order {
+            return Nat.compare(b.1.burnedAmount, a.1.burnedAmount);
+        };
+        for((spender,data) in burned.entries()){
+            if(result.size() < count){
+                let temp = Array.append(result,[(spender,data)]);
+                result := Array.sort(temp, order);
+            }else {
+                let temp = Array.append(result,[(spender,data)]);
+                let sort = Array.sort(temp, order);
+                var tempList = List.fromArray(sort);
+                var tempTopList = List.take(tempList,count);
+                result := List.toArray(tempTopList)
+            };
+        };
+        result;
+    };
+
+    private func _updateBurner(owner:Principal,earnings:Nat) {
+        let taxCollector = Principal.fromText("fppg4-cyaaa-aaaap-aanza-cai");
+        if(owner != taxCollector){
+            let exist = burned.get(owner);
+            switch(exist){
+                case(?exist){
+                    let burnerObject = {
+                        burnedAmount = exist.burnedAmount;
+                        earnedAmount = exist.earnedAmount + earnings;
+                    };
+                    burned.put(owner,burnerObject);
+                };
+                case(null){
+                    
+                };
+            }; 
+        };
     };
 
     private func _burnIt(owner:Principal,amount:Nat) {
@@ -230,10 +292,18 @@ actor {
             let exist = burned.get(owner);
             switch(exist){
                 case(?exist){
-                    burned.put(owner,amount+exist);
+                    let burnerObject = {
+                        burnedAmount = amount+exist.burnedAmount;
+                        earnedAmount = exist.earnedAmount;
+                    };
+                    burned.put(owner,burnerObject);
                 };
                 case(null){
-                    burned.put(owner,amount);
+                    let burnerObject = {
+                        burnedAmount = amount;
+                        earnedAmount = 0;
+                    };
+                    burned.put(owner,burnerObject);
                 };
             }; 
         };
