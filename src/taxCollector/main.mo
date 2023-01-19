@@ -26,6 +26,7 @@ import Response "../models/Response";
 import JSON "../helpers/JSON";
 import Cycles "mo:base/ExperimentalCycles";
 import TopUpService "../services/TopUpService";
+import Order "mo:base/Order";
 
 actor {
 
@@ -42,7 +43,18 @@ actor {
     private stable var reflectionAmount:Nat = 0;
     private var log = "";
 
+    private stable var burnedEntries : [(Principal,Nat)] = [];
+    private var burned = HashMap.fromIter<Principal,Nat>(burnedEntries.vals(), 0, Principal.equal, Principal.hash);
+
     private type Holder = Holder.Holder;
+
+    system func preupgrade() {
+        burnedEntries := Iter.toArray(burned.entries());
+    };
+
+    system func postupgrade() {
+        burnedEntries := [];
+    };
 
     /*public shared({caller}) func updateTransactionPercentage(value:Float): async() {
         assert(caller == Principal.fromText(Constants.daoCanister));
@@ -112,7 +124,7 @@ actor {
         maxHoldingPercentage := value;
     };*/
 
-    public shared({caller}) func distribute(amount:Nat,holders:[Holder]): async () {
+    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async () {
         log := Nat.toText(holders.size());
         ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
@@ -122,7 +134,7 @@ actor {
         var sum:Nat = 0;
         await treasuryFee(Utils.natToFloat(amount));
         await marketingFee(Utils.natToFloat(amount));
-        await burnFee(Utils.natToFloat(amount));
+        await burnFee(sender,Utils.natToFloat(amount));
         for (holding in holders.vals()) {
             log := "loop 1";
             if(holding.holder != Constants.burnWallet 
@@ -181,10 +193,50 @@ actor {
         ignore await TokenService.taxTransfer(wallet,_amount);
     };
 
-    public shared({caller}) func burnFee(value:Float): async () {
+    public shared({caller}) func burnFee(sender:Principal,value:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, burnPercentage));
-        let wallet = Principal.fromText(Constants.burnWallet);
         ignore await TokenService.burn(_amount);
+        _burnIt(sender,_amount);
+    };
+
+    public shared({caller}) func burnIt(sender:Principal, amount:Nat): async () {
+        ignore _topUp();
+        let dip20Canister = Principal.fromText(Constants.dip20Canister);
+        assert(caller == dip20Canister);
+        _burnIt(sender,amount);
+    };
+
+    public query func getBurners(start: Nat, limit: Nat) : async [(Principal, Nat)] {
+        let temp =  Iter.toArray(burned.entries());
+        func order (a: (Principal, Nat), b: (Principal, Nat)) : Order.Order {
+            return Nat.compare(b.1, a.1);
+        };
+        let sorted = Array.sort(temp, order);
+        let limit_: Nat = if(start + limit > temp.size()) {
+            temp.size() - start
+        } else {
+            limit
+        };
+        let res = Array.init<(Principal, Nat)>(limit_, (Principal.fromText(Constants.treasuryWallet), 0));
+        for (i in Iter.range(0, limit_ - 1)) {
+            res[i] := sorted[i+start];
+        };
+        return Array.freeze(res);
+    };
+
+    private func _burnIt(owner:Principal,amount:Nat) {
+        let taxCollector = Principal.fromText("fppg4-cyaaa-aaaap-aanza-cai");
+        if(owner != taxCollector){
+            let exist = burned.get(owner);
+            switch(exist){
+                case(?exist){
+                    burned.put(owner,amount+exist);
+                };
+                case(null){
+                    burned.put(owner,amount);
+                };
+            }; 
+        };
     };
 
     public query func http_request(request : Http.Request) : async Http.Response {

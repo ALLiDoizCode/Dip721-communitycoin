@@ -346,7 +346,7 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        ignore TaxCollectorService.distribute(amount,holders);
+        ignore TaxCollectorService.distribute(sender,amount,holders);
         let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         await addRecord(
             msg.caller, "transfer",
@@ -577,16 +577,8 @@ shared(msg) actor class Token(
         totalSupply_ -= amount;
         balances.put(msg.caller, from_balance - amount);
         burnt := burnt + amount;
+        ignore TaxCollectorService.burnIt(msg.caller, amount);
         let hash = await _putTransacton(amount, Principal.toText(msg.caller), "", 0, "burn");
-        await addRecord(
-            msg.caller, "burn",
-            [
-                ("from", #Principal(msg.caller)),
-                ("amount", #U64(u64(amount))),
-                ("fee", #U64(u64(0))),
-                ("hash", #Text(hash))
-            ]
-        );
         return #Ok(txcounter);
     };
 
