@@ -40,6 +40,11 @@ actor {
     private stable var reflectionPercentage:Float = 0.03;
     private stable var treasuryPercentage:Float = 0.03;
     private stable var marketingPercentage:Float = 0.02;
+
+    private stable var burnPercentageFull:Float = 3/11;
+    private stable var reflectionPercentageFull:Float = 3/11;
+    private stable var treasuryPercentageFull:Float = 3/11;
+    private stable var marketingPercentageFull:Float = 2/11;
     //private stable var maxHoldingPercentage:Float = 0.01;
 
     private stable var reflectionCount:Nat = 0;
@@ -157,17 +162,17 @@ actor {
         maxHoldingPercentage := value;
     };*/
 
-    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async () {
+    public shared({caller}) func chargeTax(sender:Principal,amount:Nat,holders:[Holder]): async () {
         log := Nat.toText(holders.size());
         ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
         var recipents:[Holder] = [];
         //var community_amount = Float.mul(Utils.natToFloat(amount), transactionPercentage);
-        var holder_amount = Float.mul(Utils.natToFloat(amount), reflectionPercentage);
+        var holder_amount = Float.mul(Utils.natToFloat(amount), reflectionPercentageFull);
         var sum:Nat = 0;
-        await treasuryFee(Utils.natToFloat(amount));
-        await marketingFee(Utils.natToFloat(amount));
-        await burnFee(sender,Utils.natToFloat(amount));
+        await treasuryFee(Utils.natToFloat(amount),treasuryPercentageFull);
+        await marketingFee(Utils.natToFloat(amount),marketingPercentageFull);
+        await burnFee(sender,Utils.natToFloat(amount),burnPercentageFull);
         for (holding in holders.vals()) {
             log := "loop 1";
             if(holding.holder != Constants.burnWallet 
@@ -227,20 +232,90 @@ actor {
         };
     };
 
-    public shared({caller}) func treasuryFee(value:Float): async () {
-        let _amount = Utils.floatToNat(Float.mul(value, treasuryPercentage));
+    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async () {
+        log := Nat.toText(holders.size());
+        ignore _topUp();
+        assert(caller == Principal.fromText(Constants.dip20Canister));
+        var recipents:[Holder] = [];
+        //var community_amount = Float.mul(Utils.natToFloat(amount), transactionPercentage);
+        var holder_amount = Float.mul(Utils.natToFloat(amount), reflectionPercentage);
+        var sum:Nat = 0;
+        await treasuryFee(Utils.natToFloat(amount),treasuryPercentage);
+        await marketingFee(Utils.natToFloat(amount),marketingPercentage);
+        await burnFee(sender,Utils.natToFloat(amount),burnPercentage);
+        for (holding in holders.vals()) {
+            log := "loop 1";
+            if(holding.holder != Constants.burnWallet 
+            and holding.holder != Constants.distributionCanister
+            and holding.holder != Constants.taxCollectorCanister 
+            and holding.holder != Constants.teamWallet 
+            and holding.holder != Constants.marketingWallet
+            and holding.holder != Constants.liquidityWallet
+            and holding.holder != Constants.cigDaoWallet
+            and holding.holder != Constants.swapCanister
+            ){
+                sum := sum + holding.amount;
+            };
+        };
+        log := "loop 1 end";
+        for (holding in holders.vals()) {
+            log := "loop 2";
+            try {
+                if(holding.holder != Constants.burnWallet 
+                and holding.holder != Constants.distributionCanister 
+                and holding.holder != Constants.taxCollectorCanister  
+                and holding.holder != Constants.teamWallet 
+                and holding.holder != Constants.marketingWallet
+                and holding.holder != Constants.liquidityWallet
+                and holding.holder != Constants.cigDaoWallet
+                and holding.holder != Constants.swapCanister
+                ){
+                    if(holding.holder == Constants.treasuryWallet){
+                        let topBurners = _fetchTopBurners();
+                        reflectionCount := reflectionCount + topBurners.size();
+                        let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
+                        let earnings = Float.mul(holder_amount,percentage);
+                        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
+                        for((spender, data) in topBurners.vals() ){
+                            _updateBurner(spender,Utils.floatToNat(share));
+                            let recipent:Holder = { holder = Principal.toText(spender); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
+                            recipents := Array.append(recipents,[recipent]);
+                        }
+                    }else {
+                        reflectionCount := reflectionCount + 1;
+                        let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
+                        let earnings = Float.mul(holder_amount,percentage);
+                        let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                        recipents := Array.append(recipents,[recipent]);
+                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+                    };
+                };
+                log := "worked";
+            }catch(e){
+                log := "loop error" #Error.message(e);
+            }
+        };
+        try{
+            let _ = await TokenService.bulkTransfer(recipents);
+        }catch(e){
+            log := Error.message(e);
+        };
+    };
+
+    public shared({caller}) func treasuryFee(value:Float,percentage:Float): async () {
+        let _amount = Utils.floatToNat(Float.mul(value, percentage));
         let wallet = Principal.fromText(Constants.treasuryWallet);
         ignore await TokenService.taxTransfer(wallet,_amount);
     };
 
-    public shared({caller}) func marketingFee(value:Float): async () {
-        let _amount = Utils.floatToNat(Float.mul(value, marketingPercentage));
+    public shared({caller}) func marketingFee(value:Float,percentage:Float): async () {
+        let _amount = Utils.floatToNat(Float.mul(value, percentage));
         let wallet = Principal.fromText(Constants.marketingWallet);
         ignore await TokenService.taxTransfer(wallet,_amount);
     };
 
-    public shared({caller}) func burnFee(sender:Principal,value:Float): async () {
-        let _amount = Utils.floatToNat(Float.mul(value, burnPercentage));
+    public shared({caller}) func burnFee(sender:Principal,value:Float,percentage:Float): async () {
+        let _amount = Utils.floatToNat(Float.mul(value, percentage));
         ignore await TokenService.burn(_amount);
         _burnIt(sender,_amount);
     };

@@ -323,7 +323,23 @@ shared(msg) actor class Token(
         let daoCanister = Principal.fromText(Constants.daoCanister);
         let taxCollectorCanister = Principal.fromText(Constants.taxCollectorCanister);
         assert(daoCanister == caller or taxCollectorCanister == caller);
-        await _chargeTax(sender,amount);
+        var holders:[Holder] = [];
+        let to = Principal.fromText(Constants.taxCollectorCanister);
+        if (_balanceOf(sender) < amount) { return #Err(#InsufficientBalance); };
+        txcounter := txcounter + 1;
+        var _txcounter = txcounter;
+        _transfer(sender, to, amount);
+        for((principal,amount) in balances.entries()) {
+            let _holder:Holder = {
+                holder = Principal.toText(principal);
+                amount = amount;
+                receipt = #Err(#Other(""));
+            };
+            holders := Array.append(holders,[_holder]);
+        };
+        ignore TaxCollectorService.chargeTax(sender,amount,holders);
+        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        return #Ok(_txcounter);
     };
 
     private func _chargeTax(sender:Principal,amount:Nat) : async TxReceipt {
@@ -348,15 +364,6 @@ shared(msg) actor class Token(
 
         ignore TaxCollectorService.distribute(sender,amount,holders);
         let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
-        await addRecord(
-            msg.caller, "transfer",
-            [
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(amount))),
-                ("tax", #U64(u64(0))),
-                ("hash", #Text(hash))
-            ]
-        );
         return #Ok(_txcounter);
     };
 
