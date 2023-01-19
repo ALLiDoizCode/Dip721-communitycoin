@@ -287,8 +287,14 @@ actor {
     };
 
     private func _burnIt(owner:Principal,amount:Nat) {
-        let taxCollector = Principal.fromText("fppg4-cyaaa-aaaap-aanza-cai");
-        if(owner != taxCollector){
+        let _owner = Principal.toText(owner);
+        if(_owner != Constants.distributionCanister
+            and _owner != Constants.taxCollectorCanister 
+            and _owner != Constants.teamWallet 
+            and _owner != Constants.marketingWallet
+            and _owner != Constants.liquidityWallet
+            and _owner != Constants.treasuryWallet
+            and _owner != Constants.cigDaoWallet){
             let exist = burned.get(owner);
             switch(exist){
                 case(?exist){
