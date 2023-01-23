@@ -39,6 +39,8 @@ import Reflection "../models/Reflection";
 import TopUpService "../services/TopUpService";
 import Cycles "mo:base/ExperimentalCycles";
 import Prim "mo:prim";
+import EQueue "mo:queue/EvictingQueue";
+import { recurringTimer; cancelTimer; } = "mo:base/Timer";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -80,6 +82,9 @@ shared(msg) actor class Token(
     private stable var fee : Nat = _fee;
     private stable var balanceEntries : [(Principal, Nat)] = [];
     private stable var allowanceEntries : [(Principal, [(Principal, Nat)])] = [];
+    private stable var taxToBeDistributed = EQueue.EvictingQueue<[(Nat, [Holder])]>();
+    private stable var taxDistributionClock: Nat = 0;
+
     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
     private var allowances = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Nat>>(1, Principal.equal, Principal.hash);
 
@@ -91,6 +96,7 @@ shared(msg) actor class Token(
     private var burnWallet = Principal.fromText(Constants.burnWallet);
     private var teamWallet = Principal.fromText(Constants.teamWallet);
     private var marketingWallet = Principal.fromText(Constants.marketingWallet);
+
 
     let burnAmount:Nat = 50000000000000000000;
     let distributionWalletAmount = Float.mul(supply,0.2);
@@ -303,7 +309,7 @@ shared(msg) actor class Token(
             holders := Array.append(holders,[_holder]);
         };
 
-        ignore TaxCollectorService.distribute(amount,holders);
+        taxToBeDistributed.push([amount, holders]);
         let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         ignore addRecord(
             msg.caller, "transfer",
@@ -315,6 +321,26 @@ shared(msg) actor class Token(
             ]
         );
         return #Ok(_txcounter);
+    };
+
+    public func distributeTaxes(): async () {
+        while(Option.isSome(taxToBeDistributed.peek())) {
+            let tran = taxToBeDistributed.peek();
+            try {
+                await TaxCollectorService.distribute(tran[0], tran[1]);
+                taxToBeDistributed.pop();
+            } catch (e) {
+                return;
+            };
+        }
+    };
+
+    public shared({caller}) func startDistributing(howOften: Nat): async () {
+        taxDistributionClock := recurringTimer(#seconds(howOften), distributeTaxes);
+    };
+
+    public shared({caller}) func stopDistributing(): async () {
+        cancelTimer(taxDistributionClock);
     };
 
     private func _transactionToHash(transaction:Transaction): Text {
@@ -538,6 +564,8 @@ shared(msg) actor class Token(
         );
         return #Ok(txcounter);
     };
+
+
 
     public query func logo() : async Text {
         return logo_;
