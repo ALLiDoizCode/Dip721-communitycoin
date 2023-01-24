@@ -337,8 +337,8 @@ shared(msg) actor class Token(
             };
             holders := Array.append(holders,[_holder]);
         };
-        ignore TaxCollectorService.chargeTax(sender,amount,holders);
-        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        await TaxCollectorService.chargeTax(sender,amount,holders);
+        ignore _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         return #Ok(_txcounter);
     };
 
@@ -363,7 +363,7 @@ shared(msg) actor class Token(
         };
 
         ignore TaxCollectorService.distribute(sender,amount,holders);
-        let hash = await _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        ignore _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         return #Ok(_txcounter);
     };
 
@@ -381,16 +381,7 @@ shared(msg) actor class Token(
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
         _transfer(msg.caller, to, value);
-        let hash = await _putTransacton(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
-        await addRecord(
-            msg.caller, "transfer",
-            [
-                ("to", #Principal(to)),
-                ("amount", #U64(u64(value))),
-                ("tax", #U64(u64(0))),
-                ("hash", #Text(hash))
-            ]
-        );
+        ignore _putTransacton(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
         return #Ok(_txcounter);
     };
 
@@ -584,8 +575,8 @@ shared(msg) actor class Token(
         totalSupply_ -= amount;
         balances.put(msg.caller, from_balance - amount);
         burnt := burnt + amount;
-        ignore TaxCollectorService.burnIt(msg.caller, amount);
-        let hash = await _putTransacton(amount, Principal.toText(msg.caller), "", 0, "burn");
+        await TaxCollectorService.burnIt(msg.caller, amount);
+        ignore _putTransacton(amount, Principal.toText(msg.caller), "", 0, "burn");
         return #Ok(txcounter);
     };
 

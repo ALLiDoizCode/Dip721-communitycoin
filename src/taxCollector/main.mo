@@ -54,14 +54,19 @@ actor {
     private stable var burnedEntries : [(Principal,Burner)] = [];
     private var burned = HashMap.fromIter<Principal,Burner>(burnedEntries.vals(), 0, Principal.equal, Principal.hash);
 
+    private stable var creditorEntries : [(Principal,Principal)] = [];
+    private var creditors = HashMap.fromIter<Principal,Principal>(creditorEntries.vals(), 0, Principal.equal, Principal.hash);
+
     private type Holder = Holder.Holder;
 
     system func preupgrade() {
         burnedEntries := Iter.toArray(burned.entries());
+        creditorEntries := Iter.toArray(creditors.entries());
     };
 
     system func postupgrade() {
         burnedEntries := [];
+        creditorEntries := [];
     };
 
     /*public shared({caller}) func updateTransactionPercentage(value:Float): async() {
@@ -89,6 +94,26 @@ actor {
 
     public query func fetchTopBurners(): async [(Principal,Burner)] {
         _fetchTopBurners()
+    };
+
+    public shared({caller}) func setCreditors(creditor:Principal): async () {
+        creditors.put(caller,creditor);
+    };
+
+    public query({caller}) func getCreditor(): async Principal {
+        _getCreditor(caller)
+    };
+
+    private func _getCreditor(owner:Principal):Principal {
+        let exist = creditors.get(owner);
+        switch(exist){
+            case(?exist){
+                exist
+            };
+            case(null){
+                owner
+            };
+        };
     };
 
     public query func fetchBurners(start: Nat, limit: Nat) : async [(Principal, Burner)] {
@@ -208,14 +233,14 @@ actor {
                         let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
                         for((spender, data) in topBurners.vals() ){
                             _updateBurner(spender,Utils.floatToNat(share));
-                            let recipent:Holder = { holder = Principal.toText(spender); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
+                            let recipent:Holder = { holder = Principal.toText(_getCreditor(spender)); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
                             recipents := Array.append(recipents,[recipent]);
                         }
                     }else {
                         reflectionCount := reflectionCount + 1;
                         let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                         let earnings = Float.mul(holder_amount,percentage);
-                        let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                        let recipent:Holder = { holder = Principal.toText(_getCreditor(Principal.fromText(holding.holder))); amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
                         recipents := Array.append(recipents,[recipent]);
                         reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                     };
@@ -278,14 +303,14 @@ actor {
                         let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
                         for((spender, data) in topBurners.vals() ){
                             _updateBurner(spender,Utils.floatToNat(share));
-                            let recipent:Holder = { holder = Principal.toText(spender); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
+                            let recipent:Holder = { holder = Principal.toText(_getCreditor(spender)); amount = Utils.floatToNat(share); receipt = #Err(#Other(""))};
                             recipents := Array.append(recipents,[recipent]);
                         }
                     }else {
                         reflectionCount := reflectionCount + 1;
                         let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                         let earnings = Float.mul(holder_amount,percentage);
-                        let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                        let recipent:Holder = { holder = Principal.toText(_getCreditor(Principal.fromText(holding.holder))); amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
                         recipents := Array.append(recipents,[recipent]);
                         reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                     };
