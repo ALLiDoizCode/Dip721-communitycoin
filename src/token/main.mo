@@ -819,11 +819,18 @@ shared(msg) actor class Token(
     };*/
 
     private func _distributeTransactions(): async () {
+        log := "preparing transactions";
         let _transactions = _getTransactionChunks();
         if(transactions.size() > 0){
-            await Utils._loadBalanceTransactons(_transactions);
-            _dropTransactionChunks();
-            ignore setTimer(#seconds(120), _distributeTransactions);
+            try{    
+                ignore setTimer(#seconds(30), _distributeTransactions);
+                log := "sending transactions";
+                await Utils._loadBalanceTransactons(_transactions);
+                log := "dropping transactions";
+                _dropTransactionChunks();
+            }catch(e){
+                log := Error.message(e)
+            }
         }else {
 
         }
