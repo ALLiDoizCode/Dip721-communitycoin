@@ -103,7 +103,7 @@ shared({ caller = owner }) actor class Collection({
     };
 
     public shared({ caller }) func putReflection(reflection: Reflection) : async Text {
-        ignore _topUp();
+        //ignore _topUp();
         let canister = Principal.toText(caller);
         var nodes = await LoadBalanceService.fetchNodes();
         nodes := Array.append(nodes,[Constants.dip20Canister]);

@@ -9,11 +9,11 @@ module {
 
     private type Holder = Holder.Holder;
 
-    public func distribute(sender:Principal, amount:Nat,holders:[Holder]): async () {
+    public func distribute(sender:Principal, amount:Nat,holders:[Holder]): async [Holder] {
         await canister.distribute(sender, amount,holders);
     };
 
-    public func chargeTax(sender:Principal, amount:Nat,holders:[Holder]): async () {
+    public func chargeTax(sender:Principal, amount:Nat,holders:[Holder]): async [Holder] {
         await canister.chargeTax(sender, amount,holders);
     };
 
@@ -22,8 +22,8 @@ module {
     };
 
     private let canister = actor(Constants.taxCollectorCanister) : actor { 
-        distribute: (Principal, Nat, [Holder])  -> async ();
-        chargeTax: (Principal, Nat, [Holder])  -> async ();
+        distribute: (Principal, Nat, [Holder])  -> async [Holder];
+        chargeTax: (Principal, Nat, [Holder])  -> async [Holder];
         burnIt: (Principal, Nat)  -> async ();
     };
 }

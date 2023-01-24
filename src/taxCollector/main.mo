@@ -187,7 +187,7 @@ actor {
         maxHoldingPercentage := value;
     };*/
 
-    public shared({caller}) func chargeTax(sender:Principal,amount:Nat,holders:[Holder]): async () {
+    public shared({caller}) func chargeTax(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
         log := Nat.toText(holders.size());
         ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
@@ -250,24 +250,23 @@ actor {
                 log := "loop error" #Error.message(e);
             }
         };
-        try{
-            let _ = await TokenService.bulkTransfer(recipents);
-        }catch(e){
-            log := Error.message(e);
-        };
+        recipents
     };
 
-    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async () {
+    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
         log := Nat.toText(holders.size());
-        ignore _topUp();
+        //ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
         var recipents:[Holder] = [];
         //var community_amount = Float.mul(Utils.natToFloat(amount), transactionPercentage);
         var holder_amount = Float.mul(Utils.natToFloat(amount), reflectionPercentage);
         var sum:Nat = 0;
         await treasuryFee(Utils.natToFloat(amount),treasuryPercentage);
+        log := "treasuryFee";
         await marketingFee(Utils.natToFloat(amount),marketingPercentage);
+        log := "marketingFee";
         await burnFee(sender,Utils.natToFloat(amount),burnPercentage);
+        log := "burnFee";
         for (holding in holders.vals()) {
             log := "loop 1";
             if(holding.holder != Constants.burnWallet 
@@ -320,11 +319,9 @@ actor {
                 log := "loop error" #Error.message(e);
             }
         };
-        try{
-            let _ = await TokenService.bulkTransfer(recipents);
-        }catch(e){
-            log := Error.message(e);
-        };
+        log := "preparing for bulk transfer";
+        recipents
+        //ignore await TokenService.bulkTransfer(recipents);
     };
 
     public shared({caller}) func treasuryFee(value:Float,percentage:Float): async () {

@@ -30,7 +30,7 @@ actor class Node() {
             await DatabaseBatch.batchAwaitAllCanisterStatuses(_transactions, 100);
             log := "database Worked " #Nat.toText(_transactions.size());
         }catch(e){
-            log := "reflection transaction:" #"Size: " #Nat.toText(_transactions.size()) #" " #Error.message(e);
+            log := "transaction:" #"Size: " #Nat.toText(_transactions.size()) #" " #Error.message(e);
         };
     };
 

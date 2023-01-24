@@ -20,6 +20,7 @@ import Order "mo:base/Order";
 import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import Result "mo:base/Result";
+import Int "mo:base/Int";
 import Text "mo:base/Text";
 import Error "mo:base/Error";
 import Cap "./cap/Cap";
@@ -39,7 +40,7 @@ import Reflection "../models/Reflection";
 import TopUpService "../services/TopUpService";
 import Cycles "mo:base/ExperimentalCycles";
 import Prim "mo:prim";
-
+import { recurringTimer; cancelTimer; setTimer;} = "mo:base/Timer";
 
 shared(msg) actor class Token(
     _logo: Text,
@@ -83,6 +84,15 @@ shared(msg) actor class Token(
     private stable var allowanceEntries : [(Principal, [(Principal, Nat)])] = [];
     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
     private var allowances = HashMap.HashMap<Principal, HashMap.HashMap<Principal, Nat>>(1, Principal.equal, Principal.hash);
+    private stable var transactions:[Transaction] = [];
+    private stable var reflectionsData:[Reflection] = [];
+
+    private stable var transactionClock: Nat = 0;
+    private stable var reflectionTransactionClock: Nat = 0;
+    private stable var timerStart = false;
+    private stable var reflectiontimerStart = false;
+    private stable let transactionChunkCount = 600;
+    private stable var lastReflectionAmount = 0;
 
     private let supply = Utils.natToFloat(totalSupply_);
     private stable var isBurnt = false;
@@ -212,7 +222,7 @@ shared(msg) actor class Token(
         };
     };
 
-    private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text) : async Text {
+    private func _putTransacton(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text) : Text {
         let now = Time.now();
 
         let _transaction = {
@@ -236,31 +246,22 @@ shared(msg) actor class Token(
             hash = hash;
             transactionType = transactionType;
         };
+        transactions := Array.append(transactions,[transaction]);
 
-        let _canisters = await DatabaseService.canister.getCanistersByPK("group#ledger");
-        let canisters = List.fromArray<Text>(_canisters);
-        let exist = List.last(canisters);
-
-        switch(exist){
-            case(?exist){
-                return await DatabaseService.putTransaction(exist,transaction);
-            };
-            case(null){
-                return "";
-            };
-        };
+        hash
     };
 
-    private func _reflectionFactory(amount:Nat) : Reflection {
+    /*private func _reflectionFactory(amount:Nat) : Reflection {
         let now = Time.now();
 
         {
             amount = amount;
             timestamp = now;
         };
-    };
 
-    /*private func _putReflection(amount:Nat) : async Text {
+    };*/
+
+    private func _putReflection(amount:Nat) {
         let now = Time.now();
 
         let reflection = {
@@ -268,19 +269,8 @@ shared(msg) actor class Token(
             timestamp = now;
         };
 
-        let _canisters = await ReflectionDatabaseService.canister.getCanistersByPK("group#ledger");
-        let canisters = List.fromArray<Text>(_canisters);
-        let exist = List.last(canisters);
-
-        switch(exist){
-            case(?exist){
-                return await ReflectionDatabaseService.putReflection(exist,reflection);
-            };
-            case(null){
-                return "";
-            };
-        };
-    };*/
+        reflectionsData := Array.append(reflectionsData,[reflection]);
+    };
 
     private func _balanceOf(who: Principal) : Nat {
         switch (balances.get(who)) {
@@ -337,8 +327,9 @@ shared(msg) actor class Token(
             };
             holders := Array.append(holders,[_holder]);
         };
-        await TaxCollectorService.chargeTax(sender,amount,holders);
-        ignore _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        let recipents = await TaxCollectorService.chargeTax(sender,amount,holders);
+        let r = _bulkTransfer(sender,recipents);
+        let _ =  _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
         return #Ok(_txcounter);
     };
 
@@ -361,9 +352,9 @@ shared(msg) actor class Token(
             };
             holders := Array.append(holders,[_holder]);
         };
-
-        ignore TaxCollectorService.distribute(sender,amount,holders);
-        ignore _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        let _ = _putTransacton(amount, Principal.toText(sender), Principal.toText(to), 0, "tax");
+        let recipents = await TaxCollectorService.distribute(sender,amount,holders);
+        let r = _bulkTransfer(sender,recipents);
         return #Ok(_txcounter);
     };
 
@@ -381,7 +372,7 @@ shared(msg) actor class Token(
         txcounter := txcounter + 1;
         var _txcounter = txcounter;
         _transfer(msg.caller, to, value);
-        ignore _putTransacton(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
+        let _ = _putTransacton(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
         return #Ok(_txcounter);
     };
 
@@ -399,66 +390,54 @@ shared(msg) actor class Token(
 
     private func _insertTransfer(from:Principal,to:Principal, value:Nat,tax:Nat): async () {
         try{
-            let _ = _chargeTax(from, tax);
+            ignore await _chargeTax(from, tax);
             _chargeFee(from, fee);
-            let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transfer");
-            ignore addRecord(
-                from, "transfer",
-                [
-                    ("to", #Principal(to)),
-                    ("amount", #U64(u64(value - tax))),
-                    ("tax", #U64(u64(tax))),
-                    ("hash", #Text(hash))
-                ]
-            );
+            let hash = _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transfer");
         }catch(e){
             log := Error.message(e)
         };
     };
 
-    public shared(msg) func bulkTransfer(holders:[Holder]) : async [Holder] {
-        ignore _topUp();
+    private func _bulkTransfer(sender:Principal,holders:[Holder]) : [Holder] {
+        //ignore _topUp();
         log := Nat.toText(holders.size());
         var response:[Holder] = [];
-        var transactions:[Transaction] = [];
-        var reflections:[Reflection] = [];
-        let taxCollectorCanister = Principal.fromText(Constants.taxCollectorCanister);
-        if(msg.caller != taxCollectorCanister) {return response};
+        //var transactions:[Transaction] = [];
+        //var reflections:[Reflection] = [];
+        //let taxCollectorCanister = Principal.fromText(Constants.taxCollectorCanister);
+        //if(msg.caller != taxCollectorCanister) {return response};
+        lastReflectionAmount := holders.size();
         for(value in holders.vals()){
             log := "start loop";
-            try{
-                if (_balanceOf(msg.caller) < value.amount) { return response };
-                txcounter := txcounter + 1;
-                var _txcounter = txcounter;
-                _transfer(msg.caller, Principal.fromText(value.holder), value.amount);
-                let transaction = _transactonFactory(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
-                let reflection =  _reflectionFactory(value.amount);
-                transactions := Array.append(transactions,[transaction]);
-                reflections := Array.append(reflections,[reflection]);
-                /*ignore addRecord(
-                    msg.caller, "transfer",
-                    [
-                        ("to", #Principal(Principal.fromText(value.holder))),
-                        ("amount", #U64(u64(value.amount))),
-                    ]
-                );*/
-                let _holder:Holder = {
-                    holder = value.holder;
-                    amount = value.amount;
-                    receipt = #Ok(_txcounter);
-                };
-                response := Array.append(response,[_holder]);
-                log := "Worked";
-            }catch(e){
-                log := Error.message(e);
+            if (_balanceOf(sender) < value.amount) { return response };
+            txcounter := txcounter + 1;
+            var _txcounter = txcounter;
+            _transfer(sender, Principal.fromText(value.holder), value.amount);
+            let _ = _putTransacton(value.amount, Constants.taxCollectorCanister, value.holder, 0, "reflections");
+            let __ = _putReflection(value.amount);
+            //transactions := Array.append(transactions,[transaction]);
+            //reflections := Array.append(reflections,[reflection]);
+            /*ignore addRecord(
+                msg.caller, "transfer",
+                [
+                    ("to", #Principal(Principal.fromText(value.holder))),
+                    ("amount", #U64(u64(value.amount))),
+                ]
+            );*/
+            let _holder:Holder = {
+                holder = value.holder;
+                amount = value.amount;
+                receipt = #Ok(_txcounter);
             };
+            response := Array.append(response,[_holder]);
+            log := "refleciton Worked";
         };
-        try{
-            await Utils._loadBalanceTransactons(transactions);
-            await Utils._loadBalanceRefelctions(reflections);
+        /*try{
+            //await Utils._loadBalanceTransactons(transactions);
+            //await Utils._loadBalanceRefelctions(reflections);
         }catch(e){
             log := "LoadBalancer:" #Error.message(e);
-        };
+        };*/
         return response;
     };
 
@@ -493,18 +472,8 @@ shared(msg) actor class Token(
 
     private func _insertTransferFrom(from:Principal, to:Principal, value:Nat,tax:Nat): async() {
          try{
-            let _ = _chargeTax(from, tax);
-            let hash = await _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
-            ignore addRecord(
-                msg.caller, "transferFrom",
-                [
-                    ("from", #Principal(from)),
-                    ("to", #Principal(to)),
-                    ("amount", #U64(u64(value))),
-                    ("tax", #U64(u64(tax))),
-                    ("hash", #Text(hash))
-                ]
-            );
+            ignore await _chargeTax(from, tax);
+            let hash = _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
         }catch(e){
             log := Error.message(e);
         };
@@ -592,7 +561,7 @@ shared(msg) actor class Token(
         totalSupply_ -= burnAmount;
         burnt := burnt + burnAmount;
         isBurnt := true;
-        let hash = await _putTransacton(burnAmount, "", "", 0, "burn");
+        let hash = _putTransacton(burnAmount, "", "", 0, "burn");
         ignore addRecord(
             msg.caller, "burn",
             [
@@ -780,6 +749,9 @@ shared(msg) actor class Token(
             switch (path[0]) {
                 case ("burnt") return _natResponse(burnt);
                 case ("log") return _textResponse(log);
+                case ("queue") return _natResponse(transactions.size());
+                case ("reflection_queue") return _natResponse(reflectionsData.size());
+                case ("reflection_Amount") return _natResponse(lastReflectionAmount);
                 case (_) return return Http.BAD_REQUEST();
             };
         } else if (path.size() == 2) {
@@ -813,4 +785,90 @@ shared(msg) actor class Token(
             streaming_strategy = null;
         };
     };
+    public shared({caller}) func distributeTransactions(): async () {
+        assert(caller == owner_);
+        ignore _distributeTransactions()
+    };
+
+    /*public shared({caller}) func distributeReflections(): async () {
+        assert(caller == owner_);
+        ignore _distributeReflections()
+    };*/
+
+
+    private func _getTransactionChunks(): [Transaction] {
+        let _transactions = List.fromArray(transactions);
+        List.toArray(List.take(_transactions,transactionChunkCount))
+    };
+
+    private func _dropTransactionChunks() {
+        let _transactions = List.fromArray(transactions);
+        if (transactions.size() < transactionChunkCount) {
+            if(transactions.size() > 0) {
+                transactions :=  List.toArray(List.drop(_transactions,transactions.size() - 1))
+            }
+        }else {
+            transactions :=  List.toArray(List.drop(_transactions,transactionChunkCount))
+        }
+    };
+
+    /*public shared({caller}) func stopTimers(): async () {
+        assert(caller == owner_);
+        cancelTimer(transactionClock);
+        cancelTimer(reflectionTransactionClock);
+    };*/
+
+    private func _distributeTransactions(): async () {
+        let _transactions = _getTransactionChunks();
+        if(transactions.size() > 0){
+            await Utils._loadBalanceTransactons(_transactions);
+            _dropTransactionChunks();
+            ignore setTimer(#seconds(120), _distributeTransactions);
+        }else {
+
+        }
+    };
+
+    /*private func distributeReflections(): async () {
+        if(Queue.size(reflectionsToBeDistributed) > 0) {
+            let (v, q) = Queue.peek(reflectionsToBeDistributed);
+            let _canisters = await ReflectionDatabaseService.canister.getCanistersByPK("group#ledger");
+            let canisters = List.fromArray<Text>(_canisters);
+            let exist = List.last(canisters);
+            switch(exist){
+                case(?exist){
+                    switch(v){
+                        case(?v){
+                            let _ = await ReflectionDatabaseService.putReflection(exist,v);
+                            let (v_, q_) = Queue.pop(reflectionsToBeDistributed);
+                            reflectionsToBeDistributed := q_;
+                        };
+                        case(null){
+                            let (v_, q_) = Queue.pop(reflectionsToBeDistributed);
+                            reflectionsToBeDistributed := q_;
+                        };
+                    };
+                };
+                case(null){
+                    return;
+                };
+            };
+        }else {
+            
+        }
+    };*/
+
+    /*public shared({caller}) func startDistributing(howOften: Nat): async () {
+        assert(caller == owner_);
+        assert(timerStart == false);
+        transactionClock := recurringTimer(#seconds(howOften), distributeTransactions);
+        timerStart := true;
+    };
+
+    public shared({caller}) func startDistributingReflections(howOften: Nat): async () {
+        assert(caller == owner_);
+        assert(reflectiontimerStart == false);
+        reflectionTransactionClock := recurringTimer(#seconds(howOften), distributeReflections);
+        reflectiontimerStart := true;
+    };*/
 };

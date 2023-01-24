@@ -28,7 +28,7 @@ let packages = [
   },
   { name = "base"
   , repo = "https://github.com/dfinity/motoko-base"
-  , version = "c174fc4bfc0287ccbfbd5a4b55edbc8669e3f2f3" -- Motoko 0.7.0
+  , version = "7522808e315cd89e70096488728c24bec09576af" -- Motoko 0.7.6
   , dependencies = [] : List Text
   },
   { name = "bimap"

@@ -96,7 +96,7 @@ shared ({ caller = owner }) actor class Collection({
     };
 
     public shared ({ caller }) func putReflections(parentHash:Text, transactions : [ReflectionTransaction]) : async Text {
-        ignore _topUp();
+        //ignore _topUp();
         let canister = Principal.toText(caller);
         assert (Constants.dip20Canister == canister);
         await Crud.putReflections(db, parentHash, transactions);
