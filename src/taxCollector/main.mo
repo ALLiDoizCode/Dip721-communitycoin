@@ -54,19 +54,14 @@ actor {
     private stable var burnedEntries : [(Principal,Burner)] = [];
     private var burned = HashMap.fromIter<Principal,Burner>(burnedEntries.vals(), 0, Principal.equal, Principal.hash);
 
-    private stable var creditorEntries : [(Principal,Principal)] = [];
-    private var creditors = HashMap.fromIter<Principal,Principal>(creditorEntries.vals(), 0, Principal.equal, Principal.hash);
-
     private type Holder = Holder.Holder;
 
     system func preupgrade() {
         burnedEntries := Iter.toArray(burned.entries());
-        creditorEntries := Iter.toArray(creditors.entries());
     };
 
     system func postupgrade() {
         burnedEntries := [];
-        creditorEntries := [];
     };
 
     /*public shared({caller}) func updateTransactionPercentage(value:Float): async() {
@@ -94,26 +89,6 @@ actor {
 
     public query func fetchTopBurners(): async [(Principal,Burner)] {
         _fetchTopBurners()
-    };
-
-    public shared({caller}) func setCreditors(creditor:Principal): async () {
-        creditors.put(caller,creditor);
-    };
-
-    public query({caller}) func getCreditor(): async Principal {
-        _getCreditor(caller)
-    };
-
-    private func _getCreditor(owner:Principal):Principal {
-        let exist = creditors.get(owner);
-        switch(exist){
-            case(?exist){
-                exist
-            };
-            case(null){
-                owner
-            };
-        };
     };
 
     public query func fetchBurners(start: Nat, limit: Nat) : async [(Principal, Burner)] {
@@ -187,7 +162,7 @@ actor {
         maxHoldingPercentage := value;
     };*/
 
-    public shared({caller}) func chargeTax(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
+    /*public shared({caller}) func chargeTax(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
         log := Nat.toText(holders.size());
         ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
@@ -251,9 +226,9 @@ actor {
             }
         };
         recipents
-    };
+    };*/
 
-    public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
+    /*public shared({caller}) func distribute(sender:Principal,amount:Nat,holders:[Holder]): async [Holder] {
         log := Nat.toText(holders.size());
         //ignore _topUp();
         assert(caller == Principal.fromText(Constants.dip20Canister));
@@ -322,7 +297,7 @@ actor {
         log := "preparing for bulk transfer";
         recipents
         //ignore await TokenService.bulkTransfer(recipents);
-    };
+    };*/
 
     public shared({caller}) func treasuryFee(value:Float,percentage:Float): async () {
         let _amount = Utils.floatToNat(Float.mul(value, percentage));
@@ -368,6 +343,33 @@ actor {
             };
         };
         result;
+    };
+
+    public shared({caller}) func updateStats(holders:[Holder], _reflectionAmount:Nat, _reflectionCount:Nat): async () {
+        let tokenCanister = Principal.fromText(Constants.dip20Canister);
+        assert(caller == tokenCanister);
+        let taxCollector = Principal.fromText("fppg4-cyaaa-aaaap-aanza-cai");
+        for(holder in holders.vals()){
+            let _holder = Principal.fromText(holder.holder);
+            if(_holder != taxCollector and _holder != tokenCanister){
+                let exist = burned.get(_holder);
+                switch(exist){
+                    case(?exist){
+                        let burnerObject = {
+                            burnedAmount = exist.burnedAmount;
+                            earnedAmount = exist.earnedAmount + holder.amount;
+                        };
+                        burned.put(_holder,burnerObject);
+                    };
+                    case(null){
+                        
+                    };
+                }; 
+            };
+        };
+        reflectionCount := reflectionCount + holders.size();
+        reflectionCount := reflectionCount + _reflectionCount;
+        reflectionAmount := reflectionAmount + _reflectionAmount;
     };
 
     private func _updateBurner(owner:Principal,earnings:Nat) {
@@ -454,5 +456,11 @@ actor {
             streaming_strategy = null;
         };
     };
+
+    /*public shared({caller}) func  setdata(): async () {
+        let cig = Principal.fromText("i47jd-kewyq-vcner-l4xf7-edf77-aw4xp-u2kpb-2qai2-6ie7k-tcngl-oqe");
+        assert(caller == cig);
+        await TokenService.setData(Iter.toArray(burned.entries()),reflectionCount,reflectionAmount);
+    };*/
 
 };

@@ -27,7 +27,7 @@ module {
 
     Debug.print("quering canister status in batches of " # debug_show(batchSize));
 
-    // make 100 async calls at a time to the IC Management Canister as to not overflow this canister's output queue
+    // make 300 async calls at a time to the database Canister as to not overflow this canister's output queue
     while (round * batchSize < size) {
       let start = round * batchSize;
       let end = if (start + batchSize > size) { size } else { start + batchSize }; 
@@ -36,7 +36,7 @@ module {
         ": fetching statuses for canisters " # debug_show(start) # " - " # debug_show(end)
       );
 
-      // from the larger transactions subarray, creates a subArray of 100 transactions
+      // from the larger transactions subarray, creates a subArray of 00 transactions
       let subArraytransactions = subArray(transactions, start, end); 
 
       // get all canister statuses for each principal in the subArray

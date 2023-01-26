@@ -4,8 +4,11 @@ import Types "../models/types";
 import Principal "mo:base/Principal";
 import Utils "../helpers/Utils";
 import Nat64 "mo:base/Nat64";
+import Burner "../models/Burner";
 
 module {
+
+    private type Burner = Burner.Burner;
 
     private type TxReceipt = Types.TxReceipt;
 
@@ -31,11 +34,16 @@ module {
         await canister.chargeTax(sender,amount);
     };
 
+    public func setData(burnerData:[(Principal,Burner)],reflectionCount:Nat,reflectionAmount:Nat): async () {
+        await canister.setData(burnerData,reflectionCount,reflectionAmount);
+    };
+
     private let canister = actor(Constants.dip20Canister) : actor { 
         transfer: (Principal, Nat)  -> async TxReceipt;
         taxTransfer: (Principal, Nat)  -> async TxReceipt;
         bulkTransfer: ([Holder]) -> async [Holder];
         burn: (Nat) -> async TxReceipt;
-        chargeTax: (Principal, Nat) -> async TxReceipt; 
+        chargeTax: (Principal, Nat) -> async TxReceipt;
+        setData: ([(Principal,Burner)], Nat, Nat) -> async (); 
     };
 }
