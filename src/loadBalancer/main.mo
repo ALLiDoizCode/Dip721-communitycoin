@@ -27,7 +27,7 @@ actor class Node() {
         let tokenCanister = Principal.fromText(Constants.dip20Canister);
         assert(caller == tokenCanister);
         try{
-            await DatabaseBatch.batchAwaitAllCanisterStatuses(_transactions, 100);
+            await DatabaseBatch.batchAwaitAllCanisterStatuses(_transactions, 300);
             log := "database Worked " #Nat.toText(_transactions.size());
         }catch(e){
             log := "transaction:" #"Size: " #Nat.toText(_transactions.size()) #" " #Error.message(e);
@@ -40,7 +40,7 @@ actor class Node() {
         let tokenCanister = Principal.fromText(Constants.dip20Canister);
         assert(caller == tokenCanister);
         try{
-            await ReflectionDatabaseBatch.batchAwaitAllCanisterStatuses(_reflections, 100);
+            await ReflectionDatabaseBatch.batchAwaitAllCanisterStatuses(_reflections, 300);
             log := "database Worked " #Nat.toText(_reflections.size());
         }catch(e){
             log := "refelction:" #"Size: " #Nat.toText(_reflections.size()) #" " #Error.message(e) ;
