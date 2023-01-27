@@ -652,9 +652,9 @@ shared(msg) actor class Token(
     };
 
     private func _insertTransfer(from:Principal,to:Principal, value:Nat,tax:Nat) {
+        _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transfer");
         _chargeTax(from, tax);
         _chargeFee(from, fee);
-        let hash = _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transfer");
     };
 
     private func _bulkTransfer(sender:Principal,holders:[Holder]) {
@@ -729,8 +729,8 @@ shared(msg) actor class Token(
     };
 
     private func _insertTransferFrom(from:Principal, to:Principal, value:Nat,tax:Nat) {
+        _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
         _chargeTax(from, tax);
-        let hash = _putTransacton(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
     };
 
     /// Allows spender to withdraw from your account multiple times, up to the value amount.
@@ -1077,7 +1077,7 @@ shared(msg) actor class Token(
         let _transactions = List.fromArray(Buffer.toArray(transactions));
         if (transactions.size() < transactionChunkCount) {
             if(transactions.size() > 0) {
-                transactions :=  Buffer.fromArray(List.toArray(List.drop(_transactions,transactions.size() - 1)))
+                transactions :=  Buffer.fromArray(List.toArray(List.drop(_transactions,transactions.size())))
             }
         }else {
             transactions :=  Buffer.fromArray(List.toArray(List.drop(_transactions,transactionChunkCount)))
