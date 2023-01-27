@@ -444,7 +444,7 @@ shared(msg) actor class Token(
         var holder_amount = Float.mul(Utils.natToFloat(amount), reflectionPercentageFull);
         treasuryFee(sender,Utils.natToFloat(amount),treasuryPercentageFull);
         marketingFee(sender,Utils.natToFloat(amount),marketingPercentageFull);
-        ignore _putTransacton(amount, Principal.toText(sender), "", 0, "tax");
+        _putTransacton(amount, Principal.toText(sender), "", 0, "tax");
         for ((holder_principal,holder_balance) in balances.entries()) {
             log := "loop 1";
             let holder_principal_text = Principal.toText(holder_principal);
@@ -480,6 +480,19 @@ shared(msg) actor class Token(
                     reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                     for((spender, data) in topBurners.vals() ){
                         reflectionCount := reflectionCount + 1;
+                        let exist = burned.get(spender);
+                        switch(exist){
+                            case(?exist){
+                                let burnerObject = {
+                                    burnedAmount = exist.burnedAmount;
+                                    earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
+                                };
+                                burned.put(spender,burnerObject);
+                            };
+                            case(null){
+        
+                            };
+                        };
                         let _holder:Holder = {
                             holder = Principal.toText(spender);
                             amount = Utils.floatToNat(share);
@@ -559,6 +572,19 @@ shared(msg) actor class Token(
                     reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                     for((spender, data) in topBurners.vals() ){
                         reflectionCount := reflectionCount + 1;
+                        let exist = burned.get(spender);
+                        switch(exist){
+                            case(?exist){
+                                let burnerObject = {
+                                    burnedAmount = exist.burnedAmount;
+                                    earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
+                                };
+                                burned.put(spender,burnerObject);
+                            };
+                            case(null){
+        
+                            };
+                        };
                         let _holder:Holder = {
                             holder = Principal.toText(spender);
                             amount = Utils.floatToNat(share);
