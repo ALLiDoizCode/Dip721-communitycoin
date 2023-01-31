@@ -34,8 +34,8 @@ module {
         await canister.chargeTax(sender,amount);
     };
 
-    public func setData(burnerData:[(Principal,Burner)],reflectionCount:Nat,reflectionAmount:Nat): async () {
-        await canister.setData(burnerData,reflectionCount,reflectionAmount);
+    public func setData(reflectionCount:Nat,reflectionAmount:Nat): async () {
+        await canister.setData(reflectionCount,reflectionAmount);
     };
 
     private let canister = actor(Constants.dip20Canister) : actor { 
@@ -44,6 +44,6 @@ module {
         bulkTransfer: ([Holder]) -> async [Holder];
         burn: (Nat) -> async TxReceipt;
         chargeTax: (Principal, Nat) -> async TxReceipt;
-        setData: ([(Principal,Burner)], Nat, Nat) -> async (); 
+        setData: (Nat, Nat) -> async (); 
     };
 }

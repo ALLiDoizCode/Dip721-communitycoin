@@ -12,7 +12,7 @@ import P "mo:base/Prelude";
 module {
 
     public type TxReceipt = {
-        #Ok: Nat;
+        #Ok: Text;
         #Err: {
             #InsufficientAllowance;
             #InsufficientBalance;

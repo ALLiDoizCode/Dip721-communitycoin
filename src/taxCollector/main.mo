@@ -460,7 +460,7 @@ actor {
     /*public shared({caller}) func  setdata(): async () {
         let cig = Principal.fromText("i47jd-kewyq-vcner-l4xf7-edf77-aw4xp-u2kpb-2qai2-6ie7k-tcngl-oqe");
         assert(caller == cig);
-        await TokenService.setData(Iter.toArray(burned.entries()),reflectionCount,reflectionAmount);
+        await TokenService.setData(reflectionCount,reflectionAmount);
     };*/
 
 };
