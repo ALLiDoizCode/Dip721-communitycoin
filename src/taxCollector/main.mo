@@ -124,16 +124,25 @@ actor {
                 sum := sum + holding.amount;
             };
         };
+       
+        //christmas: var totalReflectionPayout = 0;
         for (holding in holders.vals()) {
             if(holding.holder != Constants.burnWallet and holding.holder != Constants.distributionCanister and holding.holder != Constants.taxCollectorCanister and holding.holder != Constants.treasuryWallet and holding.holder != Constants.teamWallet and holding.holder != Constants.marketingWallet){
                 reflectionCount := reflectionCount + 1;
                 let percentage:Float = Float.div(Utils.natToFloat(holding.amount), Utils.natToFloat(sum));
                 let earnings = Float.mul(holder_amount,percentage);
                 let recipent:Holder = { holder = holding.holder; amount = Utils.floatToNat(earnings); receipt = #Err(#Other(""))};
+                totalReflectionPayout += earnings;
+                //christmas: dear god use a buffer man!!!!
                 recipents := Array.append(recipents,[recipent]);
                 reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
             };
         };
+        //christmas: let christmasAmount = amount - Utils.floatToNat(totalReflectionPayout);
+        //christmas:if(christmasAmount > 0){
+            //christmas: let recipent:Holder = { holder = Constants.christmasAccont; amount = christmasAmount; receipt = #Err(#Other(""))};
+            //christmas: recipents := Array.append(recipents,[recipent]);
+        //christmas:};
         ignore await TokenService.bulkTransfer(recipents);
     };
 
