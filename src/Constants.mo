@@ -7,6 +7,8 @@ module {
     public let treasuryWallet = "unwqb-kyaaa-aaaak-ac5aa-cai";
     public let daoCanister = "7tac7-rqaaa-aaaak-ac47q-cai";
     public let topUpCanister = "wifml-jyaaa-aaaal-qbjma-cai";
+    
+    //christmas public let christmasAccount = "tdes5-vm7m7-el6ek-7nhqs-nsvts-b2kmy-5e3k6-thhr7-d7pfz-4wcv2-fae"; :) You shoudl change this.
 
     public let dip20Canister = "5gxp5-jyaaa-aaaag-qarma-cai";
     public let taxCollectorCanister = "fppg4-cyaaa-aaaap-aanza-cai";
