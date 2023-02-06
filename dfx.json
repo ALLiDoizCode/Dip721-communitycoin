@@ -4,7 +4,7 @@
       "main": "src/taxCollector/main.mo",
       "type": "motoko"
     },
-   "token": {
+    "token": {
       "main": "src/token/main.mo",
       "type": "motoko"
     },
