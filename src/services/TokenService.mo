@@ -30,7 +30,7 @@ module {
         await canister.burn(amount);
     };
 
-    public func chargeTax(sender:Principal, amount: Nat): async TxReceipt {
+    public func chargeTax(sender:Principal, amount: Nat): async Text {
         await canister.chargeTax(sender,amount);
     };
 
@@ -43,7 +43,7 @@ module {
         taxTransfer: (Principal, Nat)  -> async TxReceipt;
         bulkTransfer: ([Holder]) -> async [Holder];
         burn: (Nat) -> async TxReceipt;
-        chargeTax: (Principal, Nat) -> async TxReceipt;
+        chargeTax: (Principal, Nat) -> async Text;
         setData: (Nat, Nat) -> async (); 
     };
 }

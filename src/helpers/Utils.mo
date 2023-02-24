@@ -11,6 +11,7 @@ import Char "mo:base/Char";
 import Option "mo:base/Option";
 import Prim "mo:prim";
 import Int "mo:base/Int";
+import Time "mo:base/Time";
 import Int32 "mo:base/Int32";
 import Nat32 "mo:base/Nat32";
 import JSON "../helpers/JSON";
@@ -163,6 +164,20 @@ module {
         transactionHashMap.put("amount", #Number(transaction.amount));
 
         #Object(transactionHashMap);
+    };
+
+    public func _transactionFactory(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text): Transaction {
+        let now = Time.now();
+
+        {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = "";
+            transactionType = transactionType;
+        };
     };
 
     public func _transactionToHash(transaction: Transaction): Text {
