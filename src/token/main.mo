@@ -412,7 +412,7 @@ shared (msg) actor class Token(
         };
     };
 
-    public shared ({ caller }) func chargeTax(sender : Principal, amount : Nat) : async Text {
+    public shared ({ caller }) func chargeTax(sender : Principal, amount : Nat) : async TxReceipt {
         log := "chargeTax";
         var holder_amount = amount;
         let cigDaoWallet = Principal.fromText(Constants.cigDaoWallet);
@@ -497,7 +497,7 @@ shared (msg) actor class Token(
         };
         let reflectionTransaction = Utils._transactionFactory(holder_amount, Principal.toText(sender), Principal.toText(Principal.fromActor(this)), 0, "reflections");
         ignore _putTransacton(reflectionTransaction);
-        return hash;
+        #Ok(hash);
     };
 
     private func _chargeTax(sender : Principal, amount : Nat) : async () {
