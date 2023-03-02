@@ -443,7 +443,6 @@ shared (msg) actor class Token(
             log := Error.message(e);
         };
         let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
-        let hash = _transactionToHash(transaction);
 
         sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
         sum := sum - _balanceOf(Principal.fromText(Constants.distributionCanister));
@@ -497,7 +496,8 @@ shared (msg) actor class Token(
         };
         let reflectionTransaction = Utils._transactionFactory(holder_amount, Principal.toText(sender), Principal.toText(Principal.fromActor(this)), 0, "reflections");
         ignore _putTransacton(reflectionTransaction);
-        #Ok(hash);
+        ignore _putTransacton(transaction);
+        #Ok(transaction.hash);
     };
 
     private func _chargeTax(sender : Principal, amount : Nat) : async () {
@@ -529,7 +529,6 @@ shared (msg) actor class Token(
             log := Error.message(e);
         };
         let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
-        let hash = _transactionToHash(transaction);
         ignore _putTransacton(transaction);
 
         sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
@@ -636,9 +635,8 @@ shared (msg) actor class Token(
         var _txcounter = txcounter;
         _transfer(msg.caller, to, value);
         let transaction = Utils._transactionFactory(value, Constants.taxCollectorCanister, Principal.toText(to), 0, "dao");
-        let hash = _transactionToHash(transaction);
         ignore _putTransacton(transaction);
-        return #Ok(hash);
+        return #Ok(transaction.hash);
     };
 
     public shared (msg) func transfer(to : Principal, value : Nat) : async TxReceipt {
@@ -652,9 +650,9 @@ shared (msg) actor class Token(
             var _txcounter = txcounter;
             _transfer(msg.caller, to, value - tax);
             let transaction = Utils._transactionFactory(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
-            let hash = _transactionToHash(transaction);
-            ignore _tranferLog(msg.caller : Principal, transaction : Transaction, tax : Nat);
-            return #Ok(hash);
+
+            ignore _tranferLog(msg.caller, transaction, tax);
+            return #Ok(transaction.hash);
         } catch (e) {
             log := "transfer:" #Error.message(e);
             return #Err(#Other(""));
@@ -718,9 +716,8 @@ shared (msg) actor class Token(
             };
         };
         let transaction = Utils._transactionFactory(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
-        let hash = _transactionToHash(transaction);
         ignore _transferFromLog(from,transaction,tax);
-        return #Ok(hash);
+        return #Ok(transaction.hash);
     };
 
     private func _transferFromLog(from:Principal,transaction:Transaction,tax:Nat): async () {
@@ -752,9 +749,8 @@ shared (msg) actor class Token(
             allowances.put(msg.caller, allowance_caller);
         };
         let transaction = Utils._transactionFactory(value, Principal.toText(msg.caller), Principal.toText(spender), 0, "approve");
-        let hash = _transactionToHash(transaction);
         ignore _putTransacton(transaction);
-        return #Ok(hash);
+        return #Ok(transaction.hash);
     };
 
     public shared (msg) func mint(to : Principal, value : Nat) : async TxReceipt {
@@ -767,9 +763,8 @@ shared (msg) actor class Token(
         totalSupply_ += value;
         balances.put(to, to_balance + value);
         let transaction = Utils._transactionFactory(value, Principal.toText(msg.caller), Principal.toText(to), 0, "mint");
-        let hash = _transactionToHash(transaction);
         ignore _putTransacton(transaction);
-        return #Ok(hash);
+        return #Ok(transaction.hash);
     };
 
     public shared (msg) func burn(amount : Nat) : async TxReceipt {

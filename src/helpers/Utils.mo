@@ -167,15 +167,27 @@ module {
     };
 
     public func _transactionFactory(amount:Int, sender:Text, receiver:Text, tax:Int, transactionType:Text): Transaction {
-        let now = Time.now();
+        let now = Time.now();   
 
-        {
+        let _transaction = {
             sender = sender;
             receiver = receiver;
             amount = amount;
             fee = tax;
             timeStamp = now;
             hash = "";
+            transactionType = transactionType;
+        };
+
+       let hash = _transactionToHash(_transaction);
+
+       {
+            sender = sender;
+            receiver = receiver;
+            amount = amount;
+            fee = tax;
+            timeStamp = now;
+            hash = hash;
             transactionType = transactionType;
         };
     };
