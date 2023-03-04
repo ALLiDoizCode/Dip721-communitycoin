@@ -441,63 +441,71 @@ shared (msg) actor class Token(
 
         } catch (e) {
             log := Error.message(e);
+            return #Err(#Other(Error.message(e)));
         };
-        let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
+        try {
+            let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
 
-        sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.distributionCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.taxCollectorCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.teamWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.marketingWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.liquidityWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.cigDaoWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.swapCanister));
+            sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
+            sum := sum - _balanceOf(Principal.fromText(Constants.distributionCanister));
+            sum := sum - _balanceOf(Principal.fromText(Constants.taxCollectorCanister));
+            sum := sum - _balanceOf(Principal.fromText(Constants.teamWallet));
+            sum := sum - _balanceOf(Principal.fromText(Constants.marketingWallet));
+            sum := sum - _balanceOf(Principal.fromText(Constants.liquidityWallet));
+            sum := sum - _balanceOf(Principal.fromText(Constants.cigDaoWallet));
+            sum := sum - _balanceOf(Principal.fromText(Constants.swapCanister));
+            sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapTestNetCanister));
+            sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapCanister));
 
-        for ((holder_principal, holder_balance) in balances.entries()) {
-            let holder_principal_text = Principal.toText(holder_principal);
-            if (
-                holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
-            ) {
-                if (holder_principal_text == Constants.treasuryWallet) {
-                    let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
-                    let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
-                    let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
-                    reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
-                    for ((spender, data) in topBurners.vals()) {
-                        reflectionCount := reflectionCount + 1;
-                        let exist = burned.get(spender);
-                        switch (exist) {
-                            case (?exist) {
-                                let burnerObject = {
-                                    burnedAmount = exist.burnedAmount;
-                                    earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
+            for ((holder_principal, holder_balance) in balances.entries()) {
+                let holder_principal_text = Principal.toText(holder_principal);
+                if (
+                    holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.sonicSwapTestNetCanister and holder_principal_text != Constants.sonicSwapCanister and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
+                ) {
+                    if (holder_principal_text == Constants.treasuryWallet) {
+                        let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
+                        let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
+                        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
+                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+                        for ((spender, data) in topBurners.vals()) {
+                            reflectionCount := reflectionCount + 1;
+                            let exist = burned.get(spender);
+                            switch (exist) {
+                                case (?exist) {
+                                    let burnerObject = {
+                                        burnedAmount = exist.burnedAmount;
+                                        earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
+                                    };
+                                    burned.put(spender, burnerObject);
                                 };
-                                burned.put(spender, burnerObject);
-                            };
-                            case (null) {
+                                case (null) {
 
+                                };
                             };
+                            let _holder : Holder = {
+                                holder = Principal.toText(spender);
+                                amount = Utils.floatToNat(share);
+                            };
+                            burners := Array.append(burners, [_holder]);
+                            _transfer(sender, _getCreditor(spender), Utils.floatToNat(share));
                         };
-                        let _holder : Holder = {
-                            holder = Principal.toText(spender);
-                            amount = Utils.floatToNat(share);
-                        };
-                        burners := Array.append(burners, [_holder]);
-                        _transfer(sender, _getCreditor(spender), Utils.floatToNat(share));
+                    } else {
+                        reflectionCount := reflectionCount + 1;
+                        let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
+                        let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
+                        _transfer(sender, _getCreditor(holder_principal), Utils.floatToNat(earnings));
+                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                     };
-                } else {
-                    reflectionCount := reflectionCount + 1;
-                    let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
-                    let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
-                    _transfer(sender, _getCreditor(holder_principal), Utils.floatToNat(earnings));
-                    reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                 };
             };
+            let reflectionTransaction = Utils._transactionFactory(holder_amount, Principal.toText(sender), Principal.toText(Principal.fromActor(this)), 0, "reflections");
+            ignore _putTransacton(reflectionTransaction);
+            ignore _putTransacton(transaction);
+            #Ok(transaction.hash);
+        } catch (e) {
+            log := Error.message(e);
+            return #Err(#Other(Error.message(e)));
         };
-        let reflectionTransaction = Utils._transactionFactory(holder_amount, Principal.toText(sender), Principal.toText(Principal.fromActor(this)), 0, "reflections");
-        ignore _putTransacton(reflectionTransaction);
-        ignore _putTransacton(transaction);
-        #Ok(transaction.hash);
     };
 
     private func _chargeTax(sender : Principal, amount : Nat) : async () {
@@ -539,11 +547,13 @@ shared (msg) actor class Token(
         sum := sum - _balanceOf(Principal.fromText(Constants.liquidityWallet));
         sum := sum - _balanceOf(Principal.fromText(Constants.cigDaoWallet));
         sum := sum - _balanceOf(Principal.fromText(Constants.swapCanister));
+        sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapTestNetCanister));
+        sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapCanister));
 
         for ((holder_principal, holder_balance) in balances.entries()) {
             let holder_principal_text = Principal.toText(holder_principal);
             if (
-                holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
+                holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.sonicSwapTestNetCanister and holder_principal_text != Constants.sonicSwapCanister and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
             ) {
                 if (holder_principal_text == Constants.treasuryWallet) {
                     let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
@@ -655,7 +665,7 @@ shared (msg) actor class Token(
             return #Ok(transaction.hash);
         } catch (e) {
             log := "transfer:" #Error.message(e);
-            return #Err(#Other(""));
+            return #Err(#Other(Error.message(e)));
         };
     };
 
@@ -690,37 +700,41 @@ shared (msg) actor class Token(
 
     /// Transfers value amount of tokens from Principal from to Principal to.
     public shared (msg) func transferFrom(from : Principal, to : Principal, value : Nat) : async TxReceipt {
-        ignore _topUp();
-        let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
-        let tax = Utils.floatToNat(_tax);
-        if (_balanceOf(from) < value + fee) {
-            return #Err(#InsufficientBalance);
-        };
-        let allowed : Nat = _allowance(from, msg.caller);
-        if (allowed < value + fee) { return #Err(#InsufficientAllowance) };
-        txcounter := txcounter + 1;
-        var _txcounter = txcounter;
-        _transfer(from, to, value - tax);
-        let allowed_new : Nat = allowed - value - fee;
-        if (allowed_new != 0) {
-            let allowance_from = Types.unwrap(allowances.get(from));
-            allowance_from.put(msg.caller, allowed_new);
-            allowances.put(from, allowance_from);
-        } else {
-            if (allowed != 0) {
+        try {
+            ignore _topUp();
+            let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
+            let tax = Utils.floatToNat(_tax);
+            if (_balanceOf(from) < value + fee) {
+                return #Err(#InsufficientBalance);
+            };
+            let allowed : Nat = _allowance(from, msg.caller);
+            if (allowed < value + fee) { return #Err(#InsufficientAllowance) };
+            txcounter := txcounter + 1;
+            var _txcounter = txcounter;
+            _transfer(from, to, value - tax);
+            let allowed_new : Nat = allowed - value - fee;
+            if (allowed_new != 0) {
                 let allowance_from = Types.unwrap(allowances.get(from));
-                allowance_from.delete(msg.caller);
-                if (allowance_from.size() == 0) { allowances.delete(from) } else {
-                    allowances.put(from, allowance_from);
+                allowance_from.put(msg.caller, allowed_new);
+                allowances.put(from, allowance_from);
+            } else {
+                if (allowed != 0) {
+                    let allowance_from = Types.unwrap(allowances.get(from));
+                    allowance_from.delete(msg.caller);
+                    if (allowance_from.size() == 0) { allowances.delete(from) } else {
+                        allowances.put(from, allowance_from);
+                    };
                 };
             };
+            let transaction = Utils._transactionFactory(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
+            ignore _transferFromLog(from, transaction, tax);
+            return #Ok(transaction.hash);
+        } catch (e) {
+            return #Err(#Other(Error.message(e)));
         };
-        let transaction = Utils._transactionFactory(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
-        ignore _transferFromLog(from,transaction,tax);
-        return #Ok(transaction.hash);
     };
 
-    private func _transferFromLog(from:Principal,transaction:Transaction,tax:Nat): async () {
+    private func _transferFromLog(from : Principal, transaction : Transaction, tax : Nat) : async () {
         await _putTransacton(transaction);
         await _chargeTax(from, tax);
     };

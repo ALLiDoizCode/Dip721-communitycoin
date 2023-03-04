@@ -20,6 +20,9 @@ module {
     public let loadBalancer_3 = "clqed-riaaa-aaaak-qbiba-cai";
     public let distributionCanister = "cjzlc-riaaa-aaaal-qbgwa-cai";
 
+    public let sonicSwapTestNetCanister = "nbhbc-iyaaa-aaaah-aceyq-cai";
+    public let sonicSwapCanister = "3xwpq-ziaaa-aaaah-qcn4a-cai";
+
     public let loadBalancer_Index_Canister = "p7sib-4yaaa-aaaap-qavua-cai";
 
     public let cyclesThreshold = 20000000000000;
