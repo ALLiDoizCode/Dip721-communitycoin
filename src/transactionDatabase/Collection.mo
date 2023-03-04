@@ -9,7 +9,7 @@ import Http "../helpers/http";
 import Int "mo:base/Int";
 import Int32 "mo:base/Int32";
 import Iter "mo:base/Iter";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Nat32 "mo:base/Nat32";
 import Prim "mo:prim";
 import Principal "mo:base/Principal";

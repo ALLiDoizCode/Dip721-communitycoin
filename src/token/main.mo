@@ -32,7 +32,7 @@ import DatabaseService "../services/DatabaseService";
 import ReflectionDatabaseService "../services/ReflectionDatabaseService";
 import Utils "../helpers/Utils";
 import SHA256 "mo:crypto/SHA/SHA256";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Transaction "../models/Transaction";
 import Http "../helpers/http";
 import Response "../models/Response";
@@ -109,6 +109,19 @@ shared (msg) actor class Token(
 
     private stable var reflectionArray : [Reflection] = [];
     private var reflectionsData = Buffer.fromArray<Reflection>(reflectionArray);
+
+    private stable var whiteList : [Text] = [
+        Constants.burnWallet,
+        Constants.sonicSwapTestNetCanister,
+        Constants.sonicSwapCanister,
+        Constants.distributionCanister,
+        Constants.taxCollectorCanister,
+        Constants.teamWallet,
+        Constants.marketingWallet,
+        Constants.liquidityWallet,
+        Constants.cigDaoWallet,
+        Constants.swapCanister,
+    ];
 
     private stable var transactionClock : Nat = 0;
     private stable var reflectionTransactionClock : Nat = 0;
@@ -412,8 +425,20 @@ shared (msg) actor class Token(
         };
     };
 
+    public shared ({ caller }) func updateWhiteList(value : [Text]) : async [Text] {
+        let daoCanister = Principal.fromText(Constants.daoCanister);
+        assert (caller == daoCanister);
+        whiteList := value;
+        whiteList;
+    };
+
+    public query func getWhiteList() : async [Text] {
+        _getWhiteList();
+    };
     public shared ({ caller }) func chargeTax(sender : Principal, amount : Nat) : async TxReceipt {
         log := "chargeTax";
+        var _whiteList = List.fromArray(whiteList);
+        _whiteList := List.push(Principal.toText(sender), _whiteList);
         var holder_amount = amount;
         let cigDaoWallet = Principal.fromText(Constants.cigDaoWallet);
         let liquidityWallet = Principal.fromText(Constants.liquidityWallet);
@@ -446,22 +471,13 @@ shared (msg) actor class Token(
         try {
             let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
 
-            sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
-            sum := sum - _balanceOf(Principal.fromText(Constants.distributionCanister));
-            sum := sum - _balanceOf(Principal.fromText(Constants.taxCollectorCanister));
-            sum := sum - _balanceOf(Principal.fromText(Constants.teamWallet));
-            sum := sum - _balanceOf(Principal.fromText(Constants.marketingWallet));
-            sum := sum - _balanceOf(Principal.fromText(Constants.liquidityWallet));
-            sum := sum - _balanceOf(Principal.fromText(Constants.cigDaoWallet));
-            sum := sum - _balanceOf(Principal.fromText(Constants.swapCanister));
-            sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapTestNetCanister));
-            sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapCanister));
+            for (canister in whiteList.vals()) {
+                sum := sum - _balanceOf(Principal.fromText(canister));
+            };
 
             for ((holder_principal, holder_balance) in balances.entries()) {
                 let holder_principal_text = Principal.toText(holder_principal);
-                if (
-                    holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.sonicSwapTestNetCanister and holder_principal_text != Constants.sonicSwapCanister and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
-                ) {
+                if (List.some<Text>(_whiteList, func(e : Text) : Bool { holder_principal_text != e })) {
                     if (holder_principal_text == Constants.treasuryWallet) {
                         let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
                         let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
@@ -510,6 +526,8 @@ shared (msg) actor class Token(
 
     private func _chargeTax(sender : Principal, amount : Nat) : async () {
         log := "_chargeTax";
+        var _whiteList = List.fromArray(whiteList);
+        _whiteList := List.push(Principal.toText(sender), _whiteList);
         var holder_amount = amount;
         let cigDaoWallet = Principal.fromText(Constants.cigDaoWallet);
         let liquidityWallet = Principal.fromText(Constants.liquidityWallet);
@@ -539,22 +557,13 @@ shared (msg) actor class Token(
         let transaction = Utils._transactionFactory(amount, Principal.toText(sender), "", 0, "tax");
         ignore _putTransacton(transaction);
 
-        sum := sum - _balanceOf(Principal.fromText(Constants.burnWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.distributionCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.taxCollectorCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.teamWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.marketingWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.liquidityWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.cigDaoWallet));
-        sum := sum - _balanceOf(Principal.fromText(Constants.swapCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapTestNetCanister));
-        sum := sum - _balanceOf(Principal.fromText(Constants.sonicSwapCanister));
+        for (canister in whiteList.vals()) {
+            sum := sum - _balanceOf(Principal.fromText(canister));
+        };
 
         for ((holder_principal, holder_balance) in balances.entries()) {
             let holder_principal_text = Principal.toText(holder_principal);
-            if (
-                holder_principal_text != Constants.burnWallet and holder_principal_text != Constants.sonicSwapTestNetCanister and holder_principal_text != Constants.sonicSwapCanister and holder_principal_text != Constants.distributionCanister and holder_principal_text != Constants.taxCollectorCanister and holder_principal_text != Constants.teamWallet and holder_principal_text != Constants.marketingWallet and holder_principal_text != Constants.liquidityWallet and holder_principal_text != Constants.cigDaoWallet and holder_principal_text != Constants.swapCanister and holder_principal != sender,
-            ) {
+            if (List.some<Text>(_whiteList, func(e : Text) : Bool { holder_principal_text != e })) {
                 if (holder_principal_text == Constants.treasuryWallet) {
                     let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
                     let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
@@ -802,6 +811,10 @@ shared (msg) actor class Token(
         return #Ok(hash);
     };
 
+    private func _getWhiteList() : [Text] {
+        whiteList;
+    };
+
     public shared ({ caller }) func setup() : async TxReceipt {
         assert (caller == owner_);
         assert (isBurnt == false);
@@ -1012,6 +1025,7 @@ shared (msg) actor class Token(
                 case ("reflection_Amount") return _natResponse(lastReflectionAmount);
                 case ("reflectionCount") return _natResponse(reflectionCount);
                 case ("reflectionAmount") return _natResponse(reflectionAmount);
+                case ("whiteList") return _whiteListResponse();
                 case (_) return return Http.BAD_REQUEST();
             };
         } else if (path.size() == 2) {
@@ -1037,6 +1051,24 @@ shared (msg) actor class Token(
 
     private func _textResponse(value : Text) : Http.Response {
         let json = #String(value);
+        let blob = Text.encodeUtf8(JSON.show(json));
+        let response : Http.Response = {
+            status_code = 200;
+            headers = [("Content-Type", "application/json")];
+            body = blob;
+            streaming_strategy = null;
+        };
+    };
+
+    private func _whiteListResponse() : Http.Response {
+        var _whiteList : [JSON] = [];
+
+        for (canister in whiteList.vals()) {
+            let json = #String(canister);
+            _whiteList := Array.append(_whiteList, [json]);
+        };
+
+        let json = #Array(_whiteList);
         let blob = Text.encodeUtf8(JSON.show(json));
         let response : Http.Response = {
             status_code = 200;

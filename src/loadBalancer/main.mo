@@ -4,7 +4,7 @@ import Transaction "../models/Transaction";
 import Reflection "../models/Reflection";
 import Http "../helpers/http";
 import Response "../models/Response";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Constants "../Constants";
 import Error "mo:base/Error";
 import Array "mo:base/Array";

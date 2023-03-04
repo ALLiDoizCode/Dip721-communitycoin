@@ -1,1 +1,1 @@
-{ dependencies = [ "base", "stable-rbtree", "stable-buffer", "candb", "rand", "ulid", "hash", "crypto", "queue" ], compiler = Some "0.7.6" }
+{ dependencies = [ "base", "stable-rbtree", "stable-buffer", "candb", "rand", "ulid", "hash", "crypto", "queue", "explore" ], compiler = Some "0.7.6" }

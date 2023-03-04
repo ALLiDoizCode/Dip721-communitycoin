@@ -11,7 +11,7 @@ import Http "../helpers/http";
 import Response "../models/Response";
 import Prim "mo:prim";
 import Iter "mo:base/Iter";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Array "mo:base/Array";
 import Collection "./Collection";
 import Admin "mo:candb/CanDBAdmin";

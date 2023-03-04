@@ -14,7 +14,7 @@ import Int "mo:base/Int";
 import Time "mo:base/Time";
 import Int32 "mo:base/Int32";
 import Nat32 "mo:base/Nat32";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Transaction "../models/Transaction";
 import Holder "../models/Holder";
 import Reflection "../models/Reflection";

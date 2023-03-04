@@ -25,7 +25,7 @@ import Types "../models/types";
 import Http "../helpers/http";
 import Response "../models/Response";
 import Burner "../models/Burner";
-import JSON "../helpers/JSON";
+import JSON "mo:json/JSON";
 import Cycles "mo:base/ExperimentalCycles";
 import TopUpService "../services/TopUpService";
 import Order "mo:base/Order";

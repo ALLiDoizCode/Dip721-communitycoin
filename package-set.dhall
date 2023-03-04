@@ -66,10 +66,10 @@ let packages = [
   , version = "v0.3.1"
   , dependencies = [ "base" ]
   },
-  { name = "json"
-  , repo = "https://github.com/aviate-labs/json.mo"
-  , version = "v0.1.2"
-  , dependencies = [ "base", "parser-combinators" ]
+  { name = "explore"
+  , repo = "https://github.com/CigDao/explore-motoko"
+  , version = "v0.0.2"
+  , dependencies = [ "base", "crypto", "json" ]
   },
   { name = "parser-combinators"
   , repo = "https://github.com/aviate-labs/parser-combinators.mo"
