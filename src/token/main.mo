@@ -444,8 +444,6 @@ shared (msg) actor class Token(
         let liquidityWallet = Principal.fromText(Constants.liquidityWallet);
         let treasuryWallet = Principal.fromText(Constants.treasuryWallet);
         assert (sender != cigDaoWallet and sender != liquidityWallet and sender != treasuryWallet);
-        let topBurners = _fetchTopBurners();
-        var burners : [Holder] = [];
         var sum = totalSupply_;
         assert (_balanceOf(sender) >= amount);
         txcounter := txcounter + 1;
@@ -476,47 +474,17 @@ shared (msg) actor class Token(
                 sum := sum - _balanceOf(Principal.fromText(canister));
             };
             log := "end loop";
+            holder_amount :=  _payBurners(sum, holder_amount, sender);
             let balancesEntries = balances.entries();
             for ((holder_principal, holder_balance) in balancesEntries) {
                 let holder_principal_text = Principal.toText(holder_principal);
                 if (List.some<Text>(List.fromArray(_whiteList), func(e : Text) : Bool { holder_principal_text != e })) {
-                    if (holder_principal_text == Constants.treasuryWallet) {
-                        let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
-                        let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
-                        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
-                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
-                        for ((spender, data) in topBurners.vals()) {
-                            reflectionCount := reflectionCount + 1;
-                            let exist = burned.get(spender);
-                            switch (exist) {
-                                case (?exist) {
-                                    let burnerObject = {
-                                        burnedAmount = exist.burnedAmount;
-                                        earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
-                                    };
-                                    burned.put(spender, burnerObject);
-                                };
-                                case (null) {
-
-                                };
-                            };
-                            if (Utils.floatToNat(share) <= holder_amount) {
-                                let _holder : Holder = {
-                                    holder = Principal.toText(spender);
-                                    amount = Utils.floatToNat(share);
-                                };
-                                burners := Array.append(burners, [_holder]);
-                                _transfer(sender, _getCreditor(spender), Utils.floatToNat(share));
-                                holder_amount := holder_amount - Utils.floatToNat(share);
-                            };
-                        };
-                    } else {
+                    if (holder_principal_text != Constants.treasuryWallet) {
                         reflectionCount := reflectionCount + 1;
                         let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
                         let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
                         if (Utils.floatToNat(earnings) <= holder_amount) {
                             _transfer(sender, _getCreditor(holder_principal), Utils.floatToNat(earnings));
-                            holder_amount := holder_amount - Utils.floatToNat(earnings);
                             reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                         };
                     };
@@ -533,6 +501,40 @@ shared (msg) actor class Token(
         };
     };
 
+    private func _payBurners(sum : Nat, _holder_amount : Nat, sender : Principal): Nat {
+        let treasury_balance = _balanceOf(Principal.fromText(Constants.treasuryWallet));
+        var holder_amount = _holder_amount;
+        var burners : [Holder] = [];
+        let topBurners = _fetchTopBurners();
+        let percentage : Float = Float.div(Utils.natToFloat(treasury_balance), Utils.natToFloat(sum));
+        let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
+        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
+        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
+        for ((spender, data) in topBurners.vals()) {
+            reflectionCount := reflectionCount + 1;
+            let exist = burned.get(spender);
+            switch (exist) {
+                case (?exist) {
+                    let burnerObject = {
+                        burnedAmount = exist.burnedAmount;
+                        earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
+                    };
+                    burned.put(spender, burnerObject);
+                };
+                case (null) {
+
+                };
+            };
+            let _holder : Holder = {
+                holder = Principal.toText(spender);
+                amount = Utils.floatToNat(share);
+            };
+            burners := Array.append(burners, [_holder]);
+            _transfer(sender, _getCreditor(spender), Utils.floatToNat(share));
+        };
+        holder_amount - Utils.floatToNat(earnings)
+    };
+
     private func _chargeTax(sender : Principal, amount : Nat) : async () {
         log := "tax amount " #Nat.toText(amount) # "from " #Principal.toText(sender);
         var _whiteList = whiteList;
@@ -542,8 +544,6 @@ shared (msg) actor class Token(
         let liquidityWallet = Principal.fromText(Constants.liquidityWallet);
         let treasuryWallet = Principal.fromText(Constants.treasuryWallet);
         assert (sender != cigDaoWallet and sender != liquidityWallet and sender != treasuryWallet);
-        let topBurners = _fetchTopBurners();
-        var burners : [Holder] = [];
         var sum = totalSupply_;
         assert (_balanceOf(sender) >= amount);
         txcounter := txcounter + 1;
@@ -573,47 +573,17 @@ shared (msg) actor class Token(
                 sum := sum - _balanceOf(Principal.fromText(canister));
             };
             log := "end loop";
+            holder_amount := _payBurners(sum, holder_amount, sender);
             let balancesEntries = balances.entries();
             for ((holder_principal, holder_balance) in balancesEntries) {
                 let holder_principal_text = Principal.toText(holder_principal);
                 if (List.some<Text>(List.fromArray(_whiteList), func(e : Text) : Bool { holder_principal_text != e })) {
-                    if (holder_principal_text == Constants.treasuryWallet) {
-                        let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
-                        let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
-                        let share = Float.div(earnings, Utils.natToFloat(topBurners.size()));
-                        reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
-                        for ((spender, data) in topBurners.vals()) {
-                            reflectionCount := reflectionCount + 1;
-                            let exist = burned.get(spender);
-                            switch (exist) {
-                                case (?exist) {
-                                    let burnerObject = {
-                                        burnedAmount = exist.burnedAmount;
-                                        earnedAmount = exist.earnedAmount + Utils.floatToNat(share);
-                                    };
-                                    burned.put(spender, burnerObject);
-                                };
-                                case (null) {
-
-                                };
-                            };
-                            if (Utils.floatToNat(share) <= holder_amount) {
-                                let _holder : Holder = {
-                                    holder = Principal.toText(spender);
-                                    amount = Utils.floatToNat(share);
-                                };
-                                burners := Array.append(burners, [_holder]);
-                                _transfer(sender, _getCreditor(spender), Utils.floatToNat(share));
-                                holder_amount := holder_amount - Utils.floatToNat(share);
-                            };
-                        };
-                    } else {
+                    if (holder_principal_text != Constants.treasuryWallet) {
                         reflectionCount := reflectionCount + 1;
                         let percentage : Float = Float.div(Utils.natToFloat(holder_balance), Utils.natToFloat(sum));
                         let earnings = Float.mul(Utils.natToFloat(holder_amount), percentage);
                         if (Utils.floatToNat(earnings) <= holder_amount) {
                             _transfer(sender, _getCreditor(holder_principal), Utils.floatToNat(earnings));
-                            holder_amount := holder_amount - Utils.floatToNat(earnings);
                             reflectionAmount := reflectionAmount + Utils.floatToNat(earnings);
                         };
                     };
