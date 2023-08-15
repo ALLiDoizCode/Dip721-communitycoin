@@ -655,17 +655,17 @@ shared (msg) actor class Token(
     public shared (msg) func transfer(to : Principal, value : Nat) : async TxReceipt {
         log := "transfer";
         try {
-            let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
-            let tax = Utils.floatToNat(_tax);
+            //let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
+            //let tax = Utils.floatToNat(_tax);
             if (_balanceOf(msg.caller) < value + fee) {
                 return #Err(#InsufficientBalance);
             };
             txcounter := txcounter + 1;
             var _txcounter = txcounter;
-            _transfer(msg.caller, to, value - tax);
-            let transaction = Utils._transactionFactory(value, Principal.toText(msg.caller), Principal.toText(to), tax, "transfer");
+            _transfer(msg.caller, to, value);
+            let transaction = Utils._transactionFactory(value, Principal.toText(msg.caller), Principal.toText(to), 0, "transfer");
 
-            ignore _tranferLog(msg.caller, transaction, tax);
+            ignore _tranferLog(msg.caller, transaction, 0);
             return #Ok(transaction.hash);
         } catch (e) {
             log := "transfer:" #Error.message(e);
@@ -706,8 +706,8 @@ shared (msg) actor class Token(
     public shared (msg) func transferFrom(from : Principal, to : Principal, value : Nat) : async TxReceipt {
         try {
             ignore _topUp();
-            let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
-            let tax = Utils.floatToNat(_tax);
+            //let _tax : Float = Float.mul(Utils.natToFloat(value), transactionPercentage);
+            //let tax = Utils.floatToNat(_tax);
             if (_balanceOf(from) < value + fee) {
                 return #Err(#InsufficientBalance);
             };
@@ -715,7 +715,7 @@ shared (msg) actor class Token(
             if (allowed < value + fee) { return #Err(#InsufficientAllowance) };
             txcounter := txcounter + 1;
             var _txcounter = txcounter;
-            _transfer(from, to, value - tax);
+            _transfer(from, to, value);
             let allowed_new : Nat = allowed - value - fee;
             if (allowed_new != 0) {
                 let allowance_from = Types.unwrap(allowances.get(from));
@@ -730,8 +730,8 @@ shared (msg) actor class Token(
                     };
                 };
             };
-            let transaction = Utils._transactionFactory(value, Principal.toText(from), Principal.toText(to), tax, "transferFrom");
-            ignore _transferFromLog(from, transaction, tax);
+            let transaction = Utils._transactionFactory(value, Principal.toText(from), Principal.toText(to), 0, "transferFrom");
+            ignore _transferFromLog(from, transaction, 0);
             return #Ok(transaction.hash);
         } catch (e) {
             return #Err(#Other(Error.message(e)));
